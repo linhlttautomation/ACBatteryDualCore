@@ -1,0 +1,700 @@
+
+// Included Files
+#include "cla_sdfm_filter_sync_shared.h"
+#include "F2837xD_cla.h"
+#include "F2837xD_piectrl.h"
+#include "F2837xD_gpio.h"
+#include "F2837xD_epwm.h"
+#include "F2837xD_EPwm_defines.h"
+#include "RAMP_GEN_CLA.h"
+#include "Ramp.h"
+#include "iPARK_CLA.h"
+#include "UabtoUabc.h"
+#include "SVM3D_DQZ_CLA_TOI_UU.h"
+#include "PWM_3T_CLA.h"
+#include "PARK_CLA.h"
+#include "CLAmath.h"
+#include "PV_Variables.h"
+#include "F2837xD_adc.h"
+#include "PV_Setting.h"
+#include "LowFilter.h"
+#include "CLARKE_3PHASE_CLA.h"
+#include "PI_NORMAL_CLA.h"
+// Defines CLA_DEBUG
+#define CLA_DEBUG       0
+
+#pragma DATA_SECTION(Cla1Task1, "Cla1Prog");
+
+#pragma DATA_SECTION(IsrTicker,"CLADataLS0");
+volatile Uint32 IsrTicker;
+
+#pragma DATA_SECTION(rg_har_1st,"CLADataLS0");
+volatile RAMP_GEN_CLA rg_har_1st;
+
+#pragma DATA_SECTION(rc_Ref,"CLADataLS0");
+volatile RC_CLA rc_Ref;
+
+#pragma DATA_SECTION(ipark_voltref,"CLADataLS0");
+volatile iPARK_CLA ipark_voltref;
+
+#pragma DATA_SECTION(UabtoUabc,"CLADataLS0");
+volatile UABtoUabc_CLA UabtoUabc;
+
+#pragma DATA_SECTION(Svm3d,"CLADataLS0");
+volatile SVM3D_DQZ_GEN_CLA_1 Svm3d;
+
+#pragma DATA_SECTION(pwm,"CLADataLS0");
+volatile PWMGEN_3T_CLA pwm;
+
+#pragma DATA_SECTION(park_curr,"CLADataLS0");
+volatile PARK_CLA park_curr;
+
+#pragma DATA_SECTION(park_volt,"CLADataLS0");
+volatile PARK_CLA park_volt;
+
+#pragma DATA_SECTION(CpuToCLA,"CpuToCla1MsgRAM");
+volatile CPU_TO_CLA CpuToCLA;
+
+#pragma DATA_SECTION(ClaToCPU,"Cla1ToCpuMsgRAM");
+volatile  CLA_TO_CPU ClaToCPU;
+
+#pragma DATA_SECTION(START_CONTROLLER,"CLADataLS0");
+volatile short START_CONTROLLER;
+
+#pragma DATA_SECTION(START_ADC,"CLADataLS0");
+volatile short START_ADC;
+
+#pragma DATA_SECTION(AdcValue,"CLADataLS0");
+volatile ADC_VALUE AdcValue;
+
+#pragma DATA_SECTION(adc_filter,"CLADataLS0");
+volatile ADC_VALUE adc_filter;
+
+/* Low pass filter  */
+#pragma DATA_SECTION(filter_Udc,"CLADataLS0");
+volatile LOWPASSFILTER  filter_Udc;
+//
+#pragma DATA_SECTION(filter_VaG,"CLADataLS0");
+volatile LOWPASSFILTER  filter_VaG;
+//
+#pragma DATA_SECTION(filter_VbG,"CLADataLS0");
+volatile LOWPASSFILTER  filter_VbG;
+//
+#pragma DATA_SECTION(filter_VcG,"CLADataLS0");
+volatile LOWPASSFILTER  filter_VcG;
+
+#pragma DATA_SECTION(clarke_volt,"CLADataLS0");
+volatile CLARKE_3PHASE_CLA clarke_volt;
+
+#pragma DATA_SECTION(clarke_curr,"CLADataLS0");
+volatile CLARKE_3PHASE_CLA clarke_curr;
+
+#pragma DATA_SECTION(pi_curr_id,"CLADataLS0");
+volatile PI_NORMAL_CLA pi_curr_id;
+
+#pragma DATA_SECTION(pi_curr_iq,"CLADataLS0");
+volatile PI_NORMAL_CLA pi_curr_iq;
+
+#pragma DATA_SECTION(pi_curr_iz,"CLADataLS0");
+volatile PI_NORMAL_CLA pi_curr_iz;
+
+#pragma DATA_SECTION(controller_error_curr_isd,"CLADataLS0");
+volatile short controller_error_curr_isd;
+
+#pragma DATA_SECTION(controller_error_curr_isq,"CLADataLS0");
+volatile short controller_error_curr_isq;
+
+#pragma DATA_SECTION(loop_volt_Udc,"CLADataLS0");
+volatile short loop_volt_Udc;
+
+#pragma DATA_SECTION(pi_volt_Usd,"CLADataLS0");
+volatile PI_NORMAL_CLA pi_volt_Usd;
+
+#pragma DATA_SECTION(pi_volt_Usq,"CLADataLS0");
+volatile PI_NORMAL_CLA pi_volt_Usq;
+
+#pragma DATA_SECTION(loop_volt_Us,"CLADataLS0");
+volatile int loop_volt_Us;
+
+Uint16 TaskCpu1Cla1;
+Uint16 TaskCpu1Cla1_task2;
+
+// Task 1
+//
+__interrupt void Cla1Task1 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+
+    TaskCpu1Cla1++;
+
+    if(CpuToCLA.EnableADC == 1 && START_ADC == 2)
+    {
+        START_ADC = 1;
+    }
+    if(START_ADC == 1)
+    {
+        if(CpuToCLA.ADCoffset_VaG > 2048.0)
+        {
+            AdcValue.Va_G = CpuToCLA.ADCgain_VaG*(VaG_HCPL - CpuToCLA.ADCoffset_VaG)/(4096.0 - CpuToCLA.ADCoffset_VaG);
+        }
+        else
+        {
+            AdcValue.Va_G = CpuToCLA.ADCgain_VaG*(VaG_HCPL - CpuToCLA.ADCoffset_VaG)/(CpuToCLA.ADCoffset_VaG);
+        }
+        if(CpuToCLA.ADCoffset_VbG > 2048.0)
+        {
+            AdcValue.Vb_G = CpuToCLA.ADCgain_VbG*(VbG_HCPL - CpuToCLA.ADCoffset_VbG)/(4096.0 - CpuToCLA.ADCoffset_VbG);
+        }
+        else
+        {
+            AdcValue.Vb_G = CpuToCLA.ADCgain_VbG*(VbG_HCPL - CpuToCLA.ADCoffset_VbG)/(CpuToCLA.ADCoffset_VbG);
+        }
+        if(CpuToCLA.ADCoffset_VcG > 2048.0)
+        {
+            AdcValue.Vc_G = CpuToCLA.ADCgain_VcG*(VcG_HCPL - CpuToCLA.ADCoffset_VcG)/(4096.0 - CpuToCLA.ADCoffset_VcG);
+        }
+        else
+        {
+            AdcValue.Vc_G = CpuToCLA.ADCgain_VcG*(VcG_HCPL - CpuToCLA.ADCoffset_VcG)/(CpuToCLA.ADCoffset_VcG);
+        }
+        if(CpuToCLA.ADCoffset_Ia_inv > 2048.0)
+        {
+            AdcValue.Ia_inv = CpuToCLA.ADCgain_Ia_inv*(IA_INV_LEM - CpuToCLA.ADCoffset_Ia_inv)/(4096.0 - CpuToCLA.ADCoffset_Ia_inv);
+        }
+        else
+        {
+            AdcValue.Ia_inv = CpuToCLA.ADCgain_Ia_inv*(IA_INV_LEM - CpuToCLA.ADCoffset_Ia_inv)/(CpuToCLA.ADCoffset_Ia_inv);
+        }
+        if(CpuToCLA.ADCoffset_Ib_inv > 2048.0)
+        {
+            AdcValue.Ib_inv = CpuToCLA.ADCgain_Ib_inv*(IB_INV_LEM  - CpuToCLA.ADCoffset_Ib_inv)/(4096.0 - CpuToCLA.ADCoffset_Ib_inv);
+        }
+        else
+        {
+            AdcValue.Ib_inv = CpuToCLA.ADCgain_Ib_inv*(IB_INV_LEM  - CpuToCLA.ADCoffset_Ib_inv)/(CpuToCLA.ADCoffset_Ib_inv);
+        }
+        if(CpuToCLA.ADCoffset_Ic_inv > 2048.0)
+        {
+            AdcValue.Ic_inv = CpuToCLA.ADCgain_Ic_inv*(IC_INV_LEM - CpuToCLA.ADCoffset_Ic_inv)/(4096.0 - CpuToCLA.ADCoffset_Ic_inv);
+        }
+        else
+        {
+            AdcValue.Ic_inv = CpuToCLA.ADCgain_Ic_inv*(IC_INV_LEM - CpuToCLA.ADCoffset_Ic_inv)/(CpuToCLA.ADCoffset_Ic_inv);
+        }
+        if(UDC_HCPL > CpuToCLA.ADCoffset_Udc)
+        {
+            AdcValue.Udc = CpuToCLA.ADCgain_Udc*(UDC_HCPL - CpuToCLA.ADCoffset_Udc)/(4096.0 - CpuToCLA.ADCoffset_Udc);
+        }
+        else AdcValue.Udc = 0.0;
+
+//        AdcValue.Va_G = 0.94*(UDC_HCPL - 2140)/(4096.0 - 2140);
+//        AdcValue.Vb_G = 0.9*(VbG_HCPL - 2095)/(4096.0 - 2095);
+//        AdcValue.Vc_G = 0.9*(VcG_HCPL - 2092)/(4096.0 - 2092);
+//        AdcValue.Ia_inv = 1.05*(IA_INV_LEM - 2093)/(4096.0 - 2093);
+//        AdcValue.Ib_inv = 1.09*(IB_INV_LEM  - 2105)/(4096.0 - 2105);
+//        AdcValue.Ic_inv = 0.92*(IC_INV_LEM - 2063)/(4096.0 - 2063);
+//        if (UDC_HCPL > 21)
+//        {
+//            AdcValue.Udc = 0.97*(UDC_HCPL - 21)/(4096.0 - 21);
+//        }
+//        else AdcValue.Udc = 0.0;
+
+        filter_Udc.Vin = AdcValue.Udc;
+        LOWPASSFILTER_MACRO(filter_Udc)
+        adc_filter.Udc = filter_Udc.Vout;
+
+        filter_VaG.Vin = AdcValue.Va_G;
+        LOWPASSFILTER_MACRO(filter_VaG);
+        adc_filter.Va_G = filter_VaG.Vout;
+
+        filter_VbG.Vin = AdcValue.Vb_G;
+        LOWPASSFILTER_MACRO(filter_VbG);
+        adc_filter.Vb_G = filter_VbG.Vout;
+
+        filter_VcG.Vin = AdcValue.Vc_G;
+        LOWPASSFILTER_MACRO(filter_VcG);
+        adc_filter.Vc_G = filter_VcG.Vout;
+
+        ClaToCPU.ADC_CPU.datalog1  = adc_filter.Va_G;
+        ClaToCPU.ADC_CPU.datalog2  = adc_filter.Vb_G;
+        ClaToCPU.ADC_CPU.datalog3  = adc_filter.Vc_G;
+
+        #if (BUILDLEVEL == LEVEL1 || BUILDLEVEL == LEVEL3 || BUILDLEVEL == LEVEL4)
+            if(CpuToCLA.EnableFlag == 1)
+            {
+                START_CONTROLLER = 1;
+            }
+            else START_CONTROLLER = 0;
+        #endif
+    }
+    if(START_CONTROLLER == 1)
+    {
+        EPwm4Regs.DBCTL.bit.OUT_MODE = 3; // Dead-band áp dụng cho cả hai tín hiệu PWM A và B.
+        EPwm6Regs.DBCTL.bit.OUT_MODE = 3;
+        EPwm5Regs.DBCTL.bit.OUT_MODE = 3;
+        EPwm8Regs.DBCTL.bit.OUT_MODE = 3;
+
+        #if(BUILDLEVEL == LEVEL1)
+
+            IsrTicker++;
+            rg_har_1st.Freq = 50.0/150.0;
+            RAMP_GEN_CLA_MACRO(rg_har_1st)
+
+            rc_Ref.TargetValue = 220.0/400.0;
+            RC_CLA_MACRO(rc_Ref)
+
+            ipark_voltref.d    = can2*rc_Ref.SetpointValue;
+            ipark_voltref.q    = 0;
+            ipark_voltref.z    = 0;
+            ipark_voltref.sine = CLAsinPU(rg_har_1st.Out);
+            ipark_voltref.cos  = CLAcosPU(rg_har_1st.Out);
+            iPARK_CLA_V3_MACRO(ipark_voltref)
+
+            Svm3d.Ualpha = ipark_voltref.alpha;
+            Svm3d.Ubeta = ipark_voltref.beta;
+            Svm3d.Ugamma = ipark_voltref.gamma;
+            Svm3d.Udc = 650.0/800.0;
+            SVM3D_DQZ_GEN_CLA_MACRO_1(Svm3d)
+
+            pwm.MfuncA1 = Svm3d.da;
+            pwm.MfuncA2 = Svm3d.db;
+            pwm.MfuncB1 = Svm3d.dc;
+            pwm.MfuncB2 = Svm3d.dn;
+
+            EPwm4Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncA1*pwm.PeriodMax);
+            EPwm6Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncA2*pwm.PeriodMax);                                                                                         \
+            EPwm5Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncB1*pwm.PeriodMax);
+            EPwm8Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncB2*pwm.PeriodMax);
+
+        #endif
+
+        #if(BUILDLEVEL == LEVEL3)
+
+            IsrTicker++;
+
+            rg_har_1st.Freq = 50.0/150.0;
+            RAMP_GEN_CLA_MACRO(rg_har_1st) // Tao theta
+
+            rc_Ref.TargetValue = 1.5/81.3; // Id*
+            RC_CLA_MACRO(rc_Ref) // Ramp luong dat Id
+
+            clarke_curr.As  = AdcValue.Ia_inv;  // Phase A curr
+            clarke_curr.Bs  = AdcValue.Ib_inv;  // Phase B curr
+            clarke_curr.Cs  = AdcValue.Ic_inv;  // Phase C curr
+            CLARKE_3PHASE_CLA_V3_MARCO(clarke_curr) // Chuyen abc sang anpha-beta-gamma
+
+            park_curr.theta = rg_har_1st.Out; // Dau ra cua rg_har_1st chinh la theta
+            park_curr.alpha = clarke_curr.Alpha;
+            park_curr.beta = clarke_curr.Beta;
+            park_curr.gamma = clarke_curr.Gamma;
+            park_curr.sine  = CLAsinPU(rg_har_1st.Out); // sin(theta)
+            park_curr.cos  = CLAcosPU(rg_har_1st.Out); // cos(theta)
+            PARK_CLA_V3_MACRO(park_curr) // Chuyen anpha-beta-gamma sang dqz
+
+            // Current controller
+            pi_curr_id.REF      = can2*rc_Ref.SetpointValue; // SetpointValue la gia tri dat sau ramp
+            pi_curr_id.INPUT    = park_curr.d;  // Id dau vao la gia tri d sau khoi park
+            pi_curr_id.ERROR    = pi_curr_id.REF - pi_curr_id.INPUT; // Do sai lech
+            PI_NORMAL_MACRO(pi_curr_id);
+
+            pi_curr_iq.REF      = 0;
+            pi_curr_iq.INPUT    = park_curr.q; // Iq dau vao la gia tri q sau khoi park
+            pi_curr_iq.ERROR    = pi_curr_iq.REF - pi_curr_iq.INPUT; // Do sai lech
+            PI_NORMAL_MACRO(pi_curr_iq);
+
+            pi_curr_iz.REF      = 0;
+            pi_curr_iz.INPUT    = park_curr.z; // Iz dau vao la gia tri z sau khoi park
+            pi_curr_iz.ERROR    = pi_curr_iz.REF - pi_curr_iz.INPUT; // Do sai lech
+            PI_NORMAL_MACRO(pi_curr_iz);
+
+            ipark_voltref.d = pi_curr_id.OUT;
+            ipark_voltref.q = pi_curr_iq.OUT;
+            ipark_voltref.z = pi_curr_iz.OUT;
+            ipark_voltref.sine = CLAsinPU(rg_har_1st.Out); // sin(theta)
+            ipark_voltref.cos  = CLAcosPU(rg_har_1st.Out); // cos(theta)
+            iPARK_CLA_V3_MACRO(ipark_voltref) // Chuyen dqz sang anpha-beta-gamma
+
+            Svm3d.Ualpha = ipark_voltref.alpha;
+            Svm3d.Ubeta = ipark_voltref.beta;
+            Svm3d.Ugamma = ipark_voltref.gamma;
+            Svm3d.Udc = AdcValue.Udc;
+
+            SVM3D_DQZ_GEN_CLA_MACRO_1(Svm3d)
+
+            pwm.MfuncA1 = Svm3d.da;
+            pwm.MfuncA2 = Svm3d.db;
+            pwm.MfuncB1 = Svm3d.dc;
+            pwm.MfuncB2 = Svm3d.dn;
+
+            EPwm4Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncA1*pwm.PeriodMax);
+            EPwm6Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncA2*pwm.PeriodMax);
+
+            EPwm5Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncB1*pwm.PeriodMax);
+            EPwm8Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncB2*pwm.PeriodMax);
+
+            if(pi_curr_id.OUT > 0.99 || pi_curr_id.OUT < -0.99)controller_error_curr_isd++;
+            else controller_error_curr_isd = 0;
+
+            if(pi_curr_id.OUT > 0.99 || pi_curr_id.OUT < -0.99) controller_error_curr_isq++;
+            else controller_error_curr_isq = 0;
+
+        #endif
+        #if(BUILDLEVEL == LEVEL4)
+
+            IsrTicker++;
+
+            rg_har_1st.Freq = 50.0/150.0;
+            RAMP_GEN_CLA_MACRO(rg_har_1st) // Tao theta
+
+            rc_Ref.TargetValue = can2*CpuToCLA.VdTesting/400.0; // Dat gia tri Ud*
+            RC_CLA_MACRO(rc_Ref) // Ramp gia tri Ud*
+
+            clarke_curr.As  = AdcValue.Ia_inv;  // Phase A curr
+            clarke_curr.Bs  = AdcValue.Ib_inv;  // Phase B curr
+            clarke_curr.Cs  = AdcValue.Ic_inv;  // Phase C curr
+            CLARKE_3PHASE_CLA_V3_MARCO(clarke_curr)
+
+            clarke_volt.As  = adc_filter.Va_G;  // Phase A volt
+            clarke_volt.Bs  = adc_filter.Vb_G;  // Phase B volt
+            clarke_volt.Cs  = adc_filter.Vc_G;  // Phase C volt
+            CLARKE_3PHASE_CLA_V3_MARCO(clarke_volt)
+
+            park_curr.theta = rg_har_1st.Out;
+            park_curr.alpha = clarke_curr.Alpha;
+            park_curr.beta  = clarke_curr.Beta;
+            park_curr.gamma = clarke_curr.Gamma;
+            park_curr.sine  = CLAsinPU(rg_har_1st.Out);
+            park_curr.cos   = CLAcosPU(rg_har_1st.Out);
+
+            PARK_CLA_V3_MACRO(park_curr)
+
+            park_volt.theta = rg_har_1st.Out;
+            park_volt.alpha = clarke_volt.Alpha;
+            park_volt.beta  = clarke_volt.Beta;
+            park_volt.gamma = clarke_volt.Gamma;
+            park_volt.sine  = CLAsinPU(rg_har_1st.Out);
+            park_volt.cos   = CLAcosPU(rg_har_1st.Out);
+            PARK_CLA_V3_MACRO(park_volt)
+
+            // Voltage controller
+            if(loop_volt_Us >= 10)
+            {
+            pi_volt_Usd.REF      = rc_Ref.SetpointValue;
+            pi_volt_Usd.INPUT    = park_volt.d;
+            pi_volt_Usd.ERROR    = pi_volt_Usd.REF - pi_volt_Usd.INPUT;
+            PI_NORMAL_MACRO(pi_volt_Usd)
+
+            pi_volt_Usq.REF      = 0.0;
+            pi_volt_Usq.INPUT    = park_volt.q;
+            pi_volt_Usq.ERROR    = pi_volt_Usq.REF - pi_volt_Usq.INPUT;
+            PI_NORMAL_MACRO(pi_volt_Usq)
+
+            loop_volt_Us = 1;
+            }
+            else loop_volt_Us++;
+
+            // Current controller
+            pi_curr_id.REF      = pi_volt_Usd.OUT;
+            pi_curr_id.INPUT    = park_curr.d;
+            pi_curr_id.ERROR    =  pi_curr_id.REF - pi_curr_id.INPUT ;
+            PI_NORMAL_MACRO(pi_curr_id);
+
+            pi_curr_iq.REF      = pi_volt_Usq.OUT;
+            pi_curr_iq.INPUT    = park_curr.q;
+            pi_curr_iq.ERROR    =  pi_curr_iq.REF - pi_curr_iq.INPUT;
+            PI_NORMAL_MACRO(pi_curr_iq);
+
+            pi_curr_iz.REF      = 0.0;
+            pi_curr_iz.INPUT    = park_curr.z;
+            pi_curr_iz.ERROR    =  pi_curr_iz.REF - pi_curr_iz.INPUT ;
+            PI_NORMAL_MACRO(pi_curr_iz);
+
+            ipark_voltref.d = pi_curr_id.OUT;
+            ipark_voltref.q = pi_curr_iq.OUT;
+            ipark_voltref.z = pi_curr_iz.OUT;
+
+            ipark_voltref.sine = CLAsinPU(rg_har_1st.Out);
+            ipark_voltref.cos  = CLAcosPU(rg_har_1st.Out);
+            iPARK_CLA_V3_MACRO(ipark_voltref)
+
+            Svm3d.Ualpha = ipark_voltref.alpha;
+            Svm3d.Ubeta  = ipark_voltref.beta;
+            Svm3d.Ugamma = ipark_voltref.gamma;
+            Svm3d.Udc = adc_filter.Udc;
+            SVM3D_DQZ_GEN_CLA_MACRO_1(Svm3d)
+
+            pwm.MfuncA1 = Svm3d.da;
+            pwm.MfuncA2 = Svm3d.db;
+            pwm.MfuncB1 = Svm3d.dc;
+            pwm.MfuncB2 = Svm3d.dn;
+
+            EPwm4Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncA1*pwm.PeriodMax);
+            EPwm6Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncA2*pwm.PeriodMax);
+            EPwm5Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncB1*pwm.PeriodMax);
+            EPwm8Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncB2*pwm.PeriodMax);
+        #endif
+    }
+    else
+    {
+        EPwm4Regs.DBCTL.bit.OUT_MODE = 0; // Tắt chức năng Dead Band đầu ra (Dead Band output mode).
+        EPwm6Regs.DBCTL.bit.OUT_MODE = 0; // Tắt chức năng Dead Band đầu ra (Dead Band output mode).
+        EPwm5Regs.DBCTL.bit.OUT_MODE = 0; // Tắt chức năng Dead Band đầu ra (Dead Band output mode).
+        EPwm8Regs.DBCTL.bit.OUT_MODE = 0; // Tắt chức năng Dead Band đầu ra (Dead Band output mode).
+
+        EPwm4Regs.AQCTLA.bit.CAU = AQ_CLEAR;
+        EPwm4Regs.AQCTLA.bit.CAD = AQ_SET;
+
+        EPwm6Regs.AQCTLA.bit.CAU = AQ_CLEAR;
+        EPwm6Regs.AQCTLA.bit.CAD = AQ_SET;
+
+        EPwm5Regs.AQCTLA.bit.CAU = AQ_CLEAR;
+        EPwm5Regs.AQCTLA.bit.CAD = AQ_SET;
+
+        EPwm8Regs.AQCTLA.bit.CAU = AQ_CLEAR;
+        EPwm8Regs.AQCTLA.bit.CAD = AQ_SET;
+
+        EPwm4Regs.CMPA.bit.CMPA = 0;
+        EPwm4Regs.CMPB.bit.CMPB = 0;
+
+        EPwm6Regs.CMPA.bit.CMPA = 0;
+        EPwm6Regs.CMPB.bit.CMPB = 0;
+
+        EPwm5Regs.CMPA.bit.CMPA = 0;
+        EPwm5Regs.CMPB.bit.CMPB = 0;
+
+        EPwm8Regs.CMPA.bit.CMPA = 0;
+        EPwm8Regs.CMPB.bit.CMPB = 0;
+
+        // RESET cac bien trong thuat toan
+        rg_har_1st.Angle = 0;
+        rg_har_1st.Out = 0;
+
+        rc_Ref.SetpointValue = 0;
+
+        pi_volt_Usd.OUT_I = 0; pi_volt_Usd.OUT = 0;
+        pi_volt_Usq.OUT_I = 0; pi_volt_Usq.OUT = 0;
+
+        pi_curr_id.OUT_I = 0; pi_curr_id.OUT = 0;
+        pi_curr_iq.OUT_I = 0; pi_curr_iq.OUT = 0;
+        pi_curr_iz.OUT_I = 0; pi_curr_iz.OUT = 0;
+    }
+}
+
+//
+// Task 2
+//
+__interrupt void Cla1Task2 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+    TaskCpu1Cla1_task2++;
+
+}
+
+//
+// Task 3
+//
+__interrupt void Cla1Task3 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+}
+
+//
+// Task 4
+//
+__interrupt void Cla1Task4 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+}
+
+//
+// Task 5
+//
+__interrupt void Cla1Task5 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+}
+
+//
+// Task 6
+//
+__interrupt void Cla1Task6 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+}
+
+//
+// Task 7
+//
+__interrupt void Cla1Task7 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+}
+
+//
+// Task 8
+//
+__interrupt void Cla1Task8 ( void )
+{
+    TaskCpu1Cla1 = 0;
+    TaskCpu1Cla1_task2 = 0;
+
+    CLARKE_3PHASE_CLA_INIT(clarke_curr)
+    clarke_volt  = clarke_curr;
+
+    PARK_CLA_INIT(park_curr)
+    park_volt = park_curr;
+    iPARK_CLA_INIT(ipark_voltref)
+
+    SVM3D_DQZ_GEN_CLA_INT_1(Svm3d)
+
+    pwm.PeriodMax = 1000;
+
+    #if(BUILDLEVEL == LEVEL1)
+
+        RAMP_GEN_CLA_INIT(rg_har_1st)
+        rg_har_1st.StepAngleMax = 150.0*0.00002;
+
+        RC_INT_MACRO(rc_Ref)
+        rc_Ref.StepRampDec = 0.001/400.0;
+        rc_Ref.StepRampInc = 0.001/400.0;
+
+    #endif
+
+    #if(BUILDLEVEL == LEVEL3)
+
+        RAMP_GEN_CLA_INIT(rg_har_1st)
+        rg_har_1st.StepAngleMax = 150.0*0.00002;
+
+        RC_INT_MACRO(rc_Ref)
+        rc_Ref.StepRampDec = 0.01/81.3;
+        rc_Ref.StepRampInc = 0.01/81.3;
+
+    #endif
+
+    #if(BUILDLEVEL == LEVEL4)
+
+        RAMP_GEN_CLA_INIT(rg_har_1st)
+        rg_har_1st.StepAngleMax = 150.0*0.00002;
+
+        RC_INT_MACRO(rc_Ref)
+        rc_Ref.StepRampDec = (0.0005/1)/400.0;
+        rc_Ref.StepRampInc = (0.0005/1)/400.0;
+
+    #endif
+
+    #if(BUILDLEVEL == LEVEL3)
+
+        // Current controller
+        PI_NORMAL_INT(pi_curr_id)
+        pi_curr_id.Ts = (float)Ti;
+        pi_curr_id.Kp = KP_CURR_LOOP;
+        pi_curr_id.Ki = KI_CURR_LOOP;
+        pi_curr_id.IN_max   = 81.3;
+        pi_curr_id.OUT_max  = 400.0;
+
+        PI_NORMAL_INT(pi_curr_iq)
+        pi_curr_iq.Ts = (float)Ti;
+        pi_curr_iq.Kp = KP_CURR_LOOP;
+        pi_curr_iq.Ki = KI_CURR_LOOP;
+        pi_curr_iq.IN_max   = 81.3;
+        pi_curr_iq.OUT_max  = 400.0;
+
+        PI_NORMAL_INT(pi_curr_iz)
+        pi_curr_iz.Ts = (float)Ti;
+        pi_curr_iz.Kp = KP_CURR_LOOP_Z;
+        pi_curr_iz.Ki = KI_CURR_LOOP_Z;
+        pi_curr_iz.IN_max   = 81.3;
+        pi_curr_iz.OUT_max  = 400.0;
+
+    #endif
+
+    #if(BUILDLEVEL == LEVEL4)
+
+        loop_volt_Us = 0;
+
+        // Current controller
+        PI_NORMAL_INT(pi_curr_id)
+        pi_curr_id.Ts = (float)Ti;
+        pi_curr_id.Kp = KP_CURR_LOOP_1;
+        pi_curr_id.Ki = KI_CURR_LOOP_1;
+        pi_curr_id.IN_max   = 81.3;
+        pi_curr_id.OUT_max  = 400.0;
+
+        PI_NORMAL_INT(pi_curr_iq)
+        pi_curr_iq.Ts = (float)Ti;
+        pi_curr_iq.Kp = KP_CURR_LOOP_1;
+        pi_curr_iq.Ki = KI_CURR_LOOP_1;
+        pi_curr_iq.IN_max   = 81.3;
+        pi_curr_iq.OUT_max  = 400.0;
+
+        PI_NORMAL_INT(pi_curr_iz)
+        pi_curr_iz.Ts = (float)Ti;
+        pi_curr_iz.Kp = KP_CURR_LOOP_1;
+        pi_curr_iz.Ki = KI_CURR_LOOP_1;
+        pi_curr_iz.IN_max   = 81.3;
+        pi_curr_iz.OUT_max  = 400.0;
+
+        // Voltage controller
+        PI_NORMAL_INT(pi_volt_Usd)
+        pi_volt_Usd.Ts = (float)T_Us;
+        pi_volt_Usd.Kp = KP_VOLT_US_LOOP;
+        pi_volt_Usd.Ki = KI_VOLT_US_LOOP;
+        pi_volt_Usd.IN_max   = 400.0;
+        pi_volt_Usd.OUT_max  = 81.3;
+
+        PI_NORMAL_INT(pi_volt_Usq)
+        pi_volt_Usq.Ts = (float)T_Us;
+        pi_volt_Usq.Kp = KP_VOLT_US_LOOP;
+        pi_volt_Usq.Ki = KI_VOLT_US_LOOP;
+        pi_volt_Usq.IN_max   = 400.0;
+        pi_volt_Usq.OUT_max  = 81.3;
+
+    #endif
+
+    // Filter ADC
+    filter_Udc.Heso_out = 0.96;
+    filter_Udc.Heso_in = 0.04;
+    filter_Udc.Vin = 0;
+    filter_Udc.Vout_k1 = 0;
+    filter_Udc.Vout = 0;
+
+    filter_VaG.Heso_out = 0.1373;
+    filter_VaG.Heso_in = 0.8627;
+    filter_VaG.Vin = 0;
+    filter_VaG.Vout_k1 = 0;
+    filter_VaG.Vout = 0;
+
+    filter_VbG.Heso_out = 0.1373;
+    filter_VbG.Heso_in = 0.8627;
+    filter_VbG.Vin = 0;
+    filter_VbG.Vout_k1 = 0;
+    filter_VbG.Vout = 0;
+
+    filter_VcG.Heso_out = 0.1373;
+    filter_VcG.Heso_in = 0.8627;
+    filter_VcG.Vin = 0;
+    filter_VcG.Vout_k1 = 0;
+    filter_VcG.Vout = 0;
+
+    IsrTicker = 0;
+    START_ADC = 2;
+
+}
+
+//
+// End of file
+//

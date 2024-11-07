@@ -1,0 +1,770 @@
+
+// Included Files
+
+#include "cla_sdfm_filter_sync_shared.h"
+#include "F2837xD_cla.h"
+#include "F2837xD_piectrl.h"
+#include "F2837xD_sdfm_drivers.h"
+#include "F2837xD_struct.h"
+#include "F2837xD_gpio.h"
+#include "F2837xD_epwm.h"
+#include "CFDAB_Variables.h"
+#include "Ramp.h"
+#include "CFDAB_Setting.h"
+#include "F2837xD_adc.h"
+#include "LowFilter.h"
+#include "BandStop_Filter.h"
+#include "PI_NORMAL_CLA.h"
+#include "CNTL_2P2Z_CLA.h"
+#include "CNTL_PI_CLA.h"
+
+//
+// Defines
+//
+#pragma DATA_SECTION(Cla1Task1, "Cla1Prog");
+
+#define CLA_DEBUG       0
+
+#pragma DATA_SECTION(IsrTickerTask1,"CLADataLS0");
+volatile long IsrTickerTask1;
+
+//======================================================
+#pragma DATA_SECTION(rc1,"CLADataLS0");
+volatile RC_CLA rc1;
+
+#pragma DATA_SECTION(rc_Duty,"CLADataLS0");
+volatile RC_CLA rc_Duty;
+
+#pragma DATA_SECTION(rc_Phi,"CLADataLS0");
+volatile RC_CLA rc_Phi;
+
+#pragma DATA_SECTION(rc_VdcRef,"CLADataLS0");
+volatile RC_CLA rc_VdcRef;
+
+#pragma DATA_SECTION(rc_VcRef,"CLADataLS0");
+volatile RC_CLA rc_VcRef;
+
+#pragma DATA_SECTION(rc_IlvRef,"CLADataLS0");
+volatile RC_CLA rc_IlvRef;
+
+#pragma DATA_SECTION(ledControlFlag_2, "Cla1ToCpuMsgRAM")
+
+//===========================================================
+#pragma DATA_SECTION(Kp_volt_Ubat_test,"CLADataLS0");
+volatile float Kp_volt_Ubat_test;
+
+#pragma DATA_SECTION(Ki_volt_Ubat_test,"CLADataLS0");
+volatile float Ki_volt_Ubat_test;
+
+#pragma DATA_SECTION(Kp_volt_Udc_test,"CLADataLS0");
+volatile float Kp_volt_Udc_test;
+
+#pragma DATA_SECTION(Ki_volt_Udc_test,"CLADataLS0");
+volatile float Ki_volt_Udc_test;
+
+#pragma DATA_SECTION(pi_volt_Udc,"CLADataLS0");
+volatile PI_NORMAL_CLA  pi_volt_Udc;
+
+#pragma DATA_SECTION(pi_volt_Ubat,"CLADataLS0");
+volatile PI_NORMAL_CLA  pi_volt_Ubat;
+
+#pragma DATA_SECTION(pi_volt_Ilv,"CLADataLS0");
+volatile PI_NORMAL_CLA  pi_volt_Ilv;
+
+//===========================================================
+#pragma DATA_SECTION(Duty,"CLADataLS0");
+volatile float  Duty;
+
+#pragma DATA_SECTION(detaPhi,"CLADataLS0");
+volatile float  detaPhi;
+
+#pragma DATA_SECTION(theta1,"CLADataLS0");
+volatile float  theta1;
+
+#pragma DATA_SECTION(theta2,"CLADataLS0");
+volatile float  theta2;
+
+#pragma DATA_SECTION(Phase_S1,"CLADataLS0");
+volatile long  Phase_S1;
+
+#pragma DATA_SECTION(Phase_S4,"CLADataLS0");
+volatile long  Phase_S4;
+
+#pragma DATA_SECTION(Phase_S1_old,"CLADataLS0");
+volatile long  Phase_S1_old;
+
+#pragma DATA_SECTION(Phase_S4_old,"CLADataLS0");
+volatile long  Phase_S4_old;
+
+#pragma DATA_SECTION(Cmpa_Q1,"CLADataLS0");
+volatile long  Cmpa_Q1;
+
+#pragma DATA_SECTION(Cmpa_Q2,"CLADataLS0");
+volatile long  Cmpa_Q2;
+
+#pragma DATA_SECTION(Cmpa_S1,"CLADataLS0");
+volatile long  Cmpa_S1;
+
+#pragma DATA_SECTION(Cmpa_S4,"CLADataLS0");
+volatile long  Cmpa_S4;
+
+#pragma DATA_SECTION(Cmpb_S4,"CLADataLS0");
+volatile long  Cmpb_S4;
+
+#pragma DATA_SECTION(PeriodMax,"CLADataLS0");
+volatile long PeriodMax ;
+
+#pragma DATA_SECTION(error_volt_Udc_controller,"CLADataLS0");
+volatile long  error_volt_Udc_controller ;
+//===========================================================
+#pragma DATA_SECTION(CpuToCLA,"CpuToCla1MsgRAM");
+volatile CPU_TO_CLA CpuToCLA;
+
+#pragma DATA_SECTION(ClaToCPU,"Cla1ToCpuMsgRAM");
+volatile  CLA_TO_CPU ClaToCPU;
+//===========================================================
+#pragma DATA_SECTION(start_duty,"CLADataLS0");
+volatile short start_duty;
+
+#pragma DATA_SECTION(Cnt_duty,"CLADataLS0");
+volatile long Cnt_duty;
+
+#pragma DATA_SECTION(Cnt_phi,"CLADataLS0");
+volatile long Cnt_phi;
+
+#pragma DATA_SECTION(Enable_duty,"CLADataLS0");
+volatile short Enable_duty;
+
+#pragma DATA_SECTION(Enable_phi,"CLADataLS0");
+volatile short Enable_phi;
+
+#pragma DATA_SECTION(Flag_duty,"CLADataLS0");
+volatile short Flag_duty;
+
+#pragma DATA_SECTION(Flag_phi,"CLADataLS0");
+volatile short Flag_phi;
+//===========================================================
+#pragma DATA_SECTION(AdcValue,"CLADataLS0");
+volatile ADC_VALUE  AdcValue ;
+
+#pragma DATA_SECTION(adc_filter,"CLADataLS0");
+volatile ADC_VALUE adc_filter;
+
+#pragma DATA_SECTION(adc_offset,"CLADataLS0");
+volatile ADC_VALUE adc_offset;
+//======================================================
+#pragma DATA_SECTION(START_ADC,"CLADataLS0");
+volatile short START_ADC;
+
+#pragma DATA_SECTION(OffsetCalCounter,"CLADataLS0");
+volatile short OffsetCalCounter;
+
+#pragma DATA_SECTION(ResetOffset,"CLADataLS0");
+volatile short ResetOffset;
+//======================================================
+#pragma DATA_SECTION(filter_Udc_CFDAB,"CLADataLS0");
+volatile LOWPASSFILTER  filter_Udc_CFDAB;
+
+#pragma DATA_SECTION(filter_Ubat,"CLADataLS0");
+volatile LOWPASSFILTER  filter_Ubat;
+
+#pragma DATA_SECTION(filter_Vc,"CLADataLS0");
+volatile LOWPASSFILTER  filter_Vc;
+
+#pragma DATA_SECTION(filter_Ilv,"CLADataLS0");
+volatile LOWPASSFILTER  filter_Ilv;
+
+#pragma DATA_SECTION(filter_Udc_CFDAB_pre,"CLADataLS0");
+volatile LOWPASSFILTER  filter_Udc_CFDAB_pre;
+
+#pragma DATA_SECTION(filter_Vc_pre,"CLADataLS0");
+volatile LOWPASSFILTER  filter_Vc_pre;
+
+#pragma DATA_SECTION(Enable_filter,"CLADataLS0");
+volatile short Enable_filter;
+
+#pragma DATA_SECTION(Cnt_filter,"CLADataLS0");
+volatile long Cnt_filter;
+
+//======================================================
+/* Band stop filter  */
+#pragma DATA_SECTION(filterBand_Vc,"CLADataLS0");
+volatile BANDSTOP_FILTER  filterBand_Vc;
+
+#pragma DATA_SECTION(filterBand_Udc,"CLADataLS0");
+volatile BANDSTOP_FILTER  filterBand_Udc_CFDAB;
+
+//===========================================================
+#pragma DATA_SECTION(Kp_volt_Ubat_test,"CLADataLS0");
+volatile float Kp_volt_Ubat_test;
+
+#pragma DATA_SECTION(Ki_volt_Ubat_test,"CLADataLS0");
+volatile float Ki_volt_Ubat_test;
+
+#pragma DATA_SECTION(Kp_volt_Udc_test,"CLADataLS0");
+volatile float Kp_volt_Udc_test;
+
+#pragma DATA_SECTION(Ki_volt_Udc_test,"CLADataLS0");
+volatile float Ki_volt_Udc_test;
+
+#pragma DATA_SECTION(pi_volt_Udc,"CLADataLS0");
+volatile PI_NORMAL_CLA  pi_volt_Udc;
+
+#pragma DATA_SECTION(pi_volt_Ubat,"CLADataLS0");
+volatile PI_NORMAL_CLA  pi_volt_Ubat;
+
+#pragma DATA_SECTION(pi_volt_Ilv,"CLADataLS0");
+volatile PI_NORMAL_CLA  pi_volt_Ilv;
+
+//===========================================================
+#pragma DATA_SECTION(cntl_2p2z_coeff_Udc,"CLADataLS0");
+volatile CNTL_2P2Z_CLA_COEFFS  cntl_2p2z_coeff_Udc;
+
+#pragma DATA_SECTION(cntl_2p2z_coeff_Vc,"CLADataLS0");
+volatile CNTL_2P2Z_CLA_COEFFS  cntl_2p2z_coeff_Vc;
+
+#pragma DATA_SECTION(cntl_2p2z_coeff_Ilv,"CLADataLS0");
+volatile CNTL_2P2Z_CLA_COEFFS  cntl_2p2z_coeff_Ilv;
+
+#pragma DATA_SECTION(cntl_2p2z_coeff_Ubat,"CLADataLS0");
+volatile CNTL_2P2Z_CLA_COEFFS  cntl_2p2z_coeff_Ubat;
+
+#pragma DATA_SECTION(cntl_2p2z_var_Udc,"CLADataLS0");
+volatile CNTL_2P2Z_CLA_VARS  cntl_2p2z_var_Udc;
+
+#pragma DATA_SECTION(cntl_2p2z_var_Vc,"CLADataLS0");
+volatile CNTL_2P2Z_CLA_VARS  cntl_2p2z_var_Vc;
+
+#pragma DATA_SECTION(cntl_2p2z_var_Ilv,"CLADataLS0");
+volatile CNTL_2P2Z_CLA_VARS  cntl_2p2z_var_Ilv;
+
+#pragma DATA_SECTION(cntl_2p2z_var_Ubat,"CLADataLS0");
+volatile CNTL_2P2Z_CLA_VARS  cntl_2p2z_var_Ubat;
+
+#pragma DATA_SECTION(cntl_pi_Ilv,"CLADataLS0");
+volatile CNTL_PI_CLA  cntl_pi_Ilv;
+
+
+Uint16 TaskCpu2Cla1;
+Uint16 TaskCpu2Cla1_task2;
+Uint16 TaskCpu2Cla1_task8;
+//
+// Task 1
+//
+__interrupt void Cla1Task1 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+
+    TaskCpu2Cla1++;
+//===========================================================
+    if(CpuToCLA.EnableADC == 0 ) START_ADC = 2;
+
+    if(CpuToCLA.EnableADC == 1 && START_ADC != 0) START_ADC = 0;
+
+    if(START_ADC == 0)
+    {
+        OffsetCalCounter++;
+        if(OffsetCalCounter <= 100)
+        {
+            adc_offset.Udc_CFDAB   += UDC_HCPL;
+            adc_offset.Ubat        += UBAT_HCPL;
+            adc_offset.Vc          += VC_HCPL;
+            adc_offset.Ilv         += ILV_LEM;
+
+        }
+        if(OffsetCalCounter == 101)
+        {
+            adc_offset.Udc_CFDAB   = adc_offset.Udc_CFDAB/100;
+            adc_offset.Ubat        = adc_offset.Ubat/100;
+            adc_offset.Vc          = adc_offset.Vc/100;
+            adc_offset.Ilv         = adc_offset.Ilv/100;
+
+            adc_offset.Udc_CFDAB   = 26.9999981;
+            adc_offset.Udc_CFDAB   = 10;
+            adc_offset.Ubat        = 12.8499994;
+            adc_offset.Vc          = 16.579998;
+            adc_offset.Ilv         = 2046.03992;
+
+        }
+        if (OffsetCalCounter > 101)
+        {
+            OffsetCalCounter       = 200;
+            START_ADC              = 1;
+        }
+
+    }
+
+    if(START_ADC == 1)
+    {
+
+            //   Read ADC
+            //    a  = (UDC_HCPL - adc_offset.Udc)*ADC_PU_SCALE_FACTOR_12BIT;
+            if (UDC_HCPL - adc_offset.Udc_CFDAB*800/4099 < 50)
+            {
+                 AdcValue.Udc_CFDAB   = (UDC_HCPL - adc_offset.Udc_CFDAB - 10)*ADC_PU_SCALE_FACTOR_12BIT;
+            }
+            else
+            AdcValue.Udc_CFDAB    = (UDC_HCPL - adc_offset.Udc_CFDAB+25)*ADC_PU_SCALE_FACTOR_12BIT;    // old:+0
+            // AdcValue.Udc = (UDC_HCPL - adc_offset.Udc+25)*ADC_PU_SCALE_FACTOR_12BIT;    // old:+0
+
+            AdcValue.Ubat         = (UBAT_HCPL - adc_offset.Ubat-8)*ADC_PU_SCALE_FACTOR_12BIT;
+            // AdcValue.Ubat   = (UBAT_HCPL - adc_offset.Ubat-12)*ADC_PU_SCALE_FACTOR_12BIT;
+
+            AdcValue.Vc           = (VC_HCPL - adc_offset.Vc-10)*ADC_PU_SCALE_FACTOR_12BIT;  // old:+9
+            // AdcValue.Vc     = (VC_HCPL - adc_offset.Vc+20)*ADC_PU_SCALE_FACTOR_12BIT;  // old:+9
+            // AdcValue.Vc     = (VC_HCPL - adc_offset.Vc)*ADC_PU_SCALE_FACTOR_12BIT;
+            // AdcValue.Vc     = (VC_HCPL - adc_offset.Vc-25)*ADC_PU_SCALE_FACTOR_12BIT;
+
+            AdcValue.Ilv          = (ILV_LEM - adc_offset.Ilv-8)*ADC_PU_SCALE_FACTOR_12BIT/1.2;
+
+//=========================================================================================
+            //  Lowpass filter signals ADC
+            filter_Udc_CFDAB_pre.Vin  = AdcValue.Udc_CFDAB;
+            LOWPASSFILTER_MACRO(filter_Udc_CFDAB_pre)
+
+            filterBand_Udc_CFDAB.In_k = filter_Udc_CFDAB_pre.Vout;
+            BANDSTOP_FILTER_MACRO(filterBand_Udc_CFDAB);
+
+            filter_Vc_pre.Vin         = AdcValue.Vc;
+            LOWPASSFILTER_MACRO(filter_Vc_pre)
+
+            filterBand_Vc.In_k        = filter_Vc_pre.Vout;
+            BANDSTOP_FILTER_MACRO(filterBand_Vc);
+
+            // filter_Udc.Vin = AdcValue.Udc;
+            // LOWPASSFILTER_MACRO(filter_Udc)
+            // adc_filter.Udc = filter_Udc.Vout;
+
+            filter_Ubat.Vin = AdcValue.Ubat;
+            LOWPASSFILTER_MACRO(filter_Ubat)
+            adc_filter.Ubat = filter_Ubat.Vout;
+
+            filter_Vc.Vin = AdcValue.Vc;
+            LOWPASSFILTER_MACRO(filter_Vc)
+            adc_filter.Vc = filter_Vc.Vout;
+
+            filter_Ilv.Vin = AdcValue.Ilv;
+            LOWPASSFILTER_MACRO(filter_Ilv)
+            adc_filter.Ilv = filter_Ilv.Vout;
+
+            // ClaToCPU.ADC_CPU.Udc = adc_filter.Udc;
+            ClaToCPU.ADC_CPU.Vc   = adc_filter.Vc;
+            ClaToCPU.ADC_CPU.Ubat = adc_filter.Ubat;
+            ClaToCPU.ADC_CPU.Ilv = adc_filter.Ilv;
+
+            ClaToCPU.MEASUARE_CPU.theta1 = theta1;
+            ClaToCPU.MEASUARE_CPU.duty   = Duty;
+
+    }
+
+//===========================================================
+    if(CpuToCLA.EnableFlag == 1)
+    {
+        // LEVEL1: OPEN LOOP -- DISCHARGE
+        #if(BUILDLEVEL == LEVEL1)
+
+            Cnt_duty++;
+            if((Cnt_duty - 1) > 0) Cnt_duty = 1;
+
+            Cnt_phi++;
+            if((Cnt_phi - 15) > 0) Cnt_phi = 15; // 0.2(s)
+
+            if(Cnt_duty == 1) Enable_duty = 1; // 0 (s)
+            if(Cnt_phi == 15) Enable_phi = 1; // 0.2(s)
+
+            if(Enable_duty == 1)
+            {
+                if(Flag_duty == 0)
+                {
+                    rc_Duty.SetpointValue = CpuToCLA.DutyStart;
+                    Flag_duty = 1;
+                }
+                rc_Duty.TargetValue = CpuToCLA.DutyTesting;
+                RC_CLA_MACRO(rc_Duty)
+            }
+            //-----------------------------------------------------
+            // Update
+            theta2 = (2*Duty - 1 - 2*detaPhi)/2.0;
+
+            //-----------------------------------------------------
+            // Phase
+            Phase_S1 = (int16)(PeriodMax - ((int16)(theta1*PeriodMax) + PeriodMax/2));
+            Phase_S4 = (int16)(PeriodMax - ((int16)(theta1*PeriodMax) + PeriodMax/2));
+
+            if((Phase_S1 - PeriodMax ) >= 0) Phase_S1 = Phase_S1 - PeriodMax;
+            else if(Phase_S1 <= 0) Phase_S1 = Phase_S1 + PeriodMax;
+
+            if((Phase_S4 - PeriodMax ) >= 0) Phase_S4 = Phase_S4 - PeriodMax;
+            else if(Phase_S4 <= 0) Phase_S4 = Phase_S4 + PeriodMax;
+
+            //------------------------------------------------------
+            // Cmpa
+            Cmpa_Q1 = (Uint16)(rc_Duty.SetpointValue*PeriodMax);
+            Cmpa_Q2 = (Uint16)(rc_Duty.SetpointValue*PeriodMax);
+
+            // Cmpa
+            Cmpa_S1 = PeriodMax/2;
+
+            Cmpa_S4 = (Uint16)(theta2*PeriodMax);
+            Cmpb_S4 = (Uint16)(theta2*PeriodMax) + PeriodMax/2;
+
+            //------------------------------------------------------
+            // Xu ly CMPA va Phase
+            if(Cmpa_S1 >= Phase_S1_old && Cmpa_S1 < Phase_S1) Cmpa_S1 = Phase_S1 + 1;
+
+            if(Cmpa_S4 >= Phase_S4_old && Cmpa_S4 < Phase_S4) Cmpa_S4 = Phase_S4 + 1;
+            if(Cmpb_S4 >= Phase_S4_old && Cmpb_S4 < Phase_S4) Cmpb_S4 = Phase_S4 + 1;
+
+            //-----------------------------------------------------
+            EPwm3Regs.TBPHS.bit.TBPHS = Phase_S1;
+            EPwm10Regs.TBPHS.bit.TBPHS = Phase_S4;
+
+            Phase_S1_old = Phase_S1;
+            Phase_S4_old = Phase_S4;
+            //-----------------------------------------------------
+            // Update
+            if(Enable_duty == 1)
+            {
+                EPwm1Regs.DBCTL.bit.OUT_MODE = 3;    // Enabled Dead Band
+                EPwm2Regs.DBCTL.bit.OUT_MODE = 3;    // Enabled Dead Band
+
+                EPwm1Regs.CMPA.bit.CMPA = Cmpa_Q1;
+                EPwm2Regs.CMPA.bit.CMPA = Cmpa_Q2;
+            }
+
+            if(Enable_phi == 1)
+            {
+                EPwm3Regs.DBCTL.bit.OUT_MODE = 3;    // Enabled Dead Band
+                EPwm10Regs.DBCTL.bit.OUT_MODE = 3;    // Enabled Dead Band
+
+                EPwm3Regs.CMPA.bit.CMPA = Cmpa_S1;
+
+                EPwm10Regs.CMPA.bit.CMPA = Cmpa_S4;
+                EPwm10Regs.CMPB.bit.CMPB = Cmpb_S4;
+            }
+
+            // FLAG RUN
+            if(Enable_phi == 1) ClaToCPU.flagRun = 1;
+
+        #endif
+        // LEVEL5: CLOSE LOOP -- DISCHARGE
+        #if (BUILDLEVEL == LEVEL5)
+                IsrTickerTask1++;
+
+                Cnt_duty++;
+                if((Cnt_duty - 10000) > 0)  Cnt_duty = 10000;
+
+                Cnt_phi++;
+                if((Cnt_phi - 13000) > 0)   Cnt_phi  = 13000;
+
+                if(Enable_phi == 1)
+                {
+                    Cnt_filter++;
+                    if((Cnt_filter - 10000) > 0)Cnt_filter = 10000;  // 0.2(s)
+                }
+
+                if(Cnt_duty == 1)Enable_duty = 1;
+                // if(Cnt_phi == 13000)Enable_phi = 1;
+                if(Cnt_filter == 10000) Enable_filter = 1;
+
+                //----------------------------------------------------------------------------
+                if(Enable_duty == 1)
+                {
+                    // RAMP REF
+                    if(Flag_duty == 0)
+                    {
+                        rc_VcRef.SetpointValue = adc_filter.Vc;
+                        // rc_VcRef.SetpointValue = AdcVaule.Vc;
+                        Flag_duty = 1;
+                    }
+                    rc_VcRef.TargetValue = CpuToCLA.VcRef;
+                    RC_CLA_MACRO(rc_VcRef)
+
+                    // CONTROLLER
+                    cntl_2p2z_var_Vc.Ref = rc_VcRef.SetpointValue;
+
+                    if(Enable_filter == 0)
+                    {
+                        cntl_2p2z_var_Vc.Fdbk = adc_filter.Vc;
+                    }
+                    else cntl_2p2z_var_Vc.Fdbk = filterBand_Vc.Out_k;
+
+                        CNTL_2P2Z_CLA_MACRO(cntl_2p2z_coeff_Vc,cntl_2p2z_var_Vc);
+
+
+                    if(Enable_phi == 0)
+                    {
+                        if((rc_VcRef.TargetValue - rc_VcRef.SetpointValue)  < (5.0/1000)) Enable_phi = 1;
+                        // if((rc_VcRef.TargetValue - rc_VcRef.SetpointValue)  < (200.0*rc_VcRef.StepRampDec)) Enable_phi = 1;
+
+                    }
+                    //      note
+                    //     <100V: 3.0/1000
+                    //      150V: 0.007
+                    //      200V:
+                }
+                //----------------------------------------------------------------------------
+                if(Enable_phi == 1)
+                {
+                    // RAMP REF
+                    if(Flag_phi == 0)
+                    {
+                        rc_VdcRef.SetpointValue = adc_filter.Udc_CFDAB;
+                        // rc_VdcRef.SetpointValue = AdcVaule.Udc;
+
+                        Flag_phi = 1;
+                    }
+                    rc_VdcRef.TargetValue = CpuToCLA.UdcRef;
+                    RC_CLA_MACRO(rc_VdcRef)
+
+                    // PI
+                    pi_volt_Udc.REF = rc_VdcRef.SetpointValue;
+
+                    if(Enable_filter == 0)                                                  // lua chon filter hoac bandstop_filter
+                    {
+                        pi_volt_Udc.INPUT = adc_filter.Udc_CFDAB;
+                    }
+                    else pi_volt_Udc.INPUT = filterBand_Udc_CFDAB.Out_k;
+
+                    pi_volt_Udc.ERROR = pi_volt_Udc.REF - pi_volt_Udc.INPUT;
+                    PI_NORMAL_MACRO(pi_volt_Udc)
+                }
+
+                //-----------------------------------------------------
+                // Update
+                // Duty = 0.8*cntl_2p2z_var_Vc.Out;
+                Duty =cntl_2p2z_var_Vc.Out;
+
+
+                // theta1 = cntl_2p2z_var_Udc.Out;
+                theta1 = pi_volt_Udc.OUT;
+
+                theta2 = (2*Duty - 1 - 2*detaPhi)/2.0;
+
+                //-----------------------------------------------------
+                // Phase
+                Phase_S1 = (int16)(PeriodMax - ((int16)(theta1*PeriodMax) + PeriodMax/2));
+                Phase_S4 = (int16)(PeriodMax - ((int16)(theta1*PeriodMax) + PeriodMax/2));
+
+                if((Phase_S1 - PeriodMax ) >= 0) Phase_S1 = Phase_S1 - PeriodMax;
+                else if(Phase_S1 <= 0)Phase_S1 = Phase_S1 + PeriodMax;
+
+                if((Phase_S4 - PeriodMax ) >= 0) Phase_S4 = Phase_S4 - PeriodMax;
+                else if(Phase_S4 <= 0)Phase_S4 = Phase_S4 + PeriodMax;
+
+                //------------------------------------------------------
+                // Cmpa
+                Cmpa_S1 = PeriodMax/2;
+
+                Cmpa_S4 = (Uint16)(theta2*PeriodMax);
+                Cmpb_S4 = (Uint16)(theta2*PeriodMax) + PeriodMax/2;
+
+                //------------------------------------------------------
+                // Xu ly CMPA va Phase
+
+                // Primary
+
+                // Secondary
+                // if((float)Cmpa_S1 >= (float)Phase_S1_old && (float)Cmpa_S1 < (float)Phase_S1) Cmpa_S1 = Phase_S1 + 1;
+                //
+                // if((float)Cmpa_S4 >= (float)Phase_S4_old && (float)Cmpa_S4 < (float)Phase_S4) Cmpa_S4 = Phase_S4 + 1;
+                // if((float)Cmpb_S4 >= (float)Phase_S4_old && (float)Cmpb_S4 < (float)Phase_S4) Cmpb_S4 = Phase_S4 + 1;
+                if(Cmpa_S1 >= Phase_S1_old && Cmpa_S1 < Phase_S1) Cmpa_S1 = Phase_S1 + 1;
+
+                if(Cmpa_S4 >= Phase_S4_old && Cmpa_S4 < Phase_S4) Cmpa_S4 = Phase_S4 + 1;
+                if(Cmpb_S4 >= Phase_S4_old && Cmpb_S4 < Phase_S4) Cmpb_S4 = Phase_S4 + 1;
+
+                //-----------------------------------------------------
+                EPwm3Regs.TBPHS.bit.TBPHS = Phase_S1;
+                EPwm10Regs.TBPHS.bit.TBPHS = Phase_S4;
+
+                Phase_S1_old = Phase_S1;
+                Phase_S4_old = Phase_S4;
+                //-----------------------------------------------------
+                // Update
+
+                if(Enable_duty == 1)
+                {
+                    EPwm1Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
+                    EPwm2Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
+
+                    EPwm1Regs.CMPA.bit.CMPA =(Uint16)(Duty*PeriodMax);
+                    EPwm2Regs.CMPA.bit.CMPA =(Uint16)(Duty*PeriodMax);
+                }
+                if(Enable_phi == 1)
+                {
+
+                    EPwm3Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
+                    EPwm10Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
+
+                    EPwm3Regs.CMPA.bit.CMPA = Cmpa_S1;
+
+                    EPwm10Regs.CMPA.bit.CMPA = Cmpa_S4;
+                    EPwm10Regs.CMPB.bit.CMPB = Cmpb_S4;
+
+                }
+
+                // Check controller
+                if(pi_volt_Udc.OUT > 0.2 || pi_volt_Udc.OUT < -0.2)error_volt_Udc_controller++;
+                else error_volt_Udc_controller = 0;
+
+        //        if((float)error_volt_Udc_controller > 1 )
+                  if(error_volt_Udc_controller > 1 )
+
+                ClaToCPU.flagErr = 1;
+
+                // FLAG RUN
+                if(Enable_phi == 1) ClaToCPU.flagRun = 1;
+
+                ClaToCPU.count++;
+
+                // ------------------------------------------------------------------------------
+                //    Connect inputs of the PWMDAC module
+                // ------------------------------------------------------------------------------
+           //     PWMDAC_MACRO((pi_volt_Udc.OUT + 1.0)/2.0,pi_volt_Udc.INPUT,cntl_2p2z_var_Vc.Ref,cntl_2p2z_var_Vc.Fdbk,125)
+
+
+        #endif
+
+    }
+    else
+    {
+        //=========================================================================
+        //   Ngat phat xung PWM
+        // ========================================================================
+        EPwm1Regs.DBCTL.bit.OUT_MODE = 0;    // Disabled Dead Band
+        EPwm2Regs.DBCTL.bit.OUT_MODE = 0;    // Disabled Dead Band
+        EPwm3Regs.DBCTL.bit.OUT_MODE = 0;    // Disabled Dead Band
+        EPwm10Regs.DBCTL.bit.OUT_MODE = 0;    // Disabled Dead Band
+
+        EPwm1Regs.CMPB.bit.CMPB = 0;                // Set Compare B value : PWM1B -> muc 0
+        EPwm1Regs.CMPA.bit.CMPA = PeriodMax;        // Set compare A value : PWM1A -> muc 0
+
+        EPwm2Regs.CMPB.bit.CMPB = 0;                // Set Compare B value 0
+        EPwm2Regs.CMPA.bit.CMPA = PeriodMax;        // Set compare A value 0
+
+        EPwm3Regs.CMPB.bit.CMPB = 0;                // Set Compare B value : PWM1B -> muc 0
+        EPwm3Regs.CMPA.bit.CMPA = 0;                // Set compare A value : PWM1A -> muc 0
+
+        EPwm10Regs.CMPB.bit.CMPB = PeriodMax;                // Set Compare B value 0
+        EPwm10Regs.CMPA.bit.CMPA = 0;                        // Set compare A value 0
+
+        EPwm3Regs.TBPHS.bit.TBPHS = PeriodMax/2;
+        EPwm10Regs.TBPHS.bit.TBPHS = PeriodMax/2;
+
+        Phase_S1_old = PeriodMax/2;
+        Phase_S4_old = PeriodMax/2;
+
+        start_duty = 0;
+        Cnt_duty = 0;
+        Cnt_phi = 0;
+        Flag_duty = 0;
+        Flag_phi = 0;
+        Enable_duty = 0;
+        Enable_phi = 0;
+    }
+}
+
+//
+// Task 2
+//
+__interrupt void Cla1Task2 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+    TaskCpu2Cla1_task2++;
+}
+
+//
+// Task 3
+//
+__interrupt void Cla1Task3 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+}
+
+//
+// Task 4
+//
+__interrupt void Cla1Task4 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+}
+
+//
+// Task 5
+//
+__interrupt void Cla1Task5 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+}
+
+//
+// Task 6
+//
+__interrupt void Cla1Task6 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+}
+
+//
+// Task 7
+//
+__interrupt void Cla1Task7 ( void )
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+}
+
+//
+// Task 8
+//
+__interrupt void Cla1Task8 ( void )
+{
+
+    TaskCpu2Cla1_task8++;
+
+    PeriodMax = 2000;
+    RC_INT_MACRO(rc_Duty);
+    rc_Duty.StepRampDec = 0.000064/1.0;
+    rc_Duty.StepRampInc = 0.000064/1.0;
+
+    OffsetCalCounter = 0;
+    ResetOffset = 1;
+
+    START_ADC = 2;
+    start_duty = 0;
+    Cnt_filter = 0;
+    Cnt_duty = 0;
+    Cnt_phi = 0;
+    Flag_duty = 0;
+    Flag_phi = 0;
+    Enable_duty = 0;
+    Enable_phi = 0;
+    Enable_filter = 0;
+
+    Cmpa_Q1 = 0;
+    Cmpa_Q2 = 0;
+    Cmpa_S1 = 0;
+    Cmpa_S4 = 0;
+    Cmpb_S4 = 0;
+
+    Duty = 0.64;
+    detaPhi = 8.0/360.0;
+    theta1 = 0;
+    theta2 = (2*Duty - 1 - 2*detaPhi)/2.0;
+
+}
+

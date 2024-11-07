@@ -1,0 +1,17 @@
+"./sdfm_filter_sync_cla_cpu02.obj"
+"./sdfm_filter_sync.obj"
+"./F2837xD_CodeStartBranch.obj"
+"./F2837xD_DefaultISR.obj"
+"./F2837xD_GlobalVariableDefs.obj"
+"./F2837xD_Gpio.obj"
+"./F2837xD_Ipc.obj"
+"./F2837xD_PieCtrl.obj"
+"./F2837xD_PieVect.obj"
+"./F2837xD_SysCtrl.obj"
+"./F2837xD_sdfm_drivers.obj"
+"./F2837xD_struct.obj"
+"./F2837xD_usDelay.obj"
+"C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu02/2837x_RAM_SDFM_CLA_lnk_cpu2.cmd"
+-lrts2800_fpu32.lib
+-lF2837xD_Headers_nonBIOS_cpu2.cmd
+-llibc.a

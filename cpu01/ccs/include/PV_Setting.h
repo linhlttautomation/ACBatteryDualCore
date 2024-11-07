@@ -1,0 +1,86 @@
+/*
+ * PV_Setting.h
+ *
+ *  Created on: Oct 22, 2024
+ *      Author: 84339
+ */
+
+#ifndef _PV_SETTING_H_
+#define _PV_SETTING_H_
+
+// Define Level
+#define LEVEL1        1           // Vong ho
+#define LEVEL3        3           // Vong dong
+#define LEVEL4        4           // Vong ap doc lap
+
+#define BUILDLEVEL    LEVEL1
+
+// Define toán học
+#define can2 1.414213562
+#define can3 1.732050808
+#define can6 2.449489743
+
+// Define đọc ADC
+#define UDC_HCPL        AdcbResultRegs.ADCRESULT2
+
+#define VaG_HCPL        AdcaResultRegs.ADCRESULT2
+#define VbG_HCPL        AdcbResultRegs.ADCRESULT5
+#define VcG_HCPL        AdcaResultRegs.ADCRESULT5
+
+#define IA_INV_LEM      AdcaResultRegs.ADCRESULT0
+#define IB_INV_LEM      AdcbResultRegs.ADCRESULT4
+#define IC_INV_LEM      AdcaResultRegs.ADCRESULT4
+#define IZ_INV_LEM      AdcaResultRegs.ADCRESULT1
+
+#define T_Us             0.002 // Time sample voltage
+#define Ti               0.00002 // Time sample current 0.0000154
+
+#define LEM(A)     (2048.0*A/81.3)
+
+#if (BUILDLEVEL == LEVEL3)
+
+    #define KP_CURR_LOOP            3.0 // L filter 330uH: 3.3
+    #define KI_CURR_LOOP            1500.0 // L filter 330uH: 132000.0
+
+    #define KP_CURR_LOOP_Z          3.0 // L filter 330uH: 13.2
+    #define KI_CURR_LOOP_Z          1500.0 // L filter 330uH: 528000.0
+
+#endif
+#if(BUILDLEVEL == LEVEL4)
+
+    #define KP_CURR_LOOP_1            2.0 // Thong so moi vong ap khong tai
+    #define KI_CURR_LOOP_1            0.18
+
+    #define KP_VOLT_US_LOOP         0.00001
+    #define KI_VOLT_US_LOOP         0.1
+
+#endif
+
+
+// CMPSS Permission
+#define CMPSS_PROTECT_UDC_UPPER         0
+
+#define CMPSS_PROTECT_VaG_UPPER         1
+#define CMPSS_PROTECT_VaG_LOWER         1
+
+#define CMPSS_PROTECT_VbG_UPPER         0
+#define CMPSS_PROTECT_VbG_LOWER         0
+
+#define CMPSS_PROTECT_Ia_inv_UPPER      0
+#define CMPSS_PROTECT_Ia_inv_LOWER      0
+
+#define CMPSS_PROTECT_Ib_inv_UPPER      0
+#define CMPSS_PROTECT_Ib_inv_LOWER      0
+
+#define CMPSS_PROTECT_Ic_inv_UPPER      0
+#define CMPSS_PROTECT_Ic_inv_LOWER      0
+
+// CMPSS Setting
+#define CMPSS_Udc_New_Protecion            300.0
+
+#define CMPSS_Udc_Offset_New_Protecion     100.0
+#define CMPSS_VG_Offset_New_Protecion      80.0
+
+#define CMPSS_IL_inv_New_Protecion   15.0
+
+#endif /* _PV_SETTING_H_ */
