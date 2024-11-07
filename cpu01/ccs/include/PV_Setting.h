@@ -58,29 +58,29 @@
 
 
 // CMPSS Permission
-#define CMPSS_PROTECT_UDC_UPPER         0
+#define CMPSS_PROTECT_UDC_UPPER         1
 
 #define CMPSS_PROTECT_VaG_UPPER         1
 #define CMPSS_PROTECT_VaG_LOWER         1
 
-#define CMPSS_PROTECT_VbG_UPPER         0
-#define CMPSS_PROTECT_VbG_LOWER         0
+#define CMPSS_PROTECT_VbG_UPPER         1
+#define CMPSS_PROTECT_VbG_LOWER         1
 
-#define CMPSS_PROTECT_Ia_inv_UPPER      0
-#define CMPSS_PROTECT_Ia_inv_LOWER      0
+#define CMPSS_PROTECT_Ia_inv_UPPER      1
+#define CMPSS_PROTECT_Ia_inv_LOWER      1
 
-#define CMPSS_PROTECT_Ib_inv_UPPER      0
-#define CMPSS_PROTECT_Ib_inv_LOWER      0
+#define CMPSS_PROTECT_Ib_inv_UPPER      1
+#define CMPSS_PROTECT_Ib_inv_LOWER      1
 
-#define CMPSS_PROTECT_Ic_inv_UPPER      0
-#define CMPSS_PROTECT_Ic_inv_LOWER      0
+#define CMPSS_PROTECT_Ic_inv_UPPER      1
+#define CMPSS_PROTECT_Ic_inv_LOWER      1
 
 // CMPSS Setting
 #define CMPSS_Udc_New_Protecion            300.0
 
 #define CMPSS_Udc_Offset_New_Protecion     100.0
-#define CMPSS_VG_Offset_New_Protecion      80.0
+#define CMPSS_Vg_Offset_New_Protecion      80.0
 
-#define CMPSS_IL_inv_New_Protecion   15.0
+#define CMPSS_Ig_inv_New_Protecion   15.0
 
 #endif /* _PV_SETTING_H_ */

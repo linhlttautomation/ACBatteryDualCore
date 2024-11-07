@@ -253,7 +253,7 @@ void CMPSS_Protection(void)
         Cmpss3Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // VaG Upper protection
-        Cmpss3Regs.DACHVALS.bit.DACVAL = (2145 + (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_VG_Offset_New_Protecion)/400.0)*(4096.0 - 2145)-230 + 180)/1.1;
+        Cmpss3Regs.DACHVALS.bit.DACVAL = (2145 + (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2145)-230 + 180)/1.1;
 
         Cmpss3Regs.COMPCTL.bit.COMPHINV = 0;
         Cmpss3Regs.COMPCTL.bit.CTRIPHSEL = 2;
@@ -275,7 +275,7 @@ void CMPSS_Protection(void)
         Cmpss3Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // VaG Lower protecion
-        Cmpss3Regs.DACLVALS.bit.DACVAL = (2145 - (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_VG_Offset_New_Protecion)/400.0)*(4096.0 - 2145) - 230 - 180)/1.1;
+        Cmpss3Regs.DACLVALS.bit.DACVAL = (2145 - (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2145) - 230 - 180)/1.1;
 
         Cmpss3Regs.COMPCTL.bit.COMPLINV = 1;
         Cmpss3Regs.COMPCTL.bit.CTRIPLSEL = 2;
@@ -297,7 +297,7 @@ void CMPSS_Protection(void)
         Cmpss1Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // VbG Upper protection
-        Cmpss1Regs.DACHVALS.bit.DACVAL = (2100 + (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_VG_Offset_New_Protecion)/400.0)*(4096.0 - 2100)-190 + 183)/1.1;
+        Cmpss1Regs.DACHVALS.bit.DACVAL = (2100 + (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2100)-190 + 183)/1.1;
 
         Cmpss1Regs.COMPCTL.bit.COMPHINV = 0;
         Cmpss1Regs.COMPCTL.bit.CTRIPHSEL = 2;
@@ -319,7 +319,7 @@ void CMPSS_Protection(void)
         Cmpss1Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // VbG Lower protecion
-        Cmpss1Regs.DACLVALS.bit.DACVAL = (2100 - (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_VG_Offset_New_Protecion)/400.0)*(4096.0 - 2100) - 190 - 183)/1.1;
+        Cmpss1Regs.DACLVALS.bit.DACVAL = (2100 - (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2100) - 190 - 183)/1.1;
 
         Cmpss1Regs.COMPCTL.bit.COMPLINV = 1;
         Cmpss1Regs.COMPCTL.bit.CTRIPLSEL = 2;
@@ -341,7 +341,7 @@ void CMPSS_Protection(void)
         Cmpss2Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Ia Upper protection
-        Cmpss2Regs.DACHVALS.bit.DACVAL = (2093 + (CMPSS_IL_inv_New_Protecion/81.3)*2093 - 230 + 169)/1.1;
+        Cmpss2Regs.DACHVALS.bit.DACVAL = (2093 + (CMPSS_Ig_inv_New_Protecion/81.3)*2093 - 230 + 169)/1.1;
         Cmpss2Regs.COMPCTL.bit.COMPHINV = 0;
         Cmpss2Regs.COMPCTL.bit.CTRIPHSEL = 2;
 
@@ -363,7 +363,7 @@ void CMPSS_Protection(void)
         Cmpss2Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Ia Lower protecion
-        Cmpss2Regs.DACLVALS.bit.DACVAL = (2093 - (CMPSS_IL_inv_New_Protecion/81.3)*2093 - 230 - 169)/1.1;
+        Cmpss2Regs.DACLVALS.bit.DACVAL = (2093 - (CMPSS_Ig_inv_New_Protecion/81.3)*2093 - 230 - 169)/1.1;
         Cmpss2Regs.COMPCTL.bit.COMPLINV = 1;
         Cmpss2Regs.COMPCTL.bit.CTRIPLSEL = 2;
 
@@ -384,7 +384,7 @@ void CMPSS_Protection(void)
         Cmpss4Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Ib Upper protection
-        Cmpss4Regs.DACHVALS.bit.DACVAL = (2105 + (CMPSS_IL_inv_New_Protecion/81.3)*2105 - 240 + 180)/1.1;
+        Cmpss4Regs.DACHVALS.bit.DACVAL = (2105 + (CMPSS_Ig_inv_New_Protecion/81.3)*2105 - 240 + 180)/1.1;
         Cmpss4Regs.COMPCTL.bit.COMPHINV = 0;
         Cmpss4Regs.COMPCTL.bit.CTRIPHSEL = 2;
 
@@ -406,7 +406,7 @@ void CMPSS_Protection(void)
         Cmpss4Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Ib Lower protecion
-        Cmpss4Regs.DACLVALS.bit.DACVAL = (2105 - (CMPSS_IL_inv_New_Protecion/81.3)*2105 - 232 - 180)/1.1 ;
+        Cmpss4Regs.DACLVALS.bit.DACVAL = (2105 - (CMPSS_Ig_inv_New_Protecion/81.3)*2105 - 232 - 180)/1.1 ;
         Cmpss4Regs.COMPCTL.bit.COMPLINV = 1;
         Cmpss4Regs.COMPCTL.bit.CTRIPLSEL = 2;
 
@@ -427,7 +427,7 @@ void CMPSS_Protection(void)
         Cmpss5Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Ic Upper protection
-        Cmpss5Regs.DACHVALS.bit.DACVAL = (2054 + (CMPSS_IL_inv_New_Protecion/81.3)*2054 - 185 + 162)/1.1;
+        Cmpss5Regs.DACHVALS.bit.DACVAL = (2054 + (CMPSS_Ig_inv_New_Protecion/81.3)*2054 - 185 + 162)/1.1;
         Cmpss5Regs.COMPCTL.bit.COMPHINV = 0;
         Cmpss5Regs.COMPCTL.bit.CTRIPHSEL = 2;
 
@@ -449,7 +449,7 @@ void CMPSS_Protection(void)
         Cmpss5Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Ic Lower protecion
-        Cmpss5Regs.DACLVALS.bit.DACVAL = (2054 - (CMPSS_IL_inv_New_Protecion/81.3)*2054 - 180 - 162)/1.1;
+        Cmpss5Regs.DACLVALS.bit.DACVAL = (2054 - (CMPSS_Ig_inv_New_Protecion/81.3)*2054 - 180 - 162)/1.1;
         Cmpss5Regs.COMPCTL.bit.COMPLINV = 1;
         Cmpss5Regs.COMPCTL.bit.CTRIPLSEL = 2;
 
