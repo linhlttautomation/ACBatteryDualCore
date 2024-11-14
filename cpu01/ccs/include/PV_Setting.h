@@ -13,7 +13,7 @@
 #define LEVEL3        3           // Vong dong
 #define LEVEL4        4           // Vong ap doc lap
 
-#define BUILDLEVEL    LEVEL1
+#define BUILDLEVEL    LEVEL4
 
 // Define toán học
 #define can2 1.414213562
@@ -23,19 +23,27 @@
 // Define đọc ADC
 #define UDC_HCPL        AdcbResultRegs.ADCRESULT2
 
-#define VaG_HCPL        AdcaResultRegs.ADCRESULT2
-#define VbG_HCPL        AdcbResultRegs.ADCRESULT5
-#define VcG_HCPL        AdcaResultRegs.ADCRESULT5
+#define VaG_HCPL        AdcaResultRegs.ADCRESULT5
+#define VbG_HCPL        AdcaResultRegs.ADCRESULT2
+#define VcG_HCPL        AdcbResultRegs.ADCRESULT5
 
-#define IA_INV_LEM      AdcaResultRegs.ADCRESULT0
-#define IB_INV_LEM      AdcbResultRegs.ADCRESULT4
+#define IA_INV_LEM      AdcaResultRegs.ADCRESULT1
+#define IB_INV_LEM      AdcaResultRegs.ADCRESULT0
 #define IC_INV_LEM      AdcaResultRegs.ADCRESULT4
-#define IZ_INV_LEM      AdcaResultRegs.ADCRESULT1
+#define IZ_INV_LEM      AdcbResultRegs.ADCRESULT4
 
 #define T_Us             0.002 // Time sample voltage
 #define Ti               0.00002 // Time sample current 0.0000154
 
-#define LEM(A)     (2048.0*A/81.3)
+#define LEM_1(A)     (2048.0*A/81.3)
+
+// LEM    1.0pu current ==> 50.0A -> 2048 counts
+#define LEM_2(A)     2024-132+(2048.0*A/50.0)
+#define LEML_2(A)    2024+(2048.0*A/50.0/1.1)-165
+
+#define MEAUBAT(A)   (A/800.0*4096.0+43)
+#define MEAUDC(A)    (4096.0*A/1000.0/1.09+65)
+#define MEAUC(A)     (A/800.0*4096.0/1.1+75)
 
 #if (BUILDLEVEL == LEVEL3)
 
@@ -58,19 +66,19 @@
 
 
 // CMPSS Permission
-#define CMPSS_PROTECT_UDC_UPPER         1
+#define CMPSS_PROTECT_UDC_UPPER         0 //
 
-#define CMPSS_PROTECT_VaG_UPPER         1
-#define CMPSS_PROTECT_VaG_LOWER         1
+#define CMPSS_PROTECT_VaG_UPPER         0
+#define CMPSS_PROTECT_VaG_LOWER         0
 
-#define CMPSS_PROTECT_VbG_UPPER         1
-#define CMPSS_PROTECT_VbG_LOWER         1
+#define CMPSS_PROTECT_VbG_UPPER         0 //
+#define CMPSS_PROTECT_VbG_LOWER         0 //
 
-#define CMPSS_PROTECT_Ia_inv_UPPER      1
-#define CMPSS_PROTECT_Ia_inv_LOWER      1
+#define CMPSS_PROTECT_Ia_inv_UPPER      0
+#define CMPSS_PROTECT_Ia_inv_LOWER      0
 
-#define CMPSS_PROTECT_Ib_inv_UPPER      1
-#define CMPSS_PROTECT_Ib_inv_LOWER      1
+#define CMPSS_PROTECT_Ib_inv_UPPER      0
+#define CMPSS_PROTECT_Ib_inv_LOWER      0
 
 #define CMPSS_PROTECT_Ic_inv_UPPER      1
 #define CMPSS_PROTECT_Ic_inv_LOWER      1

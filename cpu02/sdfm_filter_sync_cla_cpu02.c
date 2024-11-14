@@ -26,6 +26,11 @@ typedef struct {
 
 typedef PWMGEN *PWMGEN_handle;
 
+float Datalog1[200],Datalog2[200];
+float Vout_Display;
+float Vin_Display;
+float Vc_Display;
+
 /*------------------------------------------------------------------------------
     Default Initializers for the F280X PWMGEN Object
     bo di 1 cai
@@ -55,6 +60,8 @@ SETTING_BAT Setting_bat;
 Uint16 Task8_Isr = 0;
 Uint16 StartFlag = 0;
 Uint16 START = 0;
+Uint16 Task1_Isr,Task2_Isr = 0;
+int ChannelAdc = 0;
 
 //
 // Function prototypes
@@ -308,7 +315,23 @@ void PWM_CFDAB(int period, int deadtime)
     EDIS;
 }
 
+void DelayMs(unsigned long ms)
+{
+    unsigned long count = 0;
+    for(count = 0; count < ms ; count++)
+    {
+        DELAY_US(1000);
+    }
+}
 
+void DelayS(unsigned long s)
+{
+    unsigned long count = 0;
+    for(count = 0; count < s ; count++)
+    {
+        DelayMs(1000);
+    }
+}
 //
 // Main
 //
@@ -433,7 +456,7 @@ int main(void)
     EDIS;
     // khoi tao luong dat Cpu cho CLA
     CpuToCLA.EnableADC = 0;
-    // DelayMs(1000);
+    DelayMs(1000);
 
     CpuToCLA.EnableADC = 1;
     CpuToCLA.EnableFlag = 0;
@@ -445,6 +468,7 @@ int main(void)
     CpuToCLA.PhiTesting = 0.084;
     CpuToCLA.PhiStart = 0.001;
 
+    DelayMs(1000);
     //------------------------------------------------------------------------------
     // khoi tao tham so ban dau cho CFDAB
     Setting_bat.Power  = CFDAB_Power;
@@ -622,8 +646,35 @@ void CLA_initCpu2Cla(void)
 //
 interrupt void cla1Isr1 ()
 {
-     //asm(" ESTOP0");
-     PieCtrlRegs.PIEACK.all = M_INT11;
+    Task1_Isr++;
+    static Uint16 i = 0;
+    // hien thi
+    Vout_Display = 800.0 * ClaToCPU.ADC_CPU.Udc_CFDAB;
+    Vc_Display   = 600.0 * ClaToCPU.ADC_CPU.Vc;
+    Vin_Display  = 200.0 * ClaToCPU.ADC_CPU.Ubat;
+
+    if(i == 200) i =0;
+    switch(ChannelAdc)
+    {
+        case 0:
+            Datalog1[i] = ClaToCPU.ADC_CPU.Udc_CFDAB;
+            Datalog2[i] = ClaToCPU.ADC_CPU.Vc;
+            break;
+        case 1:
+            Datalog1[i] = ClaToCPU.ADC_CPU.Ubat;
+            Datalog2[i] = ClaToCPU.ADC_CPU.Ilv;
+            break;
+        case 2:
+            Datalog1[i] = ClaToCPU.MEASUARE_CPU.duty;
+            Datalog2[i] = ClaToCPU.MEASUARE_CPU.theta1;
+            break;
+    }
+    i++;
+    if(i == 200) i =0;
+    //asm(" ESTOP0");
+    AdcaRegs.ADCINTFLGCLR.bit.ADCINT1 = 1; //make sure INT1 flag is cleared
+    PieCtrlRegs.PIEACK.all = (PIEACK_GROUP1 | PIEACK_GROUP11);
+    PieCtrlRegs.PIEACK.all = M_INT11;
 }
 
 //

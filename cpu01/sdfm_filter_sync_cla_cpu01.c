@@ -8,6 +8,7 @@
 #include "PV_Variables.h"
 #include "F2837xD_GlobalPrototypes.h"
 #include "PV_Setting.h"
+
 //
 // Defines
 //
@@ -16,6 +17,10 @@
 #define SDFM_PIN_MUX_OPTION2      2
 #define SDFM_PIN_MUX_OPTION3      3
 #define WAITSTEP                  asm(" RPT #255 || NOP")
+
+#define NEGIN_DAC                0
+#define CTRIP_FILTER             2
+#define REFERENCE_VDDA_CMPSS     0
 
 //
 // Globals
@@ -59,12 +64,25 @@ Uint16 Task8_Isr = 0;
 
 Uint16 START = 0;
 
-// CMPSS parameters for Over Current Protection
-Uint16  clkPrescale = 6,
-        sampwin     = 30,
-        thresh      = 18,
-        LEM_curHi   = LEM(40.0),
-        LEM_curLo   = LEM(40.0);
+// CMPSS parameters for Over Current Protection FLC
+Uint16  clkPrescale_1 = 6,
+        sampwin_1     = 30,
+        thresh_1      = 18,
+        LEM_curHi_1   = LEM_1(40.0),
+        LEM_curLo_1   = LEM_1(40.0);
+
+// CMPSS parameters for Over Current Protection TPC
+Uint16  clkPrescale_2 = 2,
+        sampwin_2     = 30,
+        thresh_2      = 18,
+        LEM_curHi_2   = LEM_2(15), //20
+        LEM_curLo_2   = LEML_2(-15),
+        MEA_voltUbatHi = MEAUBAT(80),
+        MEA_voltUbatLo = 0,
+        MEA_voltUdcHi = MEAUDC(380),
+        MEA_voltUdcLo = 0,
+        MEA_voltUcHi = MEAUC(180),
+        MEA_voltUcLo = 0;
 
 void DelayUs(unsigned long us)
 {
@@ -131,18 +149,18 @@ void Init_ADC_A()
     //
     //Select the channels to convert and end of conversion flag ADCA
     //
-    // Ia_adc
-    AdcaRegs.ADCSOC0CTL.bit.CHSEL = 0;          //SOC0 will convert pin A0 -> Ia_adc
+    // Ib_adc
+    AdcaRegs.ADCSOC0CTL.bit.CHSEL = 0;          //SOC0 will convert pin A0 -> Ib_adc
     AdcaRegs.ADCSOC0CTL.bit.ACQPS = 19;         //sample window is 20 SYSCLK cycles
     AdcaRegs.ADCSOC0CTL.bit.TRIGSEL = 0x0B;     //trigger on ePWM4 SOCA/C
 
-    // Iz_adc
-    AdcaRegs.ADCSOC1CTL.bit.CHSEL = 1;          //SOC1 will convert pin A1 -> Iz_adc
+    // Ia_adc
+    AdcaRegs.ADCSOC1CTL.bit.CHSEL = 1;          //SOC1 will convert pin A1 -> Ia_adc
     AdcaRegs.ADCSOC1CTL.bit.ACQPS = 19;         //sample window is 20 SYSCLK cycles
     AdcaRegs.ADCSOC1CTL.bit.TRIGSEL = 0x0B;     //trigger on ePWM4 SOCA/C
 
-    // VaN
-    AdcaRegs.ADCSOC2CTL.bit.CHSEL = 2;          //SOC2 will convert pin A2 -> VaN
+    // VbN
+    AdcaRegs.ADCSOC2CTL.bit.CHSEL = 2;          //SOC2 will convert pin A2 -> VbN
     AdcaRegs.ADCSOC2CTL.bit.ACQPS = 19;         //sample window is 20 SYSCLK cycles
     AdcaRegs.ADCSOC2CTL.bit.TRIGSEL = 0x0B;     //trigger on ePWM4 SOCA/C
 
@@ -151,8 +169,8 @@ void Init_ADC_A()
     AdcaRegs.ADCSOC4CTL.bit.ACQPS = 19;         //sample window is 20 SYSCLK cycles
     AdcaRegs.ADCSOC4CTL.bit.TRIGSEL = 0x0B;     //trigger on ePWM4 SOCA/C
 
-    // VcN
-    AdcaRegs.ADCSOC5CTL.bit.CHSEL = 5;          //SOC5 will convert pin A5 -> VcN
+    // VaN
+    AdcaRegs.ADCSOC5CTL.bit.CHSEL = 5;          //SOC5 will convert pin A5 -> VaN
     AdcaRegs.ADCSOC5CTL.bit.ACQPS = 19;         //sample window is 20 SYSCLK cycles
     AdcaRegs.ADCSOC5CTL.bit.TRIGSEL = 0x0B;     //trigger on ePWM4 SOCA/C
 
@@ -208,42 +226,42 @@ void Init_ADC_B()
     AdcbRegs.ADCSOC2CTL.bit.ACQPS = 19;         //sample window is 20 SYSCLK cycles
     AdcbRegs.ADCSOC2CTL.bit.TRIGSEL = 0x0B;     //trigger on ePWM4 SOCA/C
 
-    //Ib_adc
-    AdcbRegs.ADCSOC4CTL.bit.CHSEL = 4;          //SOC4 will convert pin B4 -> Ib_inv
+    //Iz_adc
+    AdcbRegs.ADCSOC4CTL.bit.CHSEL = 4;          //SOC4 will convert pin B4 -> Iz_inv
     AdcbRegs.ADCSOC4CTL.bit.ACQPS = 19;         //sample window is 20 SYSCLK cycles
     AdcbRegs.ADCSOC4CTL.bit.TRIGSEL = 0x0B;     //trigger on ePWM1 SOCA/C
 
-    // VbN
-    AdcbRegs.ADCSOC5CTL.bit.CHSEL = 5;          //SOC5 will convert pin B5 -> VbN
+    // VcN
+    AdcbRegs.ADCSOC5CTL.bit.CHSEL = 5;          //SOC5 will convert pin B5 -> VcN
     AdcbRegs.ADCSOC5CTL.bit.ACQPS = 19;         //sample window is 20 SYSCLK cycles
     AdcbRegs.ADCSOC5CTL.bit.TRIGSEL = 0x0B;     //trigger on ePWM4 SOCA/C
 
     EDIS;
 }
 
-void CMPSS_Protection(void)
+void CMPSS_Protection_FLC(void)
 {
     EALLOW;
     #if(CMPSS_PROTECT_UDC_UPPER == 1)
-        Cmpss6Regs.COMPCTL.bit.COMPDACE = 1;
-        Cmpss6Regs.COMPCTL.bit.COMPHSOURCE = 0;
-        Cmpss6Regs.COMPDACCTL.bit.DACSOURCE = 0;
-        Cmpss6Regs.COMPDACCTL.bit.SWLOADSEL = 0;
+        Cmpss3Regs.COMPCTL.bit.COMPDACE = 1;
+        Cmpss3Regs.COMPCTL.bit.COMPHSOURCE = 0;
+        Cmpss3Regs.COMPDACCTL.bit.DACSOURCE = 0;
+        Cmpss3Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Udc Upper protection
-        Cmpss6Regs.DACHVALS.bit.DACVAL = (21 + ((CMPSS_Udc_New_Protecion + CMPSS_Udc_Offset_New_Protecion)/800.0)*(4096.0 - 21)*0.96 + 42)/1.1;
+        Cmpss3Regs.DACHVALS.bit.DACVAL = (21 + ((CMPSS_Udc_New_Protecion + CMPSS_Udc_Offset_New_Protecion)/800.0)*(4096.0 - 21)*0.96 + 42)/1.1;
 
-        Cmpss6Regs.COMPCTL.bit.COMPHINV = 0;
-        Cmpss6Regs.COMPCTL.bit.CTRIPHSEL = 2;
+        Cmpss3Regs.COMPCTL.bit.COMPHINV = 0;
+        Cmpss3Regs.COMPCTL.bit.CTRIPHSEL = 2;
 
         EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX10 = 0; // Cmpss6 trip H
         EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX10  = 1; // VDCH
 
-        Cmpss6Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // Set time between samples, max : 1023
-        Cmpss6Regs.CTRIPHFILCTL.bit.SAMPWIN        = 30; // # Of samples in window, max : 31
-        Cmpss6Regs.CTRIPHFILCTL.bit.THRESH         = 18; // Recommended : thresh > sampwin/2
-        Cmpss6Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
-        Cmpss6Regs.COMPSTSCLR.bit.HLATCHCLR = 1; // Clear the status register for latched comparator events
+        Cmpss3Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
+        Cmpss3Regs.CTRIPHFILCTL.bit.SAMPWIN        = sampwin_1; // # Of samples in window, max : 31
+        Cmpss3Regs.CTRIPHFILCTL.bit.THRESH         = thresh_1; // Recommended : thresh > sampwin/2
+        Cmpss3Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
+        Cmpss3Regs.COMPSTSCLR.bit.HLATCHCLR = 1; // Clear the status register for latched comparator events
     #endif
     //-----------------------------------------------------
     #if(CMPSS_PROTECT_VaG_UPPER == 1)
@@ -261,9 +279,9 @@ void CMPSS_Protection(void)
         EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX4 = 0 ; // Cmpss3 trip H
         EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX4  = 1; // VagH
 
-        Cmpss3Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // Set time between samples, max : 1023
-        Cmpss3Regs.CTRIPHFILCTL.bit.SAMPWIN        = 30; // # Of samples in window, max : 31
-        Cmpss3Regs.CTRIPHFILCTL.bit.THRESH         = 18; // Recommended : thresh > sampwin/2
+        Cmpss3Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
+        Cmpss3Regs.CTRIPHFILCTL.bit.SAMPWIN        = sampwin_1; // # Of samples in window, max : 31
+        Cmpss3Regs.CTRIPHFILCTL.bit.THRESH         = thresh_1; // Recommended : thresh > sampwin/2
         Cmpss3Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
         Cmpss3Regs.COMPSTSCLR.bit.HLATCHCLR = 1; // Clear the status register for latched comparator events
     #endif
@@ -283,9 +301,9 @@ void CMPSS_Protection(void)
         EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX5 = 0 ; // Cmpss3 trip L
         EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX5  = 1; // VagL
 
-        Cmpss3Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // Set time between samples, max : 1023
-        Cmpss3Regs.CTRIPLFILCTL.bit.SAMPWIN        = 30; // # Of samples in window, max : 31
-        Cmpss3Regs.CTRIPLFILCTL.bit.THRESH         = 18; // Recommended : thresh > sampwin/2
+        Cmpss3Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
+        Cmpss3Regs.CTRIPLFILCTL.bit.SAMPWIN        = sampwin_1; // # Of samples in window, max : 31
+        Cmpss3Regs.CTRIPLFILCTL.bit.THRESH         = thresh_1; // Recommended : thresh > sampwin/2
         Cmpss3Regs.CTRIPLFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
         Cmpss3Regs.COMPSTSCLR.bit.LLATCHCLR = 1; // Clear the status register for latched comparator events
     #endif
@@ -305,9 +323,9 @@ void CMPSS_Protection(void)
         EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX0 = 0 ; // Cmpss1 trip H
         EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX0  = 1; // VbgH
 
-        Cmpss1Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // Set time between samples, max : 1023
-        Cmpss1Regs.CTRIPHFILCTL.bit.SAMPWIN        = 30; // # Of samples in window, max : 31
-        Cmpss1Regs.CTRIPHFILCTL.bit.THRESH         = 18; // Recommended : thresh > sampwin/2
+        Cmpss1Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
+        Cmpss1Regs.CTRIPHFILCTL.bit.SAMPWIN        = sampwin_1; // # Of samples in window, max : 31
+        Cmpss1Regs.CTRIPHFILCTL.bit.THRESH         = thresh_1; // Recommended : thresh > sampwin/2
         Cmpss1Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
         Cmpss1Regs.COMPSTSCLR.bit.HLATCHCLR = 1; // Clear the status register for latched comparator events
     #endif
@@ -327,9 +345,9 @@ void CMPSS_Protection(void)
         EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX1 = 0 ; // Cmpss1 trip L
         EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX1  = 1; // VbgL
 
-        Cmpss1Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // Set time between samples, max : 1023
-        Cmpss1Regs.CTRIPLFILCTL.bit.SAMPWIN        = 30; // # Of samples in window, max : 31
-        Cmpss1Regs.CTRIPLFILCTL.bit.THRESH         = 18; // Recommended : thresh > sampwin/2
+        Cmpss1Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
+        Cmpss1Regs.CTRIPLFILCTL.bit.SAMPWIN        = sampwin_1; // # Of samples in window, max : 31
+        Cmpss1Regs.CTRIPLFILCTL.bit.THRESH         = thresh_1; // Recommended : thresh > sampwin/2
         Cmpss1Regs.CTRIPLFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
         Cmpss1Regs.COMPSTSCLR.bit.LLATCHCLR = 1; // Clear the status register for latched comparator events
     #endif
@@ -349,9 +367,9 @@ void CMPSS_Protection(void)
         EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX2  = 1; // IL3H
 
         // High protect
-        Cmpss2Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // Set time between samples, max : 1023
-        Cmpss2Regs.CTRIPHFILCTL.bit.SAMPWIN        = 30; // # Of samples in window, max : 31
-        Cmpss2Regs.CTRIPHFILCTL.bit.THRESH         = 18; // Recommended : thresh > sampwin/2
+        Cmpss2Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
+        Cmpss2Regs.CTRIPHFILCTL.bit.SAMPWIN        = sampwin_1; // # Of samples in window, max : 31
+        Cmpss2Regs.CTRIPHFILCTL.bit.THRESH         = thresh_1; // Recommended : thresh > sampwin/2
         Cmpss2Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
         Cmpss2Regs.COMPSTSCLR.bit.HLATCHCLR = 1; // Clear the status register for latched comparator events
     #endif
@@ -370,9 +388,9 @@ void CMPSS_Protection(void)
         EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX3 = 0; // Cmpss2 trip L
         EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX3  = 1; // IL3L
 
-        Cmpss2Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // Set time between samples, max : 1023
-        Cmpss2Regs.CTRIPLFILCTL.bit.SAMPWIN        = 30; // # Of samples in window, max : 31
-        Cmpss2Regs.CTRIPLFILCTL.bit.THRESH         = 18; // Recommended : thresh > sampwin/2
+        Cmpss2Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
+        Cmpss2Regs.CTRIPLFILCTL.bit.SAMPWIN        = sampwin_1; // # Of samples in window, max : 31
+        Cmpss2Regs.CTRIPLFILCTL.bit.THRESH         = thresh_1; // Recommended : thresh > sampwin/2
         Cmpss2Regs.CTRIPLFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
         Cmpss2Regs.COMPSTSCLR.bit.LLATCHCLR = 1; // Clear the status register for latched comparator events
     #endif
@@ -392,9 +410,9 @@ void CMPSS_Protection(void)
         EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX6  = 1; // IL1H
 
         // High protect
-        Cmpss4Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // Set time between samples, max : 1023
-        Cmpss4Regs.CTRIPHFILCTL.bit.SAMPWIN        = 30; // # Of samples in window, max : 31
-        Cmpss4Regs.CTRIPHFILCTL.bit.THRESH         = 18; // Recommended : thresh > sampwin/2
+        Cmpss4Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
+        Cmpss4Regs.CTRIPHFILCTL.bit.SAMPWIN        = sampwin_1; // # Of samples in window, max : 31
+        Cmpss4Regs.CTRIPHFILCTL.bit.THRESH         = thresh_1; // Recommended : thresh > sampwin/2
         Cmpss4Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
         Cmpss4Regs.COMPSTSCLR.bit.HLATCHCLR = 1; // Clear the status register for latched comparator events
     #endif
@@ -413,54 +431,54 @@ void CMPSS_Protection(void)
         EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX7 = 0 ; // Cmpss4 trip L
         EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX7  = 1; // IL1L
 
-        Cmpss4Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // Set time between samples, max : 1023
-        Cmpss4Regs.CTRIPLFILCTL.bit.SAMPWIN        = 30; // # Of samples in window, max : 31
-        Cmpss4Regs.CTRIPLFILCTL.bit.THRESH         = 18; // Recommended : thresh > sampwin/2
+        Cmpss4Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
+        Cmpss4Regs.CTRIPLFILCTL.bit.SAMPWIN        = sampwin_1; // # Of samples in window, max : 31
+        Cmpss4Regs.CTRIPLFILCTL.bit.THRESH         = thresh_1; // Recommended : thresh > sampwin/2
         Cmpss4Regs.CTRIPLFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
         Cmpss4Regs.COMPSTSCLR.bit.LLATCHCLR = 1; // Clear the status register for latched comparator events
     #endif
     //-----------------------------------------------------
     #if(CMPSS_PROTECT_Ic_inv_UPPER == 1)
-        Cmpss5Regs.COMPCTL.bit.COMPDACE = 1;
-        Cmpss5Regs.COMPCTL.bit.COMPHSOURCE = 0;
-        Cmpss5Regs.COMPDACCTL.bit.DACSOURCE = 0;
-        Cmpss5Regs.COMPDACCTL.bit.SWLOADSEL = 0;
+        Cmpss2Regs.COMPCTL.bit.COMPDACE = 1;
+        Cmpss2Regs.COMPCTL.bit.COMPHSOURCE = 0;
+        Cmpss2Regs.COMPDACCTL.bit.DACSOURCE = 0;
+        Cmpss2Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Ic Upper protection
-        Cmpss5Regs.DACHVALS.bit.DACVAL = (2054 + (CMPSS_Ig_inv_New_Protecion/81.3)*2054 - 185 + 162)/1.1;
-        Cmpss5Regs.COMPCTL.bit.COMPHINV = 0;
-        Cmpss5Regs.COMPCTL.bit.CTRIPHSEL = 2;
+        Cmpss2Regs.DACHVALS.bit.DACVAL = (2054 + (CMPSS_Ig_inv_New_Protecion/81.3)*2054 - 185 + 162)/1.1;
+        Cmpss2Regs.COMPCTL.bit.COMPHINV = 0;
+        Cmpss2Regs.COMPCTL.bit.CTRIPHSEL = 2;
 
         EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX8 = 0 ; // Cmpss5 trip H
         EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX8  = 1; // IL2H
 
         // High protect
-        Cmpss5Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // Set time between samples, max : 1023
-        Cmpss5Regs.CTRIPHFILCTL.bit.SAMPWIN        = 30; // # Of samples in window, max : 31
-        Cmpss5Regs.CTRIPHFILCTL.bit.THRESH         = 18; // Recommended : thresh > sampwin/2
-        Cmpss5Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
-        Cmpss5Regs.COMPSTSCLR.bit.HLATCHCLR = 1; // Clear the status register for latched comparator events
+        Cmpss2Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
+        Cmpss2Regs.CTRIPHFILCTL.bit.SAMPWIN        = sampwin_1; // # Of samples in window, max : 31
+        Cmpss2Regs.CTRIPHFILCTL.bit.THRESH         = thresh_1; // Recommended : thresh > sampwin/2
+        Cmpss2Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
+        Cmpss2Regs.COMPSTSCLR.bit.HLATCHCLR = 1; // Clear the status register for latched comparator events
     #endif
     //-----------------------------------------------------
     #if(CMPSS_PROTECT_Ic_inv_LOWER == 1)
-        Cmpss5Regs.COMPCTL.bit.COMPDACE = 1;
-        Cmpss5Regs.COMPCTL.bit.COMPLSOURCE = 0;
-        Cmpss5Regs.COMPDACCTL.bit.DACSOURCE = 0;
-        Cmpss5Regs.COMPDACCTL.bit.SWLOADSEL = 0;
+        Cmpss2Regs.COMPCTL.bit.COMPDACE = 1;
+        Cmpss2Regs.COMPCTL.bit.COMPLSOURCE = 0;
+        Cmpss2Regs.COMPDACCTL.bit.DACSOURCE = 0;
+        Cmpss2Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Ic Lower protecion
-        Cmpss5Regs.DACLVALS.bit.DACVAL = (2054 - (CMPSS_Ig_inv_New_Protecion/81.3)*2054 - 180 - 162)/1.1;
-        Cmpss5Regs.COMPCTL.bit.COMPLINV = 1;
-        Cmpss5Regs.COMPCTL.bit.CTRIPLSEL = 2;
+        Cmpss2Regs.DACLVALS.bit.DACVAL = (2054 - (CMPSS_Ig_inv_New_Protecion/81.3)*2054 - 180 - 162)/1.1;
+        Cmpss2Regs.COMPCTL.bit.COMPLINV = 1;
+        Cmpss2Regs.COMPCTL.bit.CTRIPLSEL = 2;
 
         EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX9 = 0 ; // Cmpss5 trip L
         EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX9  = 1; // IL2L
 
-        Cmpss5Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // Set time between samples, max : 1023
-        Cmpss5Regs.CTRIPLFILCTL.bit.SAMPWIN        = 30; // # Of samples in window, max : 31
-        Cmpss5Regs.CTRIPLFILCTL.bit.THRESH         = 18; // Recommended : thresh > sampwin/2
-        Cmpss5Regs.CTRIPLFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
-        Cmpss5Regs.COMPSTSCLR.bit.LLATCHCLR = 1; // Clear the status register for latched comparator events
+        Cmpss2Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
+        Cmpss2Regs.CTRIPLFILCTL.bit.SAMPWIN        = sampwin_1; // # Of samples in window, max : 31
+        Cmpss2Regs.CTRIPLFILCTL.bit.THRESH         = thresh_1; // Recommended : thresh > sampwin/2
+        Cmpss2Regs.CTRIPLFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
+        Cmpss2Regs.COMPSTSCLR.bit.LLATCHCLR = 1; // Clear the status register for latched comparator events
     #endif
     //-----------------------------------------------------
 
@@ -508,6 +526,183 @@ void CMPSS_Protection(void)
     EDIS;
 }
 
+void cmpssConfig(volatile struct CMPSS_REGS *v, int16 Hi, int16 Lo)
+{
+    /*
+    //------------------------------------------------------
+     CMPIN1P -> ADCINA2
+     CMPIN1N -> ADCINA3
+     CMPIN2P -> ADCINA4
+     CMPIN2N -> ADCINA5
+     CMPIN4P -> ADCIN14
+     CMPIN4N -> ADCIN15
+
+     CMPIN3P -> ADCINB2
+     CMPIN3N -> ADCINB3
+
+     CMPIN6P -> ADCINC2
+     CMPIN6N -> ADCINC3
+     CMPIN5P -> ADCINC4
+     CMPIN5N -> ADCINC5
+
+     CMPIN7P -> ADCIND0
+     CMPIN7N -> ADCIND1
+     CMPIN8P -> ADCIND2
+     CMPIN8N -> ADCIND3
+
+    */
+    //------------------------------------------------------
+    // Set up COMPCTL register
+    EALLOW;
+
+    v->COMPCTL.bit.COMPDACE    = 1;             // Enable CMPSS
+    v->COMPCTL.bit.COMPLSOURCE = NEGIN_DAC;     // NEG signal from DAC for COMP-L
+    v->COMPCTL.bit.COMPHSOURCE = NEGIN_DAC;     // NEG signal from DAC for COMP-H
+    v->COMPCTL.bit.COMPHINV    = 0;             // COMP-H output is NOT inverted
+    v->COMPCTL.bit.COMPLINV    = 1;             // COMP-L output is inverted
+    v->COMPCTL.bit.ASYNCHEN    = 0;             // Disable aynch COMP-H ouput
+    v->COMPCTL.bit.ASYNCLEN    = 0;             // Disable aynch COMP-L ouput
+    v->COMPCTL.bit.CTRIPHSEL    = CTRIP_FILTER; // Dig filter output ==> CTRIPH
+    v->COMPCTL.bit.CTRIPOUTHSEL = CTRIP_FILTER; // Dig filter output ==> CTRIPOUTH
+    v->COMPCTL.bit.CTRIPLSEL    = CTRIP_FILTER; // Dig filter output ==> CTRIPL
+    v->COMPCTL.bit.CTRIPOUTLSEL = CTRIP_FILTER; // Dig filter output ==> CTRIPOUTL
+
+    // Set up COMPHYSCTL register
+    v->COMPHYSCTL.bit.COMPHYS   = 2; // COMP hysteresis set to 2x typical value
+
+    // set up COMPDACCTL register
+    v->COMPDACCTL.bit.SELREF    = REFERENCE_VDDA_CMPSS; // VDDA is REF for CMPSS DACs
+    v->COMPDACCTL.bit.SWLOADSEL = 0; // DAC updated on sysclock
+    v->COMPDACCTL.bit.DACSOURCE = 0; // Ramp bypassed
+
+    // Load DACs - High and Low
+    v->DACHVALS.bit.DACVAL = Hi;     // Set DAC-H to allowed MAX +ve current
+    v->DACLVALS.bit.DACVAL = Lo;     // Set DAC-L to allowed MAX -ve current
+
+    // digital filter settings - HIGH side
+    v->CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale_2; // set time between samples, max : 1023
+    v->CTRIPHFILCTL.bit.SAMPWIN        = sampwin_2;     // # of samples in window, max : 31
+    v->CTRIPHFILCTL.bit.THRESH         = thresh_2;      // recommended : thresh > sampwin/2
+    v->CTRIPHFILCTL.bit.FILINIT        = 1;           // Init samples to filter input value
+
+    // digital filter settings - LOW side
+    v->CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_2; // set time between samples, max : 1023
+    v->CTRIPLFILCTL.bit.SAMPWIN        = sampwin_2;     // # of samples in window, max : 31
+    v->CTRIPLFILCTL.bit.THRESH         = thresh_2;      // recommended : thresh > sampwin/2
+    v->CTRIPLFILCTL.bit.FILINIT        = 1;           // Init samples to filter input value
+
+    // Clear the status register for latched comparator events
+    v->COMPSTSCLR.bit.HLATCHCLR = 1;
+    v->COMPSTSCLR.bit.LLATCHCLR = 1;
+
+    EDIS;
+    return;
+}
+
+void CMPSS_Protection_TPC(void)
+{
+    // LEM Current (ADC B2, COMP3), High Low Compare event trips
+    cmpssConfig(&Cmpss3Regs, MEA_voltUbatHi, MEA_voltUbatLo);  //Enable CMPSS3 - BAT VOLTAGE  for ADCINB2
+//    MEA_voltUbatHi= 3600;
+//    MEA_voltUbatLo= 2024 - MEAUBAT(Ubatlimit);
+    cmpssConfig(&Cmpss5Regs, LEM_curHi_2, LEM_curLo_2);  //Enable CMPS5 - LEM CURRENT  for ADCINC4
+    cmpssConfig(&Cmpss2Regs, MEA_voltUcHi, MEA_voltUcLo);  //Enable CMPSS2 - Vclamp for ADCINA4
+    cmpssConfig(&Cmpss4Regs, MEA_voltUdcHi, MEA_voltUdcLo);  //Enable CMPSS4 - Vdc  for ADCINA1
+
+    EALLOW;
+    // Configure TRIP 4 to OR the High and Low trips from both comparator 1 & 3
+    // Clear everything first
+    EPwmXbarRegs.TRIP4MUX0TO15CFG.all  = 0x0000;
+    EPwmXbarRegs.TRIP4MUX16TO31CFG.all = 0x0000;
+    // Enable Muxes for ored input of CMPSS1H and 1L, i.e. .1 mux for Mux0
+    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX2  = 0;  //cmpss2 - tripH
+    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX4  = 0;  //cmpss3 - tripH
+    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX6  = 0;  //cmpss4 - tripH
+    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX8  = 1;  //cmpss5 - tripH or TripL
+
+    // Disable all the muxes first
+    EPwmXbarRegs.TRIP4MUXENABLE.all = 0x0000;
+    // Enable Mux 2,4,6,8 to generate TRIP4
+    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX2  = 1;
+    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX4  = 1;
+    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX6  = 1;
+    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX8  = 1;
+
+    EPwm1Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 3; //Trip 4 is the input to the DCAHCOMPSEL
+    EPwm1Regs.TZDCSEL.bit.DCAEVT1       = TZ_DCAH_HI;
+    EPwm1Regs.DCACTL.bit.EVT1SRCSEL     = DC_EVT1;
+    EPwm1Regs.DCACTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+    EPwm1Regs.TZSEL.bit.DCAEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+
+    EPwm1Regs.DCTRIPSEL.bit.DCBHCOMPSEL = 3; //Trip 4 is the input to the DCBHCOMPSEL
+    EPwm1Regs.TZDCSEL.bit.DCBEVT1       = TZ_DCBH_HI;
+    EPwm1Regs.DCBCTL.bit.EVT1SRCSEL     = DC_EVT1;
+    EPwm1Regs.DCBCTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+    EPwm1Regs.TZSEL.bit.DCBEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+
+    EPwm2Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 3; //Trip 4 is the input to the DCAHCOMPSEL
+    EPwm2Regs.TZDCSEL.bit.DCAEVT1       = TZ_DCAH_HI;
+    EPwm2Regs.DCACTL.bit.EVT1SRCSEL     = DC_EVT1;
+    EPwm2Regs.DCACTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+    EPwm2Regs.TZSEL.bit.DCAEVT1         = 1;
+
+    EPwm2Regs.DCTRIPSEL.bit.DCBHCOMPSEL = 3; //Trip 4 is the input to the DCBHCOMPSEL
+    EPwm2Regs.TZDCSEL.bit.DCBEVT1       = TZ_DCBH_HI;
+    EPwm2Regs.DCBCTL.bit.EVT1SRCSEL     = DC_EVT1;
+    EPwm2Regs.DCBCTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+    EPwm2Regs.TZSEL.bit.DCBEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+
+    EPwm3Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 3; //Trip 4 is the input to the DCAHCOMPSEL
+    EPwm3Regs.TZDCSEL.bit.DCAEVT1       = TZ_DCAH_HI;
+    EPwm3Regs.DCACTL.bit.EVT1SRCSEL     = DC_EVT1;
+    EPwm3Regs.DCACTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+    EPwm3Regs.TZSEL.bit.DCAEVT1         = 1;
+
+    EPwm3Regs.DCTRIPSEL.bit.DCBHCOMPSEL = 3; //Trip 4 is the input to the DCBHCOMPSEL
+    EPwm3Regs.TZDCSEL.bit.DCBEVT1       = TZ_DCBH_HI;
+    EPwm3Regs.DCBCTL.bit.EVT1SRCSEL     = DC_EVT1;
+    EPwm3Regs.DCBCTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+    EPwm3Regs.TZSEL.bit.DCBEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+
+    EPwm10Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 3; //Trip 4 is the input to the DCAHCOMPSEL
+    EPwm10Regs.TZDCSEL.bit.DCAEVT1       = TZ_DCAH_HI;
+    EPwm10Regs.DCACTL.bit.EVT1SRCSEL     = DC_EVT1;
+    EPwm10Regs.DCACTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+    EPwm10Regs.TZSEL.bit.DCAEVT1         = 1;
+
+    EPwm10Regs.DCTRIPSEL.bit.DCBHCOMPSEL = 3; //Trip 4 is the input to the DCBHCOMPSEL
+    EPwm10Regs.TZDCSEL.bit.DCBEVT1       = TZ_DCBH_HI;
+    EPwm10Regs.DCBCTL.bit.EVT1SRCSEL     = DC_EVT1;
+    EPwm10Regs.DCBCTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+    EPwm10Regs.TZSEL.bit.DCBEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+
+    EPwm1Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
+    EPwm1Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
+
+    EPwm2Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
+    EPwm2Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
+
+    EPwm3Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
+    EPwm3Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
+
+    EPwm10Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
+    EPwm10Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
+
+    // Clear any spurious OV trip
+    EPwm1Regs.TZCLR.bit.DCAEVT1 = 1;
+    EPwm2Regs.TZCLR.bit.DCAEVT1 = 1;
+    EPwm3Regs.TZCLR.bit.DCAEVT1 = 1;
+    EPwm10Regs.TZCLR.bit.DCAEVT1 = 1;
+
+    // Clear any spurious OV trip
+    EPwm1Regs.TZCLR.bit.DCBEVT1 = 1;
+    EPwm2Regs.TZCLR.bit.DCBEVT1 = 1;
+    EPwm3Regs.TZCLR.bit.DCBEVT1 = 1;
+    EPwm10Regs.TZCLR.bit.DCBEVT1 = 1;
+
+    EDIS;
+}
+
 // Main
 //
 int main(void)
@@ -551,11 +746,18 @@ int main(void)
     CpuSysRegs.PCLKCR13.bit.ADC_A = 1;
     CpuSysRegs.PCLKCR13.bit.ADC_B = 1;
 
+    CpuSysRegs.PCLKCR14.bit.CMPSS1 = 1;
+    CpuSysRegs.PCLKCR14.bit.CMPSS2 = 1;
+    CpuSysRegs.PCLKCR14.bit.CMPSS3 = 1;
+    CpuSysRegs.PCLKCR14.bit.CMPSS4 = 1;
+    CpuSysRegs.PCLKCR14.bit.CMPSS5 = 1;
+    CpuSysRegs.PCLKCR14.bit.CMPSS6 = 1;
+
     EDIS;
 
     EALLOW;
 
-    // Cấp quyền truy cập ePWM2 cho CPU2
+    // Cấp quyền truy cập ePWM cho CPU2
     DevCfgRegs.CPUSEL0.bit.EPWM1 = 1; // 1: CPU2, 0: CPU1
     DevCfgRegs.CPUSEL0.bit.EPWM2 = 1; // 1: CPU2, 0: CPU1
     DevCfgRegs.CPUSEL0.bit.EPWM3 = 1; // 1: CPU2, 0: CPU1
@@ -564,6 +766,13 @@ int main(void)
     DevCfgRegs.CPUSEL11.bit.ADC_A = 0; // 1: CPU2, 0: CPU1
     DevCfgRegs.CPUSEL11.bit.ADC_B = 0; // 1: CPU2, 0: CPU1
     DevCfgRegs.CPUSEL11.bit.ADC_C = 1; // 1: CPU2, 0: CPU1
+
+    DevCfgRegs.CPUSEL12.bit.CMPSS1 = 0; // 1: CPU2, 0: CPU1
+    DevCfgRegs.CPUSEL12.bit.CMPSS2 = 0; // 1: CPU2, 0: CPU1
+    DevCfgRegs.CPUSEL12.bit.CMPSS3 = 0; // 1: CPU2, 0: CPU1
+    DevCfgRegs.CPUSEL12.bit.CMPSS4 = 0; // 1: CPU2, 0: CPU1
+    DevCfgRegs.CPUSEL12.bit.CMPSS5 = 0; // 1: CPU2, 0: CPU1
+    DevCfgRegs.CPUSEL12.bit.CMPSS6 = 0; // 1: CPU2, 0: CPU1
     // Đóng khóa
 
     EDIS;
@@ -818,13 +1027,14 @@ int main(void)
 
     EDIS;
 
-    CMPSS_Protection();
+    CMPSS_Protection_FLC();
+    CMPSS_Protection_TPC();
 
     EALLOW;
     CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;
     EDIS;
 
-    //Cấu hình Timer 0
+    // Cấu hình Timer 0
     CpuTimer0Regs.TCR.bit.TSS = 1;         // Dừng CPU Timer 0
     CpuTimer0Regs.TCR.bit.TRB = 1;         // Nạp lại giá trị bộ đếm
     CpuTimer0Regs.TCR.bit.TIE = 1;         // Kích hoạt ngắt Timer (có thể không cần nếu không muốn ngắt)
