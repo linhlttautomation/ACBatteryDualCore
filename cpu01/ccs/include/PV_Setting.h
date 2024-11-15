@@ -59,17 +59,17 @@
     #define KP_CURR_LOOP_1            2.0 // Thong so moi vong ap khong tai
     #define KI_CURR_LOOP_1            0.18
 
-    #define KP_VOLT_US_LOOP         0.00001
-    #define KI_VOLT_US_LOOP         0.1
+    #define KP_VOLT_US_LOOP           0.00001
+    #define KI_VOLT_US_LOOP           0.1
 
 #endif
 
 
-// CMPSS Permission
+// CMPSS FLC Permission
 #define CMPSS_PROTECT_UDC_UPPER         0 //
 
-#define CMPSS_PROTECT_VaG_UPPER         0
-#define CMPSS_PROTECT_VaG_LOWER         0
+#define CMPSS_PROTECT_VaG_UPPER         0 //
+#define CMPSS_PROTECT_VaG_LOWER         0 //
 
 #define CMPSS_PROTECT_VbG_UPPER         0 //
 #define CMPSS_PROTECT_VbG_LOWER         0 //
@@ -80,15 +80,31 @@
 #define CMPSS_PROTECT_Ib_inv_UPPER      0
 #define CMPSS_PROTECT_Ib_inv_LOWER      0
 
-#define CMPSS_PROTECT_Ic_inv_UPPER      1
-#define CMPSS_PROTECT_Ic_inv_LOWER      1
+#define CMPSS_PROTECT_Ic_inv_UPPER      0 //
+#define CMPSS_PROTECT_Ic_inv_LOWER      0 //
 
-// CMPSS Setting
+// CMPSS TPC Permission
+
+#define CMPSS_PROTECT_Ubat_UPPER        0 //
+#define CMPSS_PROTECT_Ubat_LOWER        0 //
+
+#define CMPSS_PROTECT_Ihv_UPPER         0 //
+#define CMPSS_PROTECT_Ihv_LOWER         0 //
+
+#define CMPSS_PROTECT_Ilv_UPPER         0 //
+#define CMPSS_PROTECT_Ilv_LOWER         0 //
+
+#define CMPSS_PROTECT_Uc_UPPER          0 //
+#define CMPSS_PROTECT_Uc_LOWER          0 //
+
+// CMPSS FLC Setting
 #define CMPSS_Udc_New_Protecion            300.0
 
-#define CMPSS_Udc_Offset_New_Protecion     100.0
-#define CMPSS_Vg_Offset_New_Protecion      80.0
+#define CMPSS_Udc_Offset_New_Protecion     0.0
+#define CMPSS_Vg_Offset_New_Protecion      0.0
 
-#define CMPSS_Ig_inv_New_Protecion   15.0
+#define CMPSS_Ig_inv_New_Protecion         15.0
+
+// CMPSS TPC Setting
 
 #endif /* _PV_SETTING_H_ */
