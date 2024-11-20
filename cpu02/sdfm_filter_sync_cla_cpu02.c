@@ -108,27 +108,27 @@ void Init_ADC_C()
 
     EALLOW;
 
-    AdccRegs.ADCSOC3CTL.bit.CHSEL = 3;          //SOC3 will convert pin C3 -> Ilv_adc
-    AdccRegs.ADCSOC3CTL.bit.ACQPS = 8;         //sample window is 20 SYSCLK cycles
-    AdccRegs.ADCSOC3CTL.bit.TRIGSEL = 0x05;     //trigger on ePWM1 SOCA/C
+    AdccRegs.ADCSOC4CTL.bit.CHSEL = 4;          //SOC3 will convert pin C4 (67) -> Ilv_adc
+    AdccRegs.ADCSOC4CTL.bit.ACQPS = 8;         //sample window is 20 SYSCLK cycles
+    AdccRegs.ADCSOC4CTL.bit.TRIGSEL = 0x05;     //trigger on ePWM1 SOCA/C
     AdccRegs.ADCPPB1CONFIG.bit.CONFIG = 0;      // PPB is associated with SOC0
     AdccRegs.ADCPPB1OFFCAL.bit.OFFCAL = 0;      // Write zero to this for now till offset ISR is run
 
-    AdccRegs.ADCSOC5CTL.bit.CHSEL = 5;          //SOC5 will convert pin C5 -> Vclamp
+    AdccRegs.ADCSOC5CTL.bit.CHSEL = 5;          //SOC5 will convert pin C5 (64) -> Vclamp
     AdccRegs.ADCSOC5CTL.bit.ACQPS = 8;         //sample window is 11 SYSCLK cycles
     AdccRegs.ADCSOC5CTL.bit.TRIGSEL = 0x05;     //trigger on ePWM1 SOCA/C
     AdccRegs.ADCPPB1CONFIG.bit.CONFIG = 0;      // PPB is associated with SOC0
     AdccRegs.ADCPPB1OFFCAL.bit.OFFCAL = 0;      // Write zero to this for now till offset ISR is run
 
-    AdccRegs.ADCSOC2CTL.bit.CHSEL = 2;          //SOC2 will convert pin C2 -> Ihv_adc
-    AdccRegs.ADCSOC2CTL.bit.ACQPS = 8;         //sample window is 11 SYSCLK cycles
-    AdccRegs.ADCSOC2CTL.bit.TRIGSEL = 0x05;     //trigger on ePWM1 SOCA/C
+    AdccRegs.ADCSOC3CTL.bit.CHSEL = 3;          //SOC2 will convert pin C3 (24)-> Ihv_adc
+    AdccRegs.ADCSOC3CTL.bit.ACQPS = 8;         //sample window is 11 SYSCLK cycles
+    AdccRegs.ADCSOC3CTL.bit.TRIGSEL = 0x05;     //trigger on ePWM1 SOCA/C
     AdccRegs.ADCPPB2CONFIG.bit.CONFIG = 1;      // PPB is associated with SOC1
     AdccRegs.ADCPPB2OFFCAL.bit.OFFCAL = 0;      // Write zero to this for now till offset ISR is run
 
-    AdccRegs.ADCSOC4CTL.bit.CHSEL = 4;          //SOC4 will convert pin C4 -> Ubat
-    AdccRegs.ADCSOC4CTL.bit.ACQPS = 8;         //sample window is 20 SYSCLK cycles
-    AdccRegs.ADCSOC4CTL.bit.TRIGSEL = 0x05;     //trigger on ePWM1 SOCA/C
+    AdccRegs.ADCSOC2CTL.bit.CHSEL = 2;          //SOC4 will convert pin C2 (27) -> Ubat
+    AdccRegs.ADCSOC2CTL.bit.ACQPS = 8;         //sample window is 20 SYSCLK cycles
+    AdccRegs.ADCSOC2CTL.bit.TRIGSEL = 0x05;     //trigger on ePWM1 SOCA/C
     AdccRegs.ADCPPB1CONFIG.bit.CONFIG = 0;      // PPB is associated with SOC0
     AdccRegs.ADCPPB1OFFCAL.bit.OFFCAL = 0;      // Write zero to this for now till offset ISR is run
 
@@ -147,27 +147,29 @@ void PWM_CFDAB(int period, int deadtime)
 {
     EALLOW;
 
-    EPwm1Regs.TBCTL.bit.PRDLD = TB_SHADOW;             // set Immediate load
-    EPwm1Regs.TBPRD = period;
-    EPwm1Regs.CMPA.bit.CMPA = period;
-    EPwm1Regs.TBPHS.bit.TBPHS = 0;
-    EPwm1Regs.TBCTR = 0;
-    EPwm1Regs.TBCTL.bit.FREE_SOFT = 3;                 // Free run
 
-    EPwm1Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;         // COUNTER_UP
-    EPwm1Regs.TBCTL.bit.PHSEN   = TB_DISABLE;          // Master module
-    EPwm1Regs.TBCTL.bit.SYNCOSEL = TB_CTR_ZERO;        //used to sync EPWM(n+1) "down-stream"
+
+    EPwm1Regs.TBCTL.bit.PRDLD = TB_SHADOW;        // set shadow load
+    EPwm1Regs.TBPRD = period;
+    EPwm1Regs.CMPA.bit.CMPA = period;             // Fix duty at 100%
+    EPwm1Regs.TBPHS.bit.TBPHS = period/2;           // Phase = 180 deg
+    EPwm1Regs.TBCTR = 0;
+    EPwm1Regs.TBCTL.bit.FREE_SOFT = 3;                   // Free run
+
+    EPwm1Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
+    EPwm1Regs.TBCTL.bit.PHSEN = TB_DISABLE;           // Slave module
+    EPwm1Regs.TBCTL.bit.SYNCOSEL = TB_CTR_ZERO;       // Sync "flow through" mode
     EPwm1Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;
     EPwm1Regs.TBCTL.bit.CLKDIV = TB_DIV1;
-    EPwm1Regs.TBCTL.bit.PHSDIR = TB_DOWN;
+    EPwm1Regs.TBCTL.bit.PHSDIR = TB_UP;            // Count DOWN on sync (=180 deg)
 
-    EPwm1Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;      // load on CTR=Zero
+    EPwm1Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;
     EPwm1Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
-    EPwm1Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;      // load on CTR=Zero
+    EPwm1Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;
     EPwm1Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
 
-    EPwm1Regs.AQCTLA.bit.ZRO = AQ_CLEAR;
-    EPwm1Regs.AQCTLA.bit.CAU = AQ_SET;
+    EPwm1Regs.AQCTLA.bit.ZRO = AQ_SET;
+    EPwm1Regs.AQCTLA.bit.CAU = AQ_CLEAR;
 
     EPwm1Regs.AQCTLB.bit.ZRO = AQ_SET;
     EPwm1Regs.AQCTLB.bit.CBU = AQ_CLEAR;
@@ -177,11 +179,11 @@ void PWM_CFDAB(int period, int deadtime)
     // reload on CTR = 0
     EPwm1Regs.DBCTL2.bit.LOADDBCTLMODE = 0x0;
 
-    EPwm1Regs.DBCTL.bit.OUT_MODE = DB_FULL_ENABLE;     // enable Dead-band module
-    EPwm1Regs.DBCTL.bit.POLSEL = DB_ACTV_HIC;          // Active Hi Complimentary
+    EPwm1Regs.DBCTL.bit.OUT_MODE = DB_FULL_ENABLE;
+    EPwm1Regs.DBCTL.bit.POLSEL = DB_ACTV_HIC;        // Active Hi Complimentary
     EPwm1Regs.DBCTL.bit.IN_MODE = DBA_ALL;
-    EPwm1Regs.DBRED.bit.DBRED = deadtime;              // dummy value for now
-    EPwm1Regs.DBFED.bit.DBFED = deadtime;              // dummy value for now
+    EPwm1Regs.DBRED.bit.DBRED = deadtime;                            // dummy value for now
+    EPwm1Regs.DBFED.bit.DBFED = deadtime;                            // dummy value for now
 
     EPwm1Regs.ETSEL.bit.SOCAEN   = 1;
     EPwm1Regs.ETSEL.bit.SOCASEL = ET_CTR_ZERO;         // CTR = 0//
@@ -235,27 +237,27 @@ void PWM_CFDAB(int period, int deadtime)
     EPwm2Regs.DBFED.bit.DBFED = deadtime;                            // dummy value for now
 
     // ePWM(n+1) init.  EPWM(n+1) is a slave
-    EPwm3Regs.TBCTL.bit.PRDLD = TB_SHADOW;        // set shadow load
+    EPwm3Regs.TBCTL.bit.PRDLD = TB_SHADOW;             // set Immediate load
     EPwm3Regs.TBPRD = period;
-    EPwm3Regs.CMPA.bit.CMPA = period;             // Fix duty at 100%
-    EPwm3Regs.TBPHS.bit.TBPHS = period/2;           // Phase = 180 deg
+    EPwm3Regs.CMPA.bit.CMPA = period;
+    EPwm3Regs.TBPHS.bit.TBPHS = 0;
     EPwm3Regs.TBCTR = 0;
-    EPwm3Regs.TBCTL.bit.FREE_SOFT = 3;                   // Free run
+    EPwm3Regs.TBCTL.bit.FREE_SOFT = 3;                 // Free run
 
-    EPwm3Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
-    EPwm3Regs.TBCTL.bit.PHSEN = TB_ENABLE;           // Slave module
-    EPwm3Regs.TBCTL.bit.SYNCOSEL = TB_SYNC_IN;       // Sync "flow through" mode
+    EPwm3Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;         // COUNTER_UP
+    EPwm3Regs.TBCTL.bit.PHSEN   = TB_ENABLE;          // Master module
+    EPwm3Regs.TBCTL.bit.SYNCOSEL = TB_SYNC_IN;        //used to sync EPWM(n+1) "down-stream"
     EPwm3Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;
     EPwm3Regs.TBCTL.bit.CLKDIV = TB_DIV1;
-    EPwm3Regs.TBCTL.bit.PHSDIR = TB_UP;            // Count DOWN on sync (=180 deg)
+    EPwm3Regs.TBCTL.bit.PHSDIR = TB_DOWN;
 
-    EPwm3Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;
+    EPwm3Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;      // load on CTR=Zero
     EPwm3Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
-    EPwm3Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;
+    EPwm3Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;      // load on CTR=Zero
     EPwm3Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
 
-    EPwm3Regs.AQCTLA.bit.ZRO = AQ_SET;
-    EPwm3Regs.AQCTLA.bit.CAU = AQ_CLEAR;
+    EPwm3Regs.AQCTLA.bit.ZRO = AQ_CLEAR;
+    EPwm3Regs.AQCTLA.bit.CAU = AQ_SET;
 
     EPwm3Regs.AQCTLB.bit.ZRO = AQ_SET;
     EPwm3Regs.AQCTLB.bit.CBU = AQ_CLEAR;
@@ -265,11 +267,11 @@ void PWM_CFDAB(int period, int deadtime)
     // reload on CTR = 0
     EPwm3Regs.DBCTL2.bit.LOADDBCTLMODE = 0x0;
 
-    EPwm3Regs.DBCTL.bit.OUT_MODE = DB_FULL_ENABLE;
-    EPwm3Regs.DBCTL.bit.POLSEL = DB_ACTV_HIC;        // Active Hi Complimentary
+    EPwm3Regs.DBCTL.bit.OUT_MODE = DB_FULL_ENABLE;     // enable Dead-band module
+    EPwm3Regs.DBCTL.bit.POLSEL = DB_ACTV_HIC;          // Active Hi Complimentary
     EPwm3Regs.DBCTL.bit.IN_MODE = DBA_ALL;
-    EPwm3Regs.DBRED.bit.DBRED = deadtime;                            // dummy value for now
-    EPwm3Regs.DBFED.bit.DBFED = deadtime;                            // dummy value for now
+    EPwm3Regs.DBRED.bit.DBRED = deadtime;              // dummy value for now
+    EPwm3Regs.DBFED.bit.DBFED = deadtime;              // dummy value for now
     //-----------------------------------------------------
 
     // ePWM(n+1) init.  EPWM(n+1) is a slave

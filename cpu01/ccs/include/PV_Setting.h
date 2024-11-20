@@ -13,7 +13,9 @@
 #define LEVEL3        3           // Vong dong
 #define LEVEL4        4           // Vong ap doc lap
 
-#define BUILDLEVEL    LEVEL4
+#define BUILDLEVEL    LEVEL1
+
+#define ALLOW_IPC_2CPU     1
 
 // Define toán học
 #define can2 1.414213562
@@ -66,13 +68,13 @@
 
 
 // CMPSS FLC Permission
-#define CMPSS_PROTECT_UDC_UPPER         0 //
+#define CMPSS_PROTECT_UDC_UPPER         0 // Da test co the bao ve duoc
 
-#define CMPSS_PROTECT_VaG_UPPER         0 //
-#define CMPSS_PROTECT_VaG_LOWER         0 //
+#define CMPSS_PROTECT_VaG_UPPER         0 // Da test co the bao ve duoc
+#define CMPSS_PROTECT_VaG_LOWER         0 // Da test co the bao ve duoc
 
-#define CMPSS_PROTECT_VbG_UPPER         0 //
-#define CMPSS_PROTECT_VbG_LOWER         0 //
+#define CMPSS_PROTECT_VbG_UPPER         0 // Da test co the bao ve duoc
+#define CMPSS_PROTECT_VbG_LOWER         0 // Da test co the bao ve duoc
 
 #define CMPSS_PROTECT_Ia_inv_UPPER      0
 #define CMPSS_PROTECT_Ia_inv_LOWER      0
@@ -80,8 +82,8 @@
 #define CMPSS_PROTECT_Ib_inv_UPPER      0
 #define CMPSS_PROTECT_Ib_inv_LOWER      0
 
-#define CMPSS_PROTECT_Ic_inv_UPPER      0 //
-#define CMPSS_PROTECT_Ic_inv_LOWER      0 //
+#define CMPSS_PROTECT_Ic_inv_UPPER      0 // Da test co the bao ve duoc
+#define CMPSS_PROTECT_Ic_inv_LOWER      0 // Da test co the bao ve duoc
 
 // CMPSS TPC Permission
 
@@ -98,7 +100,7 @@
 #define CMPSS_PROTECT_Uc_LOWER          0 //
 
 // CMPSS FLC Setting
-#define CMPSS_Udc_New_Protecion            300.0
+#define CMPSS_Udc_New_Protecion            30.0
 
 #define CMPSS_Udc_Offset_New_Protecion     0.0
 #define CMPSS_Vg_Offset_New_Protecion      0.0

@@ -570,7 +570,7 @@ void CMPSS_Protection_TPC(void)
         EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX11 = 0 ; // Cmpss6 trip L
         EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX11  = 1; // UbatL
 
-        Cmpss6Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_2; // Set time between samples, max : 1023
+        Cmpss6Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
         Cmpss6Regs.CTRIPLFILCTL.bit.SAMPWIN        = sampwin_2; // # Of samples in window, max : 31
         Cmpss6Regs.CTRIPLFILCTL.bit.THRESH         = thresh_2; // Recommended : thresh > sampwin/2
         Cmpss6Regs.CTRIPLFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
@@ -820,7 +820,7 @@ int main(void)
     DevCfgRegs.CPUSEL12.bit.CMPSS3 = 0; // 1: CPU2, 0: CPU1
     DevCfgRegs.CPUSEL12.bit.CMPSS4 = 0; // 1: CPU2, 0: CPU1
     DevCfgRegs.CPUSEL12.bit.CMPSS5 = 0; // 1: CPU2, 0: CPU1
-    DevCfgRegs.CPUSEL12.bit.CMPSS6 = 0; // 1: CPU2, 0: CPU1
+    DevCfgRegs.CPUSEL12.bit.CMPSS6 = 1; // 1: CPU2, 0: CPU1
     // Đóng khóa
 
     EDIS;
@@ -1077,7 +1077,7 @@ int main(void)
 
     CMPSS_Protection_FLC();
 
-    CMPSS_Protection_TPC();
+    //CMPSS_Protection_TPC();
 
     EALLOW;
     CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;
@@ -1322,6 +1322,11 @@ int main(void)
         else
         {
             CpuToCLA.EnableFlag = 0;
+        }
+
+        if(EPwm4Regs.TZFLG.bit.OST == 1)
+        {
+            START = 0;
         }
     }
 }

@@ -418,7 +418,7 @@ __interrupt void Cla1Task1 ( void )
             if(Cmpb_S4 >= Phase_S4_old && Cmpb_S4 < Phase_S4) Cmpb_S4 = Phase_S4 + 1;
 
             //-----------------------------------------------------
-            EPwm3Regs.TBPHS.bit.TBPHS = Phase_S1;
+            EPwm1Regs.TBPHS.bit.TBPHS = Phase_S1;
             EPwm10Regs.TBPHS.bit.TBPHS = Phase_S4;
 
             Phase_S1_old = Phase_S1;
@@ -427,19 +427,19 @@ __interrupt void Cla1Task1 ( void )
             // Update
             if(Enable_duty == 1)
             {
-                EPwm1Regs.DBCTL.bit.OUT_MODE = 3;    // Enabled Dead Band
+                EPwm3Regs.DBCTL.bit.OUT_MODE = 3;    // Enabled Dead Band
                 EPwm2Regs.DBCTL.bit.OUT_MODE = 3;    // Enabled Dead Band
 
-                EPwm1Regs.CMPA.bit.CMPA = Cmpa_Q1;
+                EPwm3Regs.CMPA.bit.CMPA = Cmpa_Q1;
                 EPwm2Regs.CMPA.bit.CMPA = Cmpa_Q2;
             }
 
             if(Enable_phi == 1)
             {
-                EPwm3Regs.DBCTL.bit.OUT_MODE = 3;    // Enabled Dead Band
+                EPwm1Regs.DBCTL.bit.OUT_MODE = 3;    // Enabled Dead Band
                 EPwm10Regs.DBCTL.bit.OUT_MODE = 3;    // Enabled Dead Band
 
-                EPwm3Regs.CMPA.bit.CMPA = Cmpa_S1;
+                EPwm1Regs.CMPA.bit.CMPA = Cmpa_S1;
 
                 EPwm10Regs.CMPA.bit.CMPA = Cmpa_S4;
                 EPwm10Regs.CMPB.bit.CMPB = Cmpb_S4;
@@ -577,7 +577,7 @@ __interrupt void Cla1Task1 ( void )
                 if(Cmpb_S4 >= Phase_S4_old && Cmpb_S4 < Phase_S4) Cmpb_S4 = Phase_S4 + 1;
 
                 //-----------------------------------------------------
-                EPwm3Regs.TBPHS.bit.TBPHS = Phase_S1;
+                EPwm1Regs.TBPHS.bit.TBPHS = Phase_S1;
                 EPwm10Regs.TBPHS.bit.TBPHS = Phase_S4;
 
                 Phase_S1_old = Phase_S1;
@@ -587,19 +587,19 @@ __interrupt void Cla1Task1 ( void )
 
                 if(Enable_duty == 1)
                 {
-                    EPwm1Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
+                    EPwm3Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
                     EPwm2Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
 
-                    EPwm1Regs.CMPA.bit.CMPA =(Uint16)(Duty*PeriodMax);
+                    EPwm3Regs.CMPA.bit.CMPA =(Uint16)(Duty*PeriodMax);
                     EPwm2Regs.CMPA.bit.CMPA =(Uint16)(Duty*PeriodMax);
                 }
                 if(Enable_phi == 1)
                 {
 
-                    EPwm3Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
+                    EPwm1Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
                     EPwm10Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
 
-                    EPwm3Regs.CMPA.bit.CMPA = Cmpa_S1;
+                    EPwm1Regs.CMPA.bit.CMPA = Cmpa_S1;
 
                     EPwm10Regs.CMPA.bit.CMPA = Cmpa_S4;
                     EPwm10Regs.CMPB.bit.CMPB = Cmpb_S4;
@@ -634,24 +634,24 @@ __interrupt void Cla1Task1 ( void )
         //=========================================================================
         //   Ngat phat xung PWM
         // ========================================================================
-        EPwm1Regs.DBCTL.bit.OUT_MODE = 0;    // Disabled Dead Band
-        EPwm2Regs.DBCTL.bit.OUT_MODE = 0;    // Disabled Dead Band
         EPwm3Regs.DBCTL.bit.OUT_MODE = 0;    // Disabled Dead Band
+        EPwm2Regs.DBCTL.bit.OUT_MODE = 0;    // Disabled Dead Band
+        EPwm1Regs.DBCTL.bit.OUT_MODE = 0;    // Disabled Dead Band
         EPwm10Regs.DBCTL.bit.OUT_MODE = 0;    // Disabled Dead Band
 
-        EPwm1Regs.CMPB.bit.CMPB = 0;                // Set Compare B value : PWM1B -> muc 0
-        EPwm1Regs.CMPA.bit.CMPA = PeriodMax;        // Set compare A value : PWM1A -> muc 0
+        EPwm3Regs.CMPB.bit.CMPB = 0;                // Set Compare B value : PWM1B -> muc 0
+        EPwm3Regs.CMPA.bit.CMPA = PeriodMax;        // Set compare A value : PWM1A -> muc 0
 
         EPwm2Regs.CMPB.bit.CMPB = 0;                // Set Compare B value 0
         EPwm2Regs.CMPA.bit.CMPA = PeriodMax;        // Set compare A value 0
 
-        EPwm3Regs.CMPB.bit.CMPB = 0;                // Set Compare B value : PWM1B -> muc 0
-        EPwm3Regs.CMPA.bit.CMPA = 0;                // Set compare A value : PWM1A -> muc 0
+        EPwm1Regs.CMPB.bit.CMPB = 0;                // Set Compare B value : PWM1B -> muc 0
+        EPwm1Regs.CMPA.bit.CMPA = 0;                // Set compare A value : PWM1A -> muc 0
 
         EPwm10Regs.CMPB.bit.CMPB = PeriodMax;                // Set Compare B value 0
         EPwm10Regs.CMPA.bit.CMPA = 0;                        // Set compare A value 0
 
-        EPwm3Regs.TBPHS.bit.TBPHS = PeriodMax/2;
+        EPwm1Regs.TBPHS.bit.TBPHS = PeriodMax/2;
         EPwm10Regs.TBPHS.bit.TBPHS = PeriodMax/2;
 
         Phase_S1_old = PeriodMax/2;
