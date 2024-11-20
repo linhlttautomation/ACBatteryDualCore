@@ -1,33 +1,34 @@
-# Code Dual Core 2 CPU 2 CLA cho FLC và TPC của hệ thống AC Battery ⚡️
+# Dual Core 2 CPU 2 CLA Code for FLC and TPC in AC Battery Systems ⚡️
 
-Dự án này cung cấp mã nguồn cho hệ thống **AC Battery** với kiến trúc **Dual Core** và **2 CLA** nhằm điều khiển các bộ biến đổi Four-leg Converter (FLC) và Three-port Converter (TPC). Hệ thống tận dụng cấu trúc đa nhân và các bộ tăng tốc CLA để tối ưu hóa hiệu suất, giảm độ trễ và tăng độ chính xác.
-
----
-
-## 🛠️ Các Thành Viên Tham Gia
-
-- **Luu Linh** - Phụ trách FLC
-- **Tung Bui** - Phụ trách TPC
----
-
-## 🚀 Tính Năng Nổi Bật
-
-- **Dual Core CPU**: Sử dụng hai bộ xử lý giúp thực thi các nhiệm vụ song song.
-- **2 CLA (Control Law Accelerators)**: Tối ưu cho xử lý thời gian thực, giúp cải thiện hiệu quả và giảm tải cho CPU chính.
+This repository provides the source code for the **AC Battery** system, designed with a **Dual Core** and **2 CLA** architecture. It controls Four-leg Converters (FLC) and Three-port Converters (TPC), leveraging multi-core technology and Control Law Accelerators (CLA) to enhance performance, reduce latency, and improve accuracy.
 
 ---
 
-## 📂 Cấu Trúc Dự Án
+## 🛠️ Contributors
 
-Dự án được phân chia thành các thư mục theo kiến trúc CPU1, CPU2 và các CLA tương ứng để tối ưu hóa khả năng điều khiển:
+- **Luu Linh** - Responsible for FLC
+- **Tung Bui** - Responsible for TPC
+
+---
+
+## 🚀 Key Features
+
+- **Dual Core CPU**: Employs two processors to execute tasks concurrently for parallel processing.
+- **2 CLA (Control Law Accelerators)**: Optimized for real-time computation, improving efficiency and offloading processing tasks from the main CPU.
+
+---
+
+## 📂 Project Structure
+
+The project is organized into directories corresponding to CPU1, CPU2, and their associated CLAs to maximize modularity and control capabilities:
 
 ```plaintext
-├── src/                         # Thư mục chứa mã nguồn chính
-│   ├── cpu1/                    # Mã nguồn cho CPU1
-│   ├── cpu1_cla1/               # Mã nguồn cho CLA1 thuộc CPU1
-│   ├── cpu2/                    # Mã nguồn cho CPU2
-│   └── cpu2_cla1/               # Mã nguồn cho CLA1 thuộc CPU2
+├── src/                         # Main source code directory
+│   ├── cpu1/                    # Source code for CPU1
+│   ├── cpu1_cla1/               # Source code for CLA1 of CPU1
+│   ├── cpu2/                    # Source code for CPU2
+│   └── cpu2_cla1/               # Source code for CLA1 of CPU2
 │
-├── docs/                        # Tài liệu dự án
-├── examples/                    # Ví dụ và demo
-└── README.md                    # Tài liệu chính của dự án
+├── docs/                        # Project documentation
+├── examples/                    # Examples and demonstrations
+└── README.md                    # Main project documentation
