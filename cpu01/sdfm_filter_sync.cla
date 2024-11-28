@@ -135,71 +135,80 @@ __interrupt void Cla1Task1 ( void )
     }
     if(START_ADC == 1)
     {
-        if(CpuToCLA.ADCoffset_VaG > 2048.0)
-        {
-            AdcValue.Va_G = CpuToCLA.ADCgain_VaG*(VaG_HCPL - CpuToCLA.ADCoffset_VaG)/(4096.0 - CpuToCLA.ADCoffset_VaG);
-        }
-        else
-        {
-            AdcValue.Va_G = CpuToCLA.ADCgain_VaG*(VaG_HCPL - CpuToCLA.ADCoffset_VaG)/(CpuToCLA.ADCoffset_VaG);
-        }
-        if(CpuToCLA.ADCoffset_VbG > 2048.0)
-        {
-            AdcValue.Vb_G = CpuToCLA.ADCgain_VbG*(VbG_HCPL - CpuToCLA.ADCoffset_VbG)/(4096.0 - CpuToCLA.ADCoffset_VbG);
-        }
-        else
-        {
-            AdcValue.Vb_G = CpuToCLA.ADCgain_VbG*(VbG_HCPL - CpuToCLA.ADCoffset_VbG)/(CpuToCLA.ADCoffset_VbG);
-        }
-        if(CpuToCLA.ADCoffset_VcG > 2048.0)
-        {
-            AdcValue.Vc_G = CpuToCLA.ADCgain_VcG*(VcG_HCPL - CpuToCLA.ADCoffset_VcG)/(4096.0 - CpuToCLA.ADCoffset_VcG);
-        }
-        else
-        {
-            AdcValue.Vc_G = CpuToCLA.ADCgain_VcG*(VcG_HCPL - CpuToCLA.ADCoffset_VcG)/(CpuToCLA.ADCoffset_VcG);
-        }
-        if(CpuToCLA.ADCoffset_Ia_inv > 2048.0)
-        {
-            AdcValue.Ia_inv = CpuToCLA.ADCgain_Ia_inv*(IA_INV_LEM - CpuToCLA.ADCoffset_Ia_inv)/(4096.0 - CpuToCLA.ADCoffset_Ia_inv);
-        }
-        else
-        {
-            AdcValue.Ia_inv = CpuToCLA.ADCgain_Ia_inv*(IA_INV_LEM - CpuToCLA.ADCoffset_Ia_inv)/(CpuToCLA.ADCoffset_Ia_inv);
-        }
-        if(CpuToCLA.ADCoffset_Ib_inv > 2048.0)
-        {
-            AdcValue.Ib_inv = CpuToCLA.ADCgain_Ib_inv*(IB_INV_LEM  - CpuToCLA.ADCoffset_Ib_inv)/(4096.0 - CpuToCLA.ADCoffset_Ib_inv);
-        }
-        else
-        {
-            AdcValue.Ib_inv = CpuToCLA.ADCgain_Ib_inv*(IB_INV_LEM  - CpuToCLA.ADCoffset_Ib_inv)/(CpuToCLA.ADCoffset_Ib_inv);
-        }
-        if(CpuToCLA.ADCoffset_Ic_inv > 2048.0)
-        {
-            AdcValue.Ic_inv = CpuToCLA.ADCgain_Ic_inv*(IC_INV_LEM - CpuToCLA.ADCoffset_Ic_inv)/(4096.0 - CpuToCLA.ADCoffset_Ic_inv);
-        }
-        else
-        {
-            AdcValue.Ic_inv = CpuToCLA.ADCgain_Ic_inv*(IC_INV_LEM - CpuToCLA.ADCoffset_Ic_inv)/(CpuToCLA.ADCoffset_Ic_inv);
-        }
-        if(UDC_HCPL > CpuToCLA.ADCoffset_Udc)
-        {
-            AdcValue.Udc = CpuToCLA.ADCgain_Udc*(UDC_HCPL - CpuToCLA.ADCoffset_Udc)/(4096.0 - CpuToCLA.ADCoffset_Udc);
-        }
-        else AdcValue.Udc = 0.0;
+        #if(TUNNING_ADC == 1)
 
-//        AdcValue.Va_G = 0.94*(UDC_HCPL - 2140)/(4096.0 - 2140);
-//        AdcValue.Vb_G = 0.9*(VbG_HCPL - 2095)/(4096.0 - 2095);
-//        AdcValue.Vc_G = 0.9*(VcG_HCPL - 2092)/(4096.0 - 2092);
-//        AdcValue.Ia_inv = 1.05*(IA_INV_LEM - 2093)/(4096.0 - 2093);
-//        AdcValue.Ib_inv = 1.09*(IB_INV_LEM  - 2105)/(4096.0 - 2105);
-//        AdcValue.Ic_inv = 0.92*(IC_INV_LEM - 2063)/(4096.0 - 2063);
-//        if (UDC_HCPL > 21)
-//        {
-//            AdcValue.Udc = 0.97*(UDC_HCPL - 21)/(4096.0 - 21);
-//        }
-//        else AdcValue.Udc = 0.0;
+            if(CpuToCLA.ADCoffset_VaG > 2048.0)
+            {
+                AdcValue.Va_G = CpuToCLA.ADCgain_VaG*(VaG_HCPL - CpuToCLA.ADCoffset_VaG)/(4096.0 - CpuToCLA.ADCoffset_VaG);
+            }
+            else
+            {
+                AdcValue.Va_G = CpuToCLA.ADCgain_VaG*(VaG_HCPL - CpuToCLA.ADCoffset_VaG)/(CpuToCLA.ADCoffset_VaG);
+            }
+            if(CpuToCLA.ADCoffset_VbG > 2048.0)
+            {
+                AdcValue.Vb_G = CpuToCLA.ADCgain_VbG*(VbG_HCPL - CpuToCLA.ADCoffset_VbG)/(4096.0 - CpuToCLA.ADCoffset_VbG);
+            }
+            else
+            {
+                AdcValue.Vb_G = CpuToCLA.ADCgain_VbG*(VbG_HCPL - CpuToCLA.ADCoffset_VbG)/(CpuToCLA.ADCoffset_VbG);
+            }
+            if(CpuToCLA.ADCoffset_VcG > 2048.0)
+            {
+                AdcValue.Vc_G = CpuToCLA.ADCgain_VcG*(VcG_HCPL - CpuToCLA.ADCoffset_VcG)/(4096.0 - CpuToCLA.ADCoffset_VcG);
+            }
+            else
+            {
+                AdcValue.Vc_G = CpuToCLA.ADCgain_VcG*(VcG_HCPL - CpuToCLA.ADCoffset_VcG)/(CpuToCLA.ADCoffset_VcG);
+            }
+            if(CpuToCLA.ADCoffset_Ia_inv > 2048.0)
+            {
+                AdcValue.Ia_inv = CpuToCLA.ADCgain_Ia_inv*(IA_INV_LEM - CpuToCLA.ADCoffset_Ia_inv)/(4096.0 - CpuToCLA.ADCoffset_Ia_inv);
+            }
+            else
+            {
+                AdcValue.Ia_inv = CpuToCLA.ADCgain_Ia_inv*(IA_INV_LEM - CpuToCLA.ADCoffset_Ia_inv)/(CpuToCLA.ADCoffset_Ia_inv);
+            }
+            if(CpuToCLA.ADCoffset_Ib_inv > 2048.0)
+            {
+                AdcValue.Ib_inv = CpuToCLA.ADCgain_Ib_inv*(IB_INV_LEM  - CpuToCLA.ADCoffset_Ib_inv)/(4096.0 - CpuToCLA.ADCoffset_Ib_inv);
+            }
+            else
+            {
+                AdcValue.Ib_inv = CpuToCLA.ADCgain_Ib_inv*(IB_INV_LEM  - CpuToCLA.ADCoffset_Ib_inv)/(CpuToCLA.ADCoffset_Ib_inv);
+            }
+            if(CpuToCLA.ADCoffset_Ic_inv > 2048.0)
+            {
+                AdcValue.Ic_inv = CpuToCLA.ADCgain_Ic_inv*(IC_INV_LEM - CpuToCLA.ADCoffset_Ic_inv)/(4096.0 - CpuToCLA.ADCoffset_Ic_inv);
+            }
+            else
+            {
+                AdcValue.Ic_inv = CpuToCLA.ADCgain_Ic_inv*(IC_INV_LEM - CpuToCLA.ADCoffset_Ic_inv)/(CpuToCLA.ADCoffset_Ic_inv);
+            }
+
+            if(UDC_HCPL > CpuToCLA.ADCoffset_Udc)
+            {
+                AdcValue.Udc = CpuToCLA.ADCgain_Udc*(UDC_HCPL - CpuToCLA.ADCoffset_Udc)/(4096.0 - CpuToCLA.ADCoffset_Udc);
+            }
+            else AdcValue.Udc = 0.0;
+
+        #endif
+
+        #if(TUNNING_ADC == 0)
+
+            AdcValue.Va_G = 0.94*(UDC_HCPL - 2140)/(4096.0 - 2140);
+            AdcValue.Vb_G = 0.9*(VbG_HCPL - 2095)/(4096.0 - 2095);
+            AdcValue.Vc_G = 0.9*(VcG_HCPL - 2092)/(4096.0 - 2092);
+            AdcValue.Ia_inv = 1.05*(IA_INV_LEM - 2093)/(4096.0 - 2093);
+            AdcValue.Ib_inv = 1.09*(IB_INV_LEM  - 2105)/(4096.0 - 2105);
+            AdcValue.Ic_inv = 0.92*(IC_INV_LEM - 2063)/(4096.0 - 2063);
+            if (UDC_HCPL > 21)
+            {
+                AdcValue.Udc = 0.97*(UDC_HCPL - 21)/(4096.0 - 21);
+            }
+            else AdcValue.Udc = 0.0;
+
+        #endif
 
         filter_Udc.Vin = AdcValue.Udc;
         LOWPASSFILTER_MACRO(filter_Udc)
@@ -217,9 +226,23 @@ __interrupt void Cla1Task1 ( void )
         LOWPASSFILTER_MACRO(filter_VcG);
         adc_filter.Vc_G = filter_VcG.Vout;
 
-        ClaToCPU.ADC_CPU.datalog1  = adc_filter.Va_G;
-        ClaToCPU.ADC_CPU.datalog2  = adc_filter.Vb_G;
-        ClaToCPU.ADC_CPU.datalog3  = adc_filter.Vc_G;
+        #if(SET_MODE_READ == READ_VOLTAGE_AC)
+            ClaToCPU.ADC_CPU.datalog1  = adc_filter.Va_G;
+            ClaToCPU.ADC_CPU.datalog2  = adc_filter.Vb_G;
+            ClaToCPU.ADC_CPU.datalog3  = adc_filter.Vc_G;
+        #endif
+
+        #if(SET_MODE_READ == READ_VOLTAGE_DC)
+            ClaToCPU.ADC_CPU.datalog1  = adc_filter.Udc;
+            ClaToCPU.ADC_CPU.datalog2  = adc_filter.Vb_G;
+            ClaToCPU.ADC_CPU.datalog3  = adc_filter.Vc_G;
+        #endif
+
+        #if(SET_MODE_READ == READ_CURRENT)
+            ClaToCPU.ADC_CPU.datalog1  = AdcValue.Ia_inv;
+            ClaToCPU.ADC_CPU.datalog2  = AdcValue.Ib_inv;
+            ClaToCPU.ADC_CPU.datalog3  = AdcValue.Ic_inv;
+        #endif
 
         #if (BUILDLEVEL == LEVEL1 || BUILDLEVEL == LEVEL3 || BUILDLEVEL == LEVEL4)
             if(CpuToCLA.EnableFlag == 1)
@@ -319,7 +342,7 @@ __interrupt void Cla1Task1 ( void )
             Svm3d.Ualpha = ipark_voltref.alpha;
             Svm3d.Ubeta = ipark_voltref.beta;
             Svm3d.Ugamma = ipark_voltref.gamma;
-            Svm3d.Udc = AdcValue.Udc;
+            Svm3d.Udc = adc_filter.Udc;
 
             SVM3D_DQZ_GEN_CLA_MACRO_1(Svm3d)
 
@@ -689,6 +712,16 @@ __interrupt void Cla1Task8 ( void )
     filter_VcG.Vin = 0;
     filter_VcG.Vout_k1 = 0;
     filter_VcG.Vout = 0;
+
+/*
+    filter_VaG.Heso_out = 1.0/(1.0 + 0.0001*2*PI*10000);
+    filter_VaG.Heso_in = 1.0 - filter_VaG.Heso_out;
+    Heso_in = deltaT/(RC +deltaT)
+    Heso_out = RC/(RC + deltaT)
+    fc = 1/(2*pi*RC)
+    RC = 1/(2*pi*fc) = 1.0
+    fc = 0.16kHz = 160Hz
+*/
 
     IsrTicker = 0;
     START_ADC = 2;

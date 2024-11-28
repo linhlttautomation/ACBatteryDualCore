@@ -799,8 +799,6 @@ int main(void)
     CpuSysRegs.PCLKCR14.bit.CMPSS2 = 1;
     CpuSysRegs.PCLKCR14.bit.CMPSS3 = 1;
     CpuSysRegs.PCLKCR14.bit.CMPSS4 = 1;
-    CpuSysRegs.PCLKCR14.bit.CMPSS5 = 1;
-    CpuSysRegs.PCLKCR14.bit.CMPSS6 = 1;
 
     EDIS;
 
@@ -820,7 +818,7 @@ int main(void)
     DevCfgRegs.CPUSEL12.bit.CMPSS2 = 0; // 1: CPU2, 0: CPU1
     DevCfgRegs.CPUSEL12.bit.CMPSS3 = 0; // 1: CPU2, 0: CPU1
     DevCfgRegs.CPUSEL12.bit.CMPSS4 = 0; // 1: CPU2, 0: CPU1
-    DevCfgRegs.CPUSEL12.bit.CMPSS5 = 0; // 1: CPU2, 0: CPU1
+    DevCfgRegs.CPUSEL12.bit.CMPSS5 = 1; // 1: CPU2, 0: CPU1
     DevCfgRegs.CPUSEL12.bit.CMPSS6 = 1; // 1: CPU2, 0: CPU1
     // Đóng khóa
 

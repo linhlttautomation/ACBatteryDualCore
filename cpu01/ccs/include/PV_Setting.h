@@ -13,14 +13,30 @@
 #define LEVEL3        3           // Vong dong
 #define LEVEL4        4           // Vong ap doc lap
 
+// ---------------------------------------------------
 #define BUILDLEVEL    LEVEL1
-
-#define ALLOW_IPC_2CPU          1
+// ---------------------------------------------------
 
 #define SINGLE_PHASE_MODE       1
 #define THREE_PHASE_MODE        3
 
+// ---------------------------------------------------
 #define SET_MODE_RUN            THREE_PHASE_MODE
+// ---------------------------------------------------
+
+#define READ_VOLTAGE_AC         1
+#define READ_VOLTAGE_DC         2
+#define READ_CURRENT            3
+
+// ---------------------------------------------------
+#define SET_MODE_READ           READ_VOLTAGE_AC
+// ---------------------------------------------------
+
+// ---------------------------------------------------
+#define TUNNING_ADC             1
+// ---------------------------------------------------
+
+#define ALLOW_IPC_2CPU          1
 
 // Define toán học
 #define can2 1.414213562
@@ -89,20 +105,6 @@
 
 #define CMPSS_PROTECT_Ic_inv_UPPER      0 // Da test co the bao ve duoc
 #define CMPSS_PROTECT_Ic_inv_LOWER      0 // Da test co the bao ve duoc
-
-// CMPSS TPC Permission
-
-#define CMPSS_PROTECT_Ubat_UPPER        0 //
-#define CMPSS_PROTECT_Ubat_LOWER        0 //
-
-#define CMPSS_PROTECT_Ihv_UPPER         0 //
-#define CMPSS_PROTECT_Ihv_LOWER         0 //
-
-#define CMPSS_PROTECT_Ilv_UPPER         0 //
-#define CMPSS_PROTECT_Ilv_LOWER         0 //
-
-#define CMPSS_PROTECT_Uc_UPPER          0 //
-#define CMPSS_PROTECT_Uc_LOWER          0 //
 
 // CMPSS FLC Setting
 #define CMPSS_Udc_New_Protecion            30.0

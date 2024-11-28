@@ -93,4 +93,17 @@
 
 #define CFDAB_Ibat_Max                 10
 
+// CMPSS TPC Permission
+#define CMPSS_PROTECT_Ubat_UPPER        1
+#define CMPSS_PROTECT_Ubat_LOWER        0
+
+#define CMPSS_PROTECT_Ihv_UPPER         0
+#define CMPSS_PROTECT_Ihv_LOWER         0
+
+#define CMPSS_PROTECT_Ilv_UPPER         0
+#define CMPSS_PROTECT_Ilv_LOWER         0
+
+#define CMPSS_PROTECT_Uc_UPPER          0
+#define CMPSS_PROTECT_Uc_LOWER          0
+
 #endif /* _CFDAB_SETTING_H_ */
