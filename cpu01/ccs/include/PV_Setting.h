@@ -15,7 +15,12 @@
 
 #define BUILDLEVEL    LEVEL1
 
-#define ALLOW_IPC_2CPU     1
+#define ALLOW_IPC_2CPU          1
+
+#define SINGLE_PHASE_MODE       1
+#define THREE_PHASE_MODE        3
+
+#define SET_MODE_RUN            THREE_PHASE_MODE
 
 // Define toán học
 #define can2 1.414213562

@@ -63,6 +63,7 @@ Uint16 Task1_Isr = 0;
 Uint16 Task8_Isr = 0;
 
 Uint16 START = 0;
+Uint16 ON_RELAY = 0;
 
 // CMPSS parameters for Over Current Protection FLC
 Uint16  clkPrescale_1 = 6,
@@ -953,6 +954,15 @@ int main(void)
 //    GpioCtrlRegs.GPAMUX2.bit.GPIO23 = 1;
 //    GpioCtrlRegs.GPADIR.bit.GPIO23 = 1;     // 1=OUTput,  0=INput
 
+    // Cấu hình GPIO27 làm output cho Relay 1
+    GpioCtrlRegs.GPAMUX2.bit.GPIO27 = 0;  // Chọn chức năng GPIO cho chân GPIO32
+    GpioCtrlRegs.GPADIR.bit.GPIO27 = 1;   // Cấu hình GPIO32 làm output
+    GpioDataRegs.GPACLEAR.bit.GPIO27 = 1; // Khởi tạo ở mức thấp (relay tắt)
+
+    // Cấu hình GPIO25 làm output cho Relay 2
+    GpioCtrlRegs.GPAMUX2.bit.GPIO25 = 0;  // Chọn chức năng GPIO cho chân GPIO32
+    GpioCtrlRegs.GPADIR.bit.GPIO25 = 1;   // Cấu hình GPIO32 làm output
+    GpioDataRegs.GPACLEAR.bit.GPIO25 = 1; // Khởi tạo ở mức thấp (relay tắt)
     EDIS;
 
     EALLOW;
@@ -1324,10 +1334,34 @@ int main(void)
             CpuToCLA.EnableFlag = 0;
         }
 
-        if(EPwm4Regs.TZFLG.bit.OST == 1)
+        if(EPwm4Regs.TZFLG.bit.OST == 1 || EPwm6Regs.TZFLG.bit.OST == 1 || EPwm5Regs.TZFLG.bit.OST == 1 || EPwm8Regs.TZFLG.bit.OST == 1)
         {
             START = 0;
         }
+
+        #if(SET_MODE_RUN == THREE_PHASE_MODE)
+
+            ON_RELAY = 1;
+            GpioDataRegs.GPASET.bit.GPIO27 = 1; // Relay 1
+            GpioDataRegs.GPASET.bit.GPIO25 = 1; // Relay 2
+            while(GpioDataRegs.GPADAT.bit.GPIO27 != 1 && GpioDataRegs.GPADAT.bit.GPIO25 != 1)
+            {
+                START = 0;
+            }
+
+        #endif
+
+        #if(SET_MODE_RUN == SINGLE_PHASE_MODE)
+
+            ON_RELAY = 1;
+            GpioDataRegs.GPACLEAR.bit.GPIO27 = 1; // Relay 1
+            GpioDataRegs.GPACLEAR.bit.GPIO25 = 1; // Relay 2
+            while(GpioDataRegs.GPADAT.bit.GPIO27 != 0 && GpioDataRegs.GPADAT.bit.GPIO25 != 0)
+            {
+                START = 0;
+            }
+
+        #endif
     }
 }
 
