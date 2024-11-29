@@ -60,14 +60,6 @@
 
 #define LEM_1(A)     (2048.0*A/81.3)
 
-// LEM    1.0pu current ==> 50.0A -> 2048 counts
-#define LEM_2(A)     2024-132+(2048.0*A/50.0)
-#define LEML_2(A)    2024+(2048.0*A/50.0/1.1)-165
-
-#define MEAUBAT(A)   (A/800.0*4096.0+43)
-#define MEAUDC(A)    (4096.0*A/1000.0/1.09+65)
-#define MEAUC(A)     (A/800.0*4096.0/1.1+75)
-
 #if (BUILDLEVEL == LEVEL3)
 
     #define KP_CURR_LOOP            3.0 // L filter 330uH: 3.3

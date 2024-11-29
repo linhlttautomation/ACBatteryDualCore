@@ -67,15 +67,13 @@ int ChannelAdc = 0;
 Uint16  clkPrescale_2 = 2,
         sampwin_2     = 30,
         thresh_2      = 18,
-        LEM_curIlvHi_2   = 2000, //20
-        LEM_curIlvLo_2   = 2000,
-        LEM_curIhvHi_2   = 2000, //20
-        LEM_curIhvLo_2   = 2000,
-        MEA_voltUbatHi = 2000,
+        LEM_curIlvHi_2   = LEM_2(15), //20
+        LEM_curIlvLo_2   = LEML_2(-15),
+        LEM_curIhvHi_2   = LEM_2(15), //20
+        LEM_curIhvLo_2   = LEML_2(-15),
+        MEA_voltUbatHi = MEAUBAT(80),
         MEA_voltUbatLo = 0,
-//        MEA_voltUdcHi = MEAUDC(380),
-//        MEA_voltUdcLo = 0,
-        MEA_voltUcHi = 2000,
+        MEA_voltUcHi = MEAUC(180),
         MEA_voltUcLo = 0;
 
 //
@@ -342,12 +340,12 @@ void CMPSS_Protection_TPC(void)
         Cmpss6Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Ubat Upper protection
-        Cmpss6Regs.DACHVALS.bit.DACVAL = 2000;
+        Cmpss6Regs.DACHVALS.bit.DACVAL = MEA_voltUbatHi;
 
         Cmpss6Regs.COMPCTL.bit.COMPHINV = 0;
         Cmpss6Regs.COMPCTL.bit.CTRIPHSEL = 2;
 
-        Cmpss6Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = 2; // Set time between samples, max : 1023
+        Cmpss6Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale_2; // Set time between samples, max : 1023
         Cmpss6Regs.CTRIPHFILCTL.bit.SAMPWIN        = sampwin_2; // # Of samples in window, max : 31
         Cmpss6Regs.CTRIPHFILCTL.bit.THRESH         = thresh_2; // Recommended : thresh > sampwin/2
         Cmpss6Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
@@ -366,7 +364,7 @@ void CMPSS_Protection_TPC(void)
         Cmpss6Regs.COMPCTL.bit.COMPLINV = 1;
         Cmpss6Regs.COMPCTL.bit.CTRIPLSEL = 2;
 
-        Cmpss6Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
+        Cmpss6Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_2; // Set time between samples, max : 1023
         Cmpss6Regs.CTRIPLFILCTL.bit.SAMPWIN        = sampwin_2; // # Of samples in window, max : 31
         Cmpss6Regs.CTRIPLFILCTL.bit.THRESH         = thresh_2; // Recommended : thresh > sampwin/2
         Cmpss6Regs.CTRIPLFILCTL.bit.FILINIT        = 1; // Init samples to filter input value

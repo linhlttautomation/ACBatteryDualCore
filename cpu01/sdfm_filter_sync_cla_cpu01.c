@@ -72,21 +72,6 @@ Uint16  clkPrescale_1 = 6,
         LEM_curHi_1   = LEM_1(40.0),
         LEM_curLo_1   = LEM_1(40.0);
 
-// CMPSS parameters for Over Current Protection TPC
-Uint16  clkPrescale_2 = 2,
-        sampwin_2     = 30,
-        thresh_2      = 18,
-        LEM_curIlvHi_2   = LEM_2(15), //20
-        LEM_curIlvLo_2   = LEML_2(-15),
-        LEM_curIhvHi_2   = LEM_2(15), //20
-        LEM_curIhvLo_2   = LEML_2(-15),
-        MEA_voltUbatHi = MEAUBAT(80),
-        MEA_voltUbatLo = 0,
-//        MEA_voltUdcHi = MEAUDC(380),
-//        MEA_voltUdcLo = 0,
-        MEA_voltUcHi = MEAUC(180),
-        MEA_voltUcLo = 0;
-
 void DelayUs(unsigned long us)
 {
     unsigned long count;

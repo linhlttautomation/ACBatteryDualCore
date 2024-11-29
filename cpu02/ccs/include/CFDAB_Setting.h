@@ -42,6 +42,13 @@
 #define ILV_LEM     AdccResultRegs.ADCRESULT3
 #endif
 
+// LEM    1.0pu current ==> 50.0A -> 2048 counts
+#define LEM_2(A)     2024-132+(2048.0*A/50.0)
+#define LEML_2(A)    2024+(2048.0*A/50.0/1.1)-165
+
+#define MEAUBAT(A)   (A/800.0*4096.0+43)
+#define MEAUC(A)     (A/800.0*4096.0/1.1+75)
+
 // Discharge Close_Loop
 #if (BUILDLEVEL == LEVEL5)
 
@@ -94,7 +101,7 @@
 #define CFDAB_Ibat_Max                 10
 
 // CMPSS TPC Permission
-#define CMPSS_PROTECT_Ubat_UPPER        1
+#define CMPSS_PROTECT_Ubat_UPPER        0
 #define CMPSS_PROTECT_Ubat_LOWER        0
 
 #define CMPSS_PROTECT_Ihv_UPPER         0
