@@ -50,6 +50,7 @@ typedef struct
     float Ubat;
     float Vc;
     float Ilv;
+    float Ihv;
 }ADC_VALUE;
 
 

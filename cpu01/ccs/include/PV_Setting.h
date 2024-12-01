@@ -24,16 +24,17 @@
 #define SET_MODE_RUN            THREE_PHASE_MODE
 // ---------------------------------------------------
 
-#define READ_VOLTAGE_AC         1
-#define READ_VOLTAGE_DC         2
-#define READ_CURRENT            3
+#define READ_VOLTAGE_AC_BEFORE_LPF         1
+#define READ_VOLTAGE_AC_AFTER_LPF          2
+#define READ_VOLTAGE_DC                    3
+#define READ_CURRENT                       4
 
 // ---------------------------------------------------
-#define SET_MODE_READ           READ_VOLTAGE_AC
+#define SET_MODE_READ           READ_VOLTAGE_AC_AFTER_LPF
 // ---------------------------------------------------
 
 // ---------------------------------------------------
-#define TUNNING_ADC             1
+#define TUNNING_ADC             1 // 0: Auto; 1: Manual; 2: No
 // ---------------------------------------------------
 
 #define ALLOW_IPC_2CPU          1
@@ -79,6 +80,12 @@
 
 #endif
 
+// Define the base quantities for PU system conversion
+#define NORMAL_FREQ     50.0
+#define BASE_FREQ       150.0               // Base electrical frequency (Hz)
+#define Udc_max         800.0               // Max DC Voltage (V)
+#define Us_max          400.0               // Max Phase Voltage (V)
+#define Is_max          81.30               // Base Peak Phase Current (A)
 
 // CMPSS FLC Permission
 #define CMPSS_PROTECT_UDC_UPPER         0 // Da test co the bao ve duoc

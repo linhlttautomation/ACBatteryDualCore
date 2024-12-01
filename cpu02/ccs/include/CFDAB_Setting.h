@@ -36,10 +36,10 @@
 #if (PV_INVERTER_ADC == 1)
 
 #define UDC_HCPL    AdcbResultRegs.ADCRESULT2
-#define UBAT_HCPL   AdccResultRegs.ADCRESULT4
+#define UBAT_HCPL   AdccResultRegs.ADCRESULT2
 #define VC_HCPL     AdccResultRegs.ADCRESULT5
-#define IHV_LEM     AdccResultRegs.ADCRESULT2
-#define ILV_LEM     AdccResultRegs.ADCRESULT3
+#define IHV_LEM     AdccResultRegs.ADCRESULT3
+#define ILV_LEM     AdccResultRegs.ADCRESULT4
 #endif
 
 // LEM    1.0pu current ==> 50.0A -> 2048 counts

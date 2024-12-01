@@ -1,7 +1,7 @@
 ******************************************************************************
              TMS320C2000 Linker PC v22.6.1                     
 ******************************************************************************
->> Linked Fri Nov 29 15:39:46 2024
+>> Linked Sat Nov 30 17:31:30 2024
 
 OUTPUT FILE NAME:   <AC_Battery_CPU2.out>
 ENTRY POINT SYMBOL: "code_start"  address: 00000000
@@ -14,7 +14,7 @@ MEMORY CONFIGURATION
 PAGE 0:
   BEGIN                 00000000   00000002  00000002  00000000  RWIX
   RAMM0                 00000122   000002de  000000d5  00000209  RWIX
-  RAMLS12345            00008800   00002800  00000b28  00001cd8  RWIX
+  RAMLS12345            00008800   00002800  00000b4e  00001cb2  RWIX
   RAMD0                 0000b000   00000800  00000800  00000000  RWIX
   RAMD1                 0000b800   00000800  000004d4  0000032c  RWIX
   RAMGS1                0000d000   00001000  00000000  00001000  RWIX
@@ -34,7 +34,7 @@ PAGE 1:
   PIEVECTTABLE          00000d00   00000200  000001c0  00000040  RWIX
   DMA                   00001000   00000200  000000e0  00000120  RWIX
   CLA1                  00001400   00000080  0000003e  00000042  RWIX
-  CLA1_MSGRAMLOW        00001480   00000080  00000014  0000006c  RWIX
+  CLA1_MSGRAMLOW        00001480   00000080  00000016  0000006a  RWIX
   CLA1_MSGRAMHIGH       00001500   00000080  0000001c  00000064  RWIX
   CLB1LOGICCFG          00003000   00000052  0000003e  00000014  RWIX
   CLB1LOGICCTRL         00003100   00000040  00000040  00000000  RWIX
@@ -102,7 +102,7 @@ PAGE 1:
   ADCD                  00007580   00000080  0000007c  00000004  RWIX
   DMACLASRCSEL          00007980   0000001a  0000001a  00000000  RWIX
   GPIODATA              00007f00   00000030  00000030  00000000  RWIX
-  RAMLS0                00008000   00000800  00000353  000004ad  RWIX
+  RAMLS0                00008000   00000800  00000359  000004a7  RWIX
   RAMLS2_1              00009000   00000400  00000000  00000400  RWIX
   RAMLS2_2              00009400   00000400  00000000  00000400  RWIX
   RAMLS3_1              00009800   00000400  00000000  00000400  RWIX
@@ -191,8 +191,8 @@ AdcdResultRegsFile
                   00000b60    00000018     F2837xD_GlobalVariableDefs.obj (AdcdResultRegsFile)
 
 Cla1ToCpuMsgRAM 
-*          1    00001480    00000014     UNINITIALIZED
-                  00001480    00000014     sdfm_filter_sync.obj (Cla1ToCpuMsgRAM)
+*          1    00001480    00000016     UNINITIALIZED
+                  00001480    00000016     sdfm_filter_sync.obj (Cla1ToCpuMsgRAM)
 
 CpuToCla1MsgRAM 
 *          1    00001500    0000001c     UNINITIALIZED
@@ -238,27 +238,27 @@ AdcdRegsFile
 *          0    000001f3    00000004     
                   000001f3    00000004     F2837xD_usDelay.obj (.TI.ramfunc)
 
-Cla1Prog   0    00008800    00000b28     
-                  00008800    00000a38     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task1)
-                  00009238    000000b8     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task8)
-                  000092f0    00000010     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task2)
-                  00009300    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task3)
-                  00009308    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task4)
-                  00009310    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task5)
-                  00009318    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task6)
-                  00009320    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task7)
+Cla1Prog   0    00008800    00000b4e     
+                  00008800    00000a5e     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task1)
+                  0000925e    000000b8     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task8)
+                  00009316    00000010     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task2)
+                  00009326    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task3)
+                  0000932e    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task4)
+                  00009336    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task5)
+                  0000933e    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task6)
+                  00009346    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task7)
 
 CLADataLS0 
-*          1    00008000    00000228     UNINITIALIZED
-                  00008000    00000228     sdfm_filter_sync.obj (CLADataLS0)
+*          1    00008000    0000022e     UNINITIALIZED
+                  00008000    0000022e     sdfm_filter_sync.obj (CLADataLS0)
 
 CLAscratch 
-*          1    00008228    00000100     UNINITIALIZED
-                  00008228    00000100     --HOLE--
+*          1    0000822e    00000100     UNINITIALIZED
+                  0000822e    00000100     --HOLE--
 
-.bss_cla   1    00008328    0000002b     UNINITIALIZED
-                  00008328    00000028     sdfm_filter_sync.obj (.bss_cla:_filterBand_Udc_CFDAB)
-                  00008350    00000003     sdfm_filter_sync.obj (.bss_cla)
+.bss_cla   1    0000832e    0000002b     UNINITIALIZED
+                  0000832e    00000028     sdfm_filter_sync.obj (.bss_cla:_filterBand_Udc_CFDAB)
+                  00008356    00000003     sdfm_filter_sync.obj (.bss_cla)
 
 .reset     0    003fffc0    00000000     DSECT
 
@@ -806,7 +806,7 @@ MODULE SUMMARY
        ------                           ----   ----------------   ------------------
     .\
        F2837xD_GlobalVariableDefs.obj   0      0                  8754              
-       sdfm_filter_sync.obj             2856   0                  643               
+       sdfm_filter_sync.obj             2894   0                  651               
        sdfm_filter_sync_cla_cpu02.obj   1407   85                 894               
        F2837xD_DefaultISR.obj           1413   0                  0                 
        F2837xD_PieVect.obj              38     448                0                 
@@ -816,7 +816,7 @@ MODULE SUMMARY
        F2837xD_CodeStartBranch.obj      10     0                  0                 
        F2837xD_usDelay.obj              4      0                  0                 
     +--+--------------------------------+------+------------------+--------------------+
-       Total:                           5900   631                10365             
+       Total:                           5938   631                10373             
                                                                                     
     C:/ti/ccs1250/ccs/tools/compiler/ti-cgt-c2000_22.6.1.LTS/lib/rts2800_fpu32.lib
        boot28.asm.obj                   86     0                  0                 
@@ -833,7 +833,7 @@ MODULE SUMMARY
                                                                                     
        Stack:                           0      0                  256               
     +--+--------------------------------+------+------------------+--------------------+
-       Grand Total:                     6146   655                10631             
+       Grand Total:                     6184   655                10639             
 
 
 GLOBAL DATA SYMBOLS: SORTED BY DATA PAGE
@@ -1021,40 +1021,40 @@ address     data page           name
 000080de     203 (000080c0)     _Flag_duty
 000080df     203 (000080c0)     _Flag_phi
 000080e0     203 (000080c0)     _AdcValue
-000080e8     203 (000080c0)     _adc_filter
-000080f0     203 (000080c0)     _adc_offset
-000080f8     203 (000080c0)     _START_ADC
-000080f9     203 (000080c0)     _OffsetCalCounter
-000080fa     203 (000080c0)     _ResetOffset
-000080fc     203 (000080c0)     _filter_Udc_CFDAB
+000080ea     203 (000080c0)     _adc_filter
+000080f4     203 (000080c0)     _adc_offset
+000080fe     203 (000080c0)     _START_ADC
+000080ff     203 (000080c0)     _OffsetCalCounter
 
-00008108     204 (00008100)     _filter_Ubat
-00008114     204 (00008100)     _filter_Vc
-00008120     204 (00008100)     _filter_Ilv
-0000812c     204 (00008100)     _filter_Udc_CFDAB_pre
-00008138     204 (00008100)     _filter_Vc_pre
+00008100     204 (00008100)     _ResetOffset
+00008102     204 (00008100)     _filter_Udc_CFDAB
+0000810e     204 (00008100)     _filter_Ubat
+0000811a     204 (00008100)     _filter_Vc
+00008126     204 (00008100)     _filter_Ilv
+00008132     204 (00008100)     _filter_Udc_CFDAB_pre
+0000813e     204 (00008100)     _filter_Vc_pre
 
-00008144     205 (00008140)     _Enable_filter
-00008146     205 (00008140)     _Cnt_filter
-00008148     205 (00008140)     _filterBand_Vc
-00008170     205 (00008140)     _cntl_2p2z_coeff_Udc
+0000814a     205 (00008140)     _Enable_filter
+0000814c     205 (00008140)     _Cnt_filter
+0000814e     205 (00008140)     _filterBand_Vc
+00008176     205 (00008140)     _cntl_2p2z_coeff_Udc
 
-00008184     206 (00008180)     _cntl_2p2z_coeff_Vc
-00008198     206 (00008180)     _cntl_2p2z_coeff_Ilv
-000081ac     206 (00008180)     _cntl_2p2z_coeff_Ubat
+0000818a     206 (00008180)     _cntl_2p2z_coeff_Vc
+0000819e     206 (00008180)     _cntl_2p2z_coeff_Ilv
+000081b2     206 (00008180)     _cntl_2p2z_coeff_Ubat
 
-000081c0     207 (000081c0)     _cntl_2p2z_var_Udc
-000081d2     207 (000081c0)     _cntl_2p2z_var_Vc
-000081e4     207 (000081c0)     _cntl_2p2z_var_Ilv
-000081f6     207 (000081c0)     _cntl_2p2z_var_Ubat
+000081c6     207 (000081c0)     _cntl_2p2z_var_Udc
+000081d8     207 (000081c0)     _cntl_2p2z_var_Vc
+000081ea     207 (000081c0)     _cntl_2p2z_var_Ilv
+000081fc     207 (000081c0)     _cntl_2p2z_var_Ubat
 
-00008208     208 (00008200)     _cntl_pi_Ilv
+0000820e     208 (00008200)     _cntl_pi_Ilv
 
-00008328     20c (00008300)     _filterBand_Udc_CFDAB
+0000832e     20c (00008300)     _filterBand_Udc_CFDAB
 
-00008350     20d (00008340)     _TaskCpu2Cla1
-00008351     20d (00008340)     _TaskCpu2Cla1_task2
-00008352     20d (00008340)     _TaskCpu2Cla1_task8
+00008356     20d (00008340)     _TaskCpu2Cla1
+00008357     20d (00008340)     _TaskCpu2Cla1_task2
+00008358     20d (00008340)     _TaskCpu2Cla1_task8
 
 0000e000     380 (0000e000)     _Datalog1
 
@@ -1198,13 +1198,13 @@ abs   00000100  CLA_SCRATCHPAD_SIZE
 1     0000e385  _ChannelAdc                     
 1     00001400  _Cla1Regs                       
 0     00008800  _Cla1Task1                      
-0     000092f0  _Cla1Task2                      
-0     00009300  _Cla1Task3                      
-0     00009308  _Cla1Task4                      
-0     00009310  _Cla1Task5                      
-0     00009318  _Cla1Task6                      
-0     00009320  _Cla1Task7                      
-0     00009238  _Cla1Task8                      
+0     00009316  _Cla1Task2                      
+0     00009326  _Cla1Task3                      
+0     0000932e  _Cla1Task4                      
+0     00009336  _Cla1Task5                      
+0     0000933e  _Cla1Task6                      
+0     00009346  _Cla1Task7                      
+0     0000925e  _Cla1Task8                      
 1     00001480  _ClaToCPU                       
 0     0000b58f  _Cla_initMemoryMap              
 1     00003200  _Clb1DataExchRegs               
@@ -1234,7 +1234,7 @@ abs   00000100  CLA_SCRATCHPAD_SIZE
 1     00005d40  _Cmpss7Regs                     
 1     00005d60  _Cmpss8Regs                     
 1     000080d8  _Cnt_duty                       
-1     00008146  _Cnt_filter                     
+1     0000814c  _Cnt_filter                     
 1     000080da  _Cnt_phi                        
 1     0005d300  _CpuSysRegs                     
 1     00000c00  _CpuTimer0Regs                  
@@ -1324,7 +1324,7 @@ abs   00000100  CLA_SCRATCHPAD_SIZE
 1     0005f480  _Emif1ConfigRegs                
 1     00047000  _Emif1Regs                      
 1     000080dc  _Enable_duty                    
-1     00008144  _Enable_filter                  
+1     0000814a  _Enable_filter                  
 1     000080dd  _Enable_phi                     
 0     000001f3  _F28x_usDelay                   
 0     0000ba4e  _FLASH_CORRECTABLE_ERROR_ISR    
@@ -1379,7 +1379,7 @@ abs   00000100  CLA_SCRATCHPAD_SIZE
 0     0000baee  _NMI_ISR                        
 0     0000baf8  _NOTUSED_ISR                    
 1     00007060  _NmiIntruptRegs                 
-1     000080f9  _OffsetCalCounter               
+1     000080ff  _OffsetCalCounter               
 0     0000bb02  _PIE_RESERVED_ISR               
 0     0000b000  _PWM_CFDAB                      
 1     000080d2  _PeriodMax                      
@@ -1393,7 +1393,7 @@ abs   00000100  CLA_SCRATCHPAD_SIZE
 0     0000bb0c  _RAM_ACCESS_VIOLATION_ISR       
 0     0000bb16  _RAM_CORRECTABLE_ERROR_ISR      
 0     0000bb20  _RTOS_ISR                       
-1     000080fa  _ResetOffset                    
+1     00008100  _ResetOffset                    
 1     0005e608  _RomPrefetchRegs                
 1     0000e36c  _SCI                            
 0     0000bb2a  _SCIA_RX_ISR                    
@@ -1415,7 +1415,7 @@ abs   00000100  CLA_SCRATCHPAD_SIZE
 0     0000bbb6  _SPIC_RX_ISR                    
 0     0000bbc0  _SPIC_TX_ISR                    
 1     0000e382  _START                          
-1     000080f8  _START_ADC                      
+1     000080fe  _START_ADC                      
 0     0000bbca  _SYS_PLL_SLIP_ISR               
 1     00007200  _SciaRegs                       
 1     00007210  _ScibRegs                       
@@ -1434,9 +1434,9 @@ abs   00000100  CLA_SCRATCHPAD_SIZE
 1     0000e383  _Task1_Isr                      
 1     0000e384  _Task2_Isr                      
 1     0000e380  _Task8_Isr                      
-1     00008350  _TaskCpu2Cla1                   
-1     00008351  _TaskCpu2Cla1_task2             
-1     00008352  _TaskCpu2Cla1_task8             
+1     00008356  _TaskCpu2Cla1                   
+1     00008357  _TaskCpu2Cla1_task2             
+1     00008358  _TaskCpu2Cla1_task8             
 0     0000bbf2  _UPPA_ISR                       
 0     0000bbfc  _USBA_ISR                       
 0     0000bc06  _USER10_ISR                     
@@ -1488,8 +1488,8 @@ abs   ffffffff  ___text__
 0     0000bcd1  __system_pre_init               
 1     0000e372  __unlock                        
 0     0000b5cb  _abort                          
-1     000080e8  _adc_filter                     
-1     000080f0  _adc_offset                     
+1     000080ea  _adc_filter                     
+1     000080f4  _adc_offset                     
 0     0000b4f3  _c_int00                        
 0     0000b34f  _cla1Isr1                       
 0     0000b6cc  _cla1Isr2                       
@@ -1500,27 +1500,27 @@ abs   ffffffff  ___text__
 0     0000b719  _cla1Isr7                       
 0     0000b6a6  _cla1Isr8                       
 1     0000e386  _clkPrescale_2                  
-1     00008198  _cntl_2p2z_coeff_Ilv            
-1     000081ac  _cntl_2p2z_coeff_Ubat           
-1     00008170  _cntl_2p2z_coeff_Udc            
-1     00008184  _cntl_2p2z_coeff_Vc             
-1     000081e4  _cntl_2p2z_var_Ilv              
-1     000081f6  _cntl_2p2z_var_Ubat             
-1     000081c0  _cntl_2p2z_var_Udc              
-1     000081d2  _cntl_2p2z_var_Vc               
-1     00008208  _cntl_pi_Ilv                    
+1     0000819e  _cntl_2p2z_coeff_Ilv            
+1     000081b2  _cntl_2p2z_coeff_Ubat           
+1     00008176  _cntl_2p2z_coeff_Udc            
+1     0000818a  _cntl_2p2z_coeff_Vc             
+1     000081ea  _cntl_2p2z_var_Ilv              
+1     000081fc  _cntl_2p2z_var_Ubat             
+1     000081c6  _cntl_2p2z_var_Udc              
+1     000081d8  _cntl_2p2z_var_Vc               
+1     0000820e  _cntl_pi_Ilv                    
 0     0000b61a  _copy_in                        
 1     000080ba  _detaPhi                        
 1     000080d4  _error_volt_Udc_controller      
 0     0000b5cd  _exit                           
-1     00008328  _filterBand_Udc_CFDAB           
-1     00008148  _filterBand_Vc                  
-1     00008120  _filter_Ilv                     
-1     00008108  _filter_Ubat                    
-1     000080fc  _filter_Udc_CFDAB               
-1     0000812c  _filter_Udc_CFDAB_pre           
-1     00008114  _filter_Vc                      
-1     00008138  _filter_Vc_pre                  
+1     0000832e  _filterBand_Udc_CFDAB           
+1     0000814e  _filterBand_Vc                  
+1     00008126  _filter_Ilv                     
+1     0000810e  _filter_Ubat                    
+1     00008102  _filter_Udc_CFDAB               
+1     00008132  _filter_Udc_CFDAB_pre           
+1     0000811a  _filter_Vc                      
+1     0000813e  _filter_Vc_pre                  
 0     0000b270  _main                           
 0     0000b65d  _memcpy                         
 1     0000809a  _pi_volt_Ilv                    
@@ -1554,13 +1554,13 @@ page  address   name
 0     00000122  cinit                           
 0     000001f3  _F28x_usDelay                   
 0     00008800  _Cla1Task1                      
-0     00009238  _Cla1Task8                      
-0     000092f0  _Cla1Task2                      
-0     00009300  _Cla1Task3                      
-0     00009308  _Cla1Task4                      
-0     00009310  _Cla1Task5                      
-0     00009318  _Cla1Task6                      
-0     00009320  _Cla1Task7                      
+0     0000925e  _Cla1Task8                      
+0     00009316  _Cla1Task2                      
+0     00009326  _Cla1Task3                      
+0     0000932e  _Cla1Task4                      
+0     00009336  _Cla1Task5                      
+0     0000933e  _Cla1Task6                      
+0     00009346  _Cla1Task7                      
 0     0000b000  _PWM_CFDAB                      
 0     0000b190  _CMPSS_Protection_TPC           
 0     0000b270  _main                           
@@ -1855,33 +1855,33 @@ page  address   name
 1     000080de  _Flag_duty                      
 1     000080df  _Flag_phi                       
 1     000080e0  _AdcValue                       
-1     000080e8  _adc_filter                     
-1     000080f0  _adc_offset                     
-1     000080f8  _START_ADC                      
-1     000080f9  _OffsetCalCounter               
-1     000080fa  _ResetOffset                    
-1     000080fc  _filter_Udc_CFDAB               
-1     00008108  _filter_Ubat                    
-1     00008114  _filter_Vc                      
-1     00008120  _filter_Ilv                     
-1     0000812c  _filter_Udc_CFDAB_pre           
-1     00008138  _filter_Vc_pre                  
-1     00008144  _Enable_filter                  
-1     00008146  _Cnt_filter                     
-1     00008148  _filterBand_Vc                  
-1     00008170  _cntl_2p2z_coeff_Udc            
-1     00008184  _cntl_2p2z_coeff_Vc             
-1     00008198  _cntl_2p2z_coeff_Ilv            
-1     000081ac  _cntl_2p2z_coeff_Ubat           
-1     000081c0  _cntl_2p2z_var_Udc              
-1     000081d2  _cntl_2p2z_var_Vc               
-1     000081e4  _cntl_2p2z_var_Ilv              
-1     000081f6  _cntl_2p2z_var_Ubat             
-1     00008208  _cntl_pi_Ilv                    
-1     00008328  _filterBand_Udc_CFDAB           
-1     00008350  _TaskCpu2Cla1                   
-1     00008351  _TaskCpu2Cla1_task2             
-1     00008352  _TaskCpu2Cla1_task8             
+1     000080ea  _adc_filter                     
+1     000080f4  _adc_offset                     
+1     000080fe  _START_ADC                      
+1     000080ff  _OffsetCalCounter               
+1     00008100  _ResetOffset                    
+1     00008102  _filter_Udc_CFDAB               
+1     0000810e  _filter_Ubat                    
+1     0000811a  _filter_Vc                      
+1     00008126  _filter_Ilv                     
+1     00008132  _filter_Udc_CFDAB_pre           
+1     0000813e  _filter_Vc_pre                  
+1     0000814a  _Enable_filter                  
+1     0000814c  _Cnt_filter                     
+1     0000814e  _filterBand_Vc                  
+1     00008176  _cntl_2p2z_coeff_Udc            
+1     0000818a  _cntl_2p2z_coeff_Vc             
+1     0000819e  _cntl_2p2z_coeff_Ilv            
+1     000081b2  _cntl_2p2z_coeff_Ubat           
+1     000081c6  _cntl_2p2z_var_Udc              
+1     000081d8  _cntl_2p2z_var_Vc               
+1     000081ea  _cntl_2p2z_var_Ilv              
+1     000081fc  _cntl_2p2z_var_Ubat             
+1     0000820e  _cntl_pi_Ilv                    
+1     0000832e  _filterBand_Udc_CFDAB           
+1     00008356  _TaskCpu2Cla1                   
+1     00008357  _TaskCpu2Cla1_task2             
+1     00008358  _TaskCpu2Cla1_task8             
 1     0000e000  _Datalog1                       
 1     0000e190  _EPWM                           
 1     0000e1aa  _ECAP                           

@@ -9,11 +9,6 @@
 #include "F2837xD_adc.h"
 #include "CFDAB_Setting.h"
 
-
-
-
-
-
 typedef struct {
         unsigned int PeriodMax;     // Parameter: PWM Half-Period in CPU clock cycles (Q0)
         float MfuncA1;        // Input: EPWM1 A&B Duty cycle ratio (Q15)
@@ -159,8 +154,6 @@ void Init_ADC_C()
 void PWM_CFDAB(int period, int deadtime)
 {
     EALLOW;
-
-
 
     EPwm1Regs.TBCTL.bit.PRDLD = TB_SHADOW;        // set shadow load
     EPwm1Regs.TBPRD = period;
@@ -968,10 +961,6 @@ interrupt void cla1Isr8 ()
     Task8_Isr++;
     PieCtrlRegs.PIEACK.all = M_INT11;
 }
-
-
-
-
 
 //
 // End of file

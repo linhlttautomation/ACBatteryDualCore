@@ -119,6 +119,9 @@ volatile int loop_volt_Us;
 Uint16 TaskCpu1Cla1;
 Uint16 TaskCpu1Cla1_task2;
 
+float max;
+float min;
+
 // Task 1
 //
 __interrupt void Cla1Task1 ( void )
@@ -129,12 +132,15 @@ __interrupt void Cla1Task1 ( void )
 
     TaskCpu1Cla1++;
 
+#if(SET_MODE_RUN == THREE_PHASE_MODE)
+
     if(CpuToCLA.EnableADC == 1 && START_ADC == 2)
     {
         START_ADC = 1;
     }
     if(START_ADC == 1)
     {
+
         #if(TUNNING_ADC == 1)
 
             if(CpuToCLA.ADCoffset_VaG > 2048.0)
@@ -194,7 +200,7 @@ __interrupt void Cla1Task1 ( void )
 
         #endif
 
-        #if(TUNNING_ADC == 0)
+        #if(TUNNING_ADC == 2)
 
             AdcValue.Va_G = 0.94*(UDC_HCPL - 2140)/(4096.0 - 2140);
             AdcValue.Vb_G = 0.9*(VbG_HCPL - 2095)/(4096.0 - 2095);
@@ -226,10 +232,16 @@ __interrupt void Cla1Task1 ( void )
         LOWPASSFILTER_MACRO(filter_VcG);
         adc_filter.Vc_G = filter_VcG.Vout;
 
-        #if(SET_MODE_READ == READ_VOLTAGE_AC)
+        #if(SET_MODE_READ == READ_VOLTAGE_AC_AFTER_LPF)
             ClaToCPU.ADC_CPU.datalog1  = adc_filter.Va_G;
             ClaToCPU.ADC_CPU.datalog2  = adc_filter.Vb_G;
             ClaToCPU.ADC_CPU.datalog3  = adc_filter.Vc_G;
+        #endif
+
+        #if(SET_MODE_READ == READ_VOLTAGE_AC_BEFORE_LPF)
+            ClaToCPU.ADC_CPU.datalog1  = AdcValue.Va_G;
+            ClaToCPU.ADC_CPU.datalog2  = AdcValue.Vb_G;
+            ClaToCPU.ADC_CPU.datalog3  = AdcValue.Vc_G;
         #endif
 
         #if(SET_MODE_READ == READ_VOLTAGE_DC)
@@ -503,6 +515,9 @@ __interrupt void Cla1Task1 ( void )
         pi_curr_iq.OUT_I = 0; pi_curr_iq.OUT = 0;
         pi_curr_iz.OUT_I = 0; pi_curr_iz.OUT = 0;
     }
+
+#endif
+
 }
 
 //
@@ -574,6 +589,8 @@ __interrupt void Cla1Task8 ( void )
 {
     TaskCpu1Cla1 = 0;
     TaskCpu1Cla1_task2 = 0;
+
+#if(SET_MODE_RUN == THREE_PHASE_MODE)
 
     CLARKE_3PHASE_CLA_INIT(clarke_curr)
     clarke_volt  = clarke_curr;
@@ -725,6 +742,11 @@ __interrupt void Cla1Task8 ( void )
 
     IsrTicker = 0;
     START_ADC = 2;
+
+    float max = 0.0;
+    float min = 0.0;
+
+#endif
 
 }
 

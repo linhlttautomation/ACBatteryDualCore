@@ -319,6 +319,7 @@ __interrupt void Cla1Task1 ( void )
 
             AdcValue.Ilv          = (ILV_LEM - adc_offset.Ilv-8)*ADC_PU_SCALE_FACTOR_12BIT/1.2;
 
+            AdcValue.Ihv          = (IHV_LEM - adc_offset.Ilv-8)*ADC_PU_SCALE_FACTOR_12BIT/1.2;
 //=========================================================================================
             //  Lowpass filter signals ADC
             filter_Udc_CFDAB_pre.Vin  = AdcValue.Udc_CFDAB;
@@ -443,6 +444,7 @@ __interrupt void Cla1Task1 ( void )
 
                 EPwm10Regs.CMPA.bit.CMPA = Cmpa_S4;
                 EPwm10Regs.CMPB.bit.CMPB = Cmpb_S4;
+
             }
 
             // FLAG RUN
