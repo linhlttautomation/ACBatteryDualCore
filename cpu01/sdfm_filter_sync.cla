@@ -119,9 +119,6 @@ volatile int loop_volt_Us;
 Uint16 TaskCpu1Cla1;
 Uint16 TaskCpu1Cla1_task2;
 
-float max;
-float min;
-
 // Task 1
 //
 __interrupt void Cla1Task1 ( void )
@@ -742,9 +739,6 @@ __interrupt void Cla1Task8 ( void )
 
     IsrTicker = 0;
     START_ADC = 2;
-
-    float max = 0.0;
-    float min = 0.0;
 
 #endif
 

@@ -1,7 +1,7 @@
 ******************************************************************************
              TMS320C2000 Linker PC v22.6.1                     
 ******************************************************************************
->> Linked Sun Dec  1 15:34:23 2024
+>> Linked Mon Dec  2 13:28:31 2024
 
 OUTPUT FILE NAME:   <AC_Battery_CPU1.out>
 ENTRY POINT SYMBOL: "code_start"  address: 00000000
@@ -14,7 +14,7 @@ MEMORY CONFIGURATION
 PAGE 0:
   BEGIN                 00000000   00000002  00000002  00000000  RWIX
   RAMM0                 00000122   000002de  000002de  00000000  RWIX
-  RAMLS12345            00008800   00002800  00001e58  000009a8  RWIX
+  RAMLS12345            00008800   00002800  00001e50  000009b0  RWIX
   RAMD0                 0000b000   00000800  00000800  00000000  RWIX
   RAMD1                 0000b800   00000800  00000800  00000000  RWIX
   RAMGS1                0000d000   00001000  0000072e  000008d2  RWIX
@@ -110,7 +110,7 @@ PAGE 1:
   OUTPUTXBAR            00007a80   00000040  00000040  00000000  RWIX
   GPIOCTRL              00007c00   00000180  00000180  00000000  RWIX
   GPIODATA              00007f00   00000030  00000030  00000000  RWIX
-  RAMLS0                00008000   00000800  000003f4  0000040c  RWIX
+  RAMLS0                00008000   00000800  000003f0  00000410  RWIX
   RAMLS2_1              00009000   00000400  00000000  00000400  RWIX
   RAMLS2_2              00009400   00000400  00000000  00000400  RWIX
   RAMLS3_1              00009800   00000400  00000000  00000400  RWIX
@@ -190,17 +190,17 @@ codestart
 *          0    000001fc    00000004     
                   000001fc    00000004     F2837xD_usDelay.obj (.TI.ramfunc)
 
-Cla1Prog   0    00008800    00001e58     
+Cla1Prog   0    00008800    00001e50     
                   00008800    00001c0e     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task1)
-                  0000a40e    000001a2     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task8)
-                  0000a5b0    00000038     cla1_math_library_fpu32.lib : CLAcosPU.obj (Cla1Prog:_CLAcosPU)
-                  0000a5e8    00000038                                 : CLAsinPU.obj (Cla1Prog:_CLAsinPU)
-                  0000a620    00000010     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task2)
-                  0000a630    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task3)
-                  0000a638    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task4)
-                  0000a640    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task5)
-                  0000a648    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task6)
-                  0000a650    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task7)
+                  0000a40e    0000019a     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task8)
+                  0000a5a8    00000038     cla1_math_library_fpu32.lib : CLAcosPU.obj (Cla1Prog:_CLAcosPU)
+                  0000a5e0    00000038                                 : CLAsinPU.obj (Cla1Prog:_CLAsinPU)
+                  0000a618    00000010     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task2)
+                  0000a628    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task3)
+                  0000a630    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task4)
+                  0000a638    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task5)
+                  0000a640    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task6)
+                  0000a648    00000008     sdfm_filter_sync.obj (Cla1Prog:_Cla1Task7)
 
 .stack     1    00000400    00000100     UNINITIALIZED
                   00000400    00000100     --HOLE--
@@ -280,12 +280,11 @@ CLAscratch
 .scratchpad 
 *          1    000083e2    0000000c     UNINITIALIZED
                   000083e2    0000000a     sdfm_filter_sync.obj (.scratchpad:Cla1Prog:_Cla1Task1)
-                  000083e2    00000004     sdfm_filter_sync.obj (.scratchpad:Cla1Prog:_Cla1Task8)
                   000083ec    00000002     cla1_math_library_fpu32.lib : CLAcosPU.obj (.scratchpad:Cla1Prog:_CLAcosPU)
                   000083ec    00000002                                 : CLAsinPU.obj (.scratchpad:Cla1Prog:_CLAsinPU)
 
-.bss_cla   1    000083ee    00000006     UNINITIALIZED
-                  000083ee    00000006     sdfm_filter_sync.obj (.bss_cla)
+.bss_cla   1    000083ee    00000002     UNINITIALIZED
+                  000083ee    00000002     sdfm_filter_sync.obj (.bss_cla)
 
 .reset     0    003fffc0    00000000     DSECT
 
@@ -913,7 +912,7 @@ MODULE SUMMARY
        ------                           ----    ----------------   ------------------
     .\
        F2837xD_GlobalVariableDefs.obj   0       0                  9870              
-       sdfm_filter_sync.obj             7656    0                  590               
+       sdfm_filter_sync.obj             7648    0                  582               
        sdfm_filter_sync_cla_cpu01.obj   1881    48                 3061              
        F2837xD_sdfm_drivers.obj         1841    0                  0                 
        F2837xD_DefaultISR.obj           1413    0                  0                 
@@ -925,7 +924,7 @@ MODULE SUMMARY
        F2837xD_CodeStartBranch.obj      10      0                  0                 
        F2837xD_usDelay.obj              4       0                  0                 
     +--+--------------------------------+-------+------------------+--------------------+
-       Total:                           13726   640                13635             
+       Total:                           13718   640                13627             
                                                                                      
     ../library/Math/CLAmath/lib/cla1_math_library_fpu32.lib
        CLASinCosTable.obj               0       342                0                 
@@ -950,7 +949,7 @@ MODULE SUMMARY
                                                                                      
        Stack:                           0       0                  256               
     +--+--------------------------------+-------+------------------+--------------------+
-       Grand Total:                     14220   1006               13905             
+       Grand Total:                     14212   1006               13897             
 
 
 GLOBAL DATA SYMBOLS: SORTED BY DATA PAGE
@@ -1171,8 +1170,6 @@ address     data page           name
 
 000083ee     20f (000083c0)     _TaskCpu1Cla1
 000083ef     20f (000083c0)     _TaskCpu1Cla1_task2
-000083f0     20f (000083c0)     _max
-000083f2     20f (000083c0)     _min
 
 0000c000     300 (0000c000)     _DataLog1
 
@@ -1316,10 +1313,10 @@ abs   00000100  CLA_SCRATCHPAD_SIZE
 0     0000d2f4  _CLA_OVERFLOW_ISR                     
 0     0000d2fe  _CLA_UNDERFLOW_ISR                    
 0     0000b7ba  _CLA_initCpu1Cla                      
-0     0000a5b0  _CLAcosPU                             
+0     0000a5a8  _CLAcosPU                             
 1     000081cc  _CLAcosTable                          
 1     000082ce  _CLAcosTableEnd                       
-0     0000a5e8  _CLAsinPU                             
+0     0000a5e0  _CLAsinPU                             
 1     0000818c  _CLAsinTable                          
 1     0000828c  _CLAsinTableEnd                       
 1     0000818c  _CLAsincosTable                       
@@ -1341,12 +1338,12 @@ abs   00000100  CLA_SCRATCHPAD_SIZE
 1     0004a000  _CanbRegs                             
 1     00001400  _Cla1Regs                             
 0     00008800  _Cla1Task1                            
-0     0000a620  _Cla1Task2                            
-0     0000a630  _Cla1Task3                            
-0     0000a638  _Cla1Task4                            
-0     0000a640  _Cla1Task5                            
-0     0000a648  _Cla1Task6                            
-0     0000a650  _Cla1Task7                            
+0     0000a618  _Cla1Task2                            
+0     0000a628  _Cla1Task3                            
+0     0000a630  _Cla1Task4                            
+0     0000a638  _Cla1Task5                            
+0     0000a640  _Cla1Task6                            
+0     0000a648  _Cla1Task7                            
 0     0000a40e  _Cla1Task8                            
 1     00001480  _ClaToCPU                             
 0     000002c2  _Cla_initMemoryMap                    
@@ -1654,9 +1651,7 @@ abs   ffffffff  ___text__
 1     00008154  _loop_volt_Udc                        
 1     0000818a  _loop_volt_Us                         
 0     0000b000  _main                                 
-1     000083f0  _max                                  
 0     0000d000  _memcpy                               
-1     000083f2  _min                                  
 1     0000e04f  _ndx1                                 
 1     0000e050  _ndx2                                 
 1     0000e051  _ndx3                                 
@@ -1701,14 +1696,14 @@ page  address   name
 0     000003db  _ConfigureTMXAnalogTrim               
 0     00008800  _Cla1Task1                            
 0     0000a40e  _Cla1Task8                            
-0     0000a5b0  _CLAcosPU                             
-0     0000a5e8  _CLAsinPU                             
-0     0000a620  _Cla1Task2                            
-0     0000a630  _Cla1Task3                            
-0     0000a638  _Cla1Task4                            
-0     0000a640  _Cla1Task5                            
-0     0000a648  _Cla1Task6                            
-0     0000a650  _Cla1Task7                            
+0     0000a5a8  _CLAcosPU                             
+0     0000a5e0  _CLAsinPU                             
+0     0000a618  _Cla1Task2                            
+0     0000a628  _Cla1Task3                            
+0     0000a630  _Cla1Task4                            
+0     0000a638  _Cla1Task5                            
+0     0000a640  _Cla1Task6                            
+0     0000a648  _Cla1Task7                            
 0     0000b000  _main                                 
 0     0000b433  _Sdfm_configureData_filter            
 0     0000b69a  _CMPSS_Protection_FLC                 
@@ -2028,8 +2023,6 @@ page  address   name
 1     000082e2  _CLAsincosTableEnd                    
 1     000083ee  _TaskCpu1Cla1                         
 1     000083ef  _TaskCpu1Cla1_task2                   
-1     000083f0  _max                                  
-1     000083f2  _min                                  
 1     0000c000  _DataLog1                             
 1     0000c400  _DataLog2                             
 1     0000c800  _DataLog3                             
@@ -2100,4 +2093,4 @@ abs   ffffffff  binit
 abs   ffffffff  etext                                 
 abs   ffffffff  pinit                                 
 
-[416 symbols]
+[414 symbols]
