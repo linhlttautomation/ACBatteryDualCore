@@ -116,6 +116,9 @@ volatile PI_NORMAL_CLA pi_volt_Usq;
 #pragma DATA_SECTION(loop_volt_Us,"CLADataLS0");
 volatile int loop_volt_Us;
 
+#pragma DATA_SECTION(data1,"CLADataLS0");
+volatile DATA data1;
+
 Uint16 TaskCpu1Cla1;
 Uint16 TaskCpu1Cla1_task2;
 
@@ -139,7 +142,7 @@ __interrupt void Cla1Task1 ( void )
     {
 
         #if(TUNNING_ADC == 1)
-
+            // VaG
             if(CpuToCLA.ADCoffset_VaG > 2048.0)
             {
                 AdcValue.Va_G = CpuToCLA.ADCgain_VaG*(VaG_HCPL - CpuToCLA.ADCoffset_VaG)/(4096.0 - CpuToCLA.ADCoffset_VaG);
@@ -148,6 +151,7 @@ __interrupt void Cla1Task1 ( void )
             {
                 AdcValue.Va_G = CpuToCLA.ADCgain_VaG*(VaG_HCPL - CpuToCLA.ADCoffset_VaG)/(CpuToCLA.ADCoffset_VaG);
             }
+            // VbG
             if(CpuToCLA.ADCoffset_VbG > 2048.0)
             {
                 AdcValue.Vb_G = CpuToCLA.ADCgain_VbG*(VbG_HCPL - CpuToCLA.ADCoffset_VbG)/(4096.0 - CpuToCLA.ADCoffset_VbG);
@@ -156,6 +160,7 @@ __interrupt void Cla1Task1 ( void )
             {
                 AdcValue.Vb_G = CpuToCLA.ADCgain_VbG*(VbG_HCPL - CpuToCLA.ADCoffset_VbG)/(CpuToCLA.ADCoffset_VbG);
             }
+            // VcG
             if(CpuToCLA.ADCoffset_VcG > 2048.0)
             {
                 AdcValue.Vc_G = CpuToCLA.ADCgain_VcG*(VcG_HCPL - CpuToCLA.ADCoffset_VcG)/(4096.0 - CpuToCLA.ADCoffset_VcG);
@@ -164,6 +169,14 @@ __interrupt void Cla1Task1 ( void )
             {
                 AdcValue.Vc_G = CpuToCLA.ADCgain_VcG*(VcG_HCPL - CpuToCLA.ADCoffset_VcG)/(CpuToCLA.ADCoffset_VcG);
             }
+            // data_Vg
+            data1.Vg_max_data_cal =  (data1.Vg_rms/400.0) * can2 * 10000 + 10000;
+            data1.Vg_min_data_cal = 10000 - (data1.Vg_rms/400.0) * can2 * 10000;
+            data1.Vg_max_sub_min_cal = data1.Vg_max_data_cal - data1.Vg_min_data_cal;
+
+            data1.Vg_max_sub_min_real = data1.Vg_max_data_real - data1.Vg_min_data_real;
+
+            // Ia_inv
             if(CpuToCLA.ADCoffset_Ia_inv > 2048.0)
             {
                 AdcValue.Ia_inv = CpuToCLA.ADCgain_Ia_inv*(IA_INV_LEM - CpuToCLA.ADCoffset_Ia_inv)/(4096.0 - CpuToCLA.ADCoffset_Ia_inv);
@@ -172,6 +185,7 @@ __interrupt void Cla1Task1 ( void )
             {
                 AdcValue.Ia_inv = CpuToCLA.ADCgain_Ia_inv*(IA_INV_LEM - CpuToCLA.ADCoffset_Ia_inv)/(CpuToCLA.ADCoffset_Ia_inv);
             }
+            // Ib_inv
             if(CpuToCLA.ADCoffset_Ib_inv > 2048.0)
             {
                 AdcValue.Ib_inv = CpuToCLA.ADCgain_Ib_inv*(IB_INV_LEM  - CpuToCLA.ADCoffset_Ib_inv)/(4096.0 - CpuToCLA.ADCoffset_Ib_inv);
@@ -180,6 +194,7 @@ __interrupt void Cla1Task1 ( void )
             {
                 AdcValue.Ib_inv = CpuToCLA.ADCgain_Ib_inv*(IB_INV_LEM  - CpuToCLA.ADCoffset_Ib_inv)/(CpuToCLA.ADCoffset_Ib_inv);
             }
+            // Ic_inv
             if(CpuToCLA.ADCoffset_Ic_inv > 2048.0)
             {
                 AdcValue.Ic_inv = CpuToCLA.ADCgain_Ic_inv*(IC_INV_LEM - CpuToCLA.ADCoffset_Ic_inv)/(4096.0 - CpuToCLA.ADCoffset_Ic_inv);
@@ -188,7 +203,13 @@ __interrupt void Cla1Task1 ( void )
             {
                 AdcValue.Ic_inv = CpuToCLA.ADCgain_Ic_inv*(IC_INV_LEM - CpuToCLA.ADCoffset_Ic_inv)/(CpuToCLA.ADCoffset_Ic_inv);
             }
+            // data_Ig
+            data1.Ig_max_data_cal =  (data1.Ig_rms/10.0) * can2 * 10000 + 10000;
+            data1.Ig_min_data_cal = 10000 - (data1.Ig_rms/10.0) * can2 * 10000;
+            data1.Ig_max_sub_min_cal = data1.Ig_max_data_cal - data1.Ig_min_data_cal;
 
+            data1.Ig_max_sub_min_real = data1.Ig_max_data_real - data1.Ig_min_data_real;
+            // Udc
             if(UDC_HCPL > CpuToCLA.ADCoffset_Udc)
             {
                 AdcValue.Udc = CpuToCLA.ADCgain_Udc*(UDC_HCPL - CpuToCLA.ADCoffset_Udc)/(4096.0 - CpuToCLA.ADCoffset_Udc);
@@ -740,6 +761,8 @@ __interrupt void Cla1Task8 ( void )
     IsrTicker = 0;
     START_ADC = 2;
 
+    data1.Vg_rms = DATA1_VG_RMS;
+    data1.Ig_rms   = DATA1_IG_RMS;
 #endif
 
 }

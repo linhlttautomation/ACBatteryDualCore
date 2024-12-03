@@ -34,7 +34,9 @@
 // ---------------------------------------------------
 
 // ---------------------------------------------------
-#define TUNNING_ADC             1 // 0: Auto; 1: Manual; 2: No
+#define TUNNING_ADC              1 // 0: Auto; 1: Manual; 2: No
+#define DATA1_VG_RMS             220.0
+#define DATA1_IG_RMS             1.0
 // ---------------------------------------------------
 
 #define ALLOW_IPC_2CPU          1
@@ -85,16 +87,16 @@
 #define BASE_FREQ       150.0               // Base electrical frequency (Hz)
 #define Udc_max         800.0               // Max DC Voltage (V)
 #define Us_max          400.0               // Max Phase Voltage (V)
-#define Is_max          81.30               // Base Peak Phase Current (A)
+#define Is_max          10.0               // Base Peak Phase Current (A)
 
 // CMPSS FLC Permission
-#define CMPSS_PROTECT_UDC_UPPER         0 // Da test co the bao ve duoc
+#define CMPSS_PROTECT_UDC_UPPER         1 // Da test co the bao ve duoc, bv ok
 
-#define CMPSS_PROTECT_VaG_UPPER         0 // Da test co the bao ve duoc
+#define CMPSS_PROTECT_VaG_UPPER         1 // Da test co the bao ve duoc
 #define CMPSS_PROTECT_VaG_LOWER         0 // Da test co the bao ve duoc
 
-#define CMPSS_PROTECT_VbG_UPPER         0 // Da test co the bao ve duoc
-#define CMPSS_PROTECT_VbG_LOWER         0 // Da test co the bao ve duoc
+#define CMPSS_PROTECT_VbG_UPPER         1 // Da test co the bao ve duoc, bv ok
+#define CMPSS_PROTECT_VbG_LOWER         1 // Da test co the bao ve duoc, bv ok
 
 #define CMPSS_PROTECT_Ia_inv_UPPER      0
 #define CMPSS_PROTECT_Ia_inv_LOWER      0
@@ -102,16 +104,16 @@
 #define CMPSS_PROTECT_Ib_inv_UPPER      0
 #define CMPSS_PROTECT_Ib_inv_LOWER      0
 
-#define CMPSS_PROTECT_Ic_inv_UPPER      0 // Da test co the bao ve duoc
-#define CMPSS_PROTECT_Ic_inv_LOWER      0 // Da test co the bao ve duoc
+#define CMPSS_PROTECT_Ic_inv_UPPER      1 // Da test co the bao ve duoc, bv ok
+#define CMPSS_PROTECT_Ic_inv_LOWER      1 // Da test co the bao ve duoc, bv ok
 
 // CMPSS FLC Setting
-#define CMPSS_Udc_New_Protecion            30.0
+#define CMPSS_Udc_New_Protecion            100.0
 
 #define CMPSS_Udc_Offset_New_Protecion     0.0
 #define CMPSS_Vg_Offset_New_Protecion      0.0
 
-#define CMPSS_Ig_inv_New_Protecion         15.0
+#define CMPSS_Ig_inv_New_Protecion         1.0
 
 // CMPSS TPC Setting
 

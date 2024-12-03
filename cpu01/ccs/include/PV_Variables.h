@@ -141,7 +141,28 @@ typedef struct
     float ADCgain_Ib_inv;
     float ADCgain_Ic_inv;
 
-
 }CPU_TO_CLA;
+
+typedef struct
+{
+    float Vg_rms;
+    float Ig_rms;
+
+    float Vg_max_data_real;
+    float Vg_min_data_real;
+    float Vg_max_sub_min_real;
+
+    float Vg_max_data_cal;
+    float Vg_min_data_cal;
+    float Vg_max_sub_min_cal;
+
+    float Ig_max_data_real;
+    float Ig_min_data_real;
+    float Ig_max_sub_min_real;
+
+    float Ig_max_data_cal;
+    float Ig_min_data_cal;
+    float Ig_max_sub_min_cal;
+}DATA;
 
 #endif /* _PV_VARIABLES_H_ */

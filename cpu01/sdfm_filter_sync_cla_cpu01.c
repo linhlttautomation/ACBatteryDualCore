@@ -234,7 +234,7 @@ void CMPSS_Protection_FLC(void)
         Cmpss3Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Udc Upper protection
-        Cmpss3Regs.DACHVALS.bit.DACVAL = (21 + ((CMPSS_Udc_New_Protecion + CMPSS_Udc_Offset_New_Protecion)/800.0)*(4096.0 - 21)*0.96 + 42)/1.1;
+        Cmpss3Regs.DACHVALS.bit.DACVAL = (4 + ((CMPSS_Udc_New_Protecion + CMPSS_Udc_Offset_New_Protecion)/800.0)*(4096.0 - 4)*1.0 + 0)/1.1;
 
         Cmpss3Regs.COMPCTL.bit.COMPHINV = 0;
         Cmpss3Regs.COMPCTL.bit.CTRIPHSEL = 2;
@@ -256,13 +256,13 @@ void CMPSS_Protection_FLC(void)
         Cmpss2Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // VaG Upper protection
-        Cmpss2Regs.DACHVALS.bit.DACVAL = (2145 + (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2145)-230 + 180)/1.1;
+        Cmpss2Regs.DACHVALS.bit.DACVAL = (2598 + (((30.0/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2598) - 10)/1.1;
 
         Cmpss2Regs.COMPCTL.bit.COMPHINV = 0;
         Cmpss2Regs.COMPCTL.bit.CTRIPHSEL = 2;
 
         EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX2 = 0 ; // Cmpss2 trip H
-        EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX2  = 1; // VagH
+        EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX2 = 1; // VagH
 
         Cmpss2Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale_1; // Set time between samples, max : 1023
         Cmpss2Regs.CTRIPHFILCTL.bit.SAMPWIN        = sampwin_1; // # Of samples in window, max : 31
@@ -278,7 +278,7 @@ void CMPSS_Protection_FLC(void)
         Cmpss2Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // VaG Lower protecion
-        Cmpss2Regs.DACLVALS.bit.DACVAL = (2145 - (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2145) - 230 - 180)/1.1;
+        Cmpss2Regs.DACLVALS.bit.DACVAL = (2598 - (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2598) + 100000)/1.1;
 
         Cmpss2Regs.COMPCTL.bit.COMPLINV = 1;
         Cmpss2Regs.COMPCTL.bit.CTRIPLSEL = 2;
@@ -300,7 +300,7 @@ void CMPSS_Protection_FLC(void)
         Cmpss1Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // VbG Upper protection
-        Cmpss1Regs.DACHVALS.bit.DACVAL = (2100 + (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2100)-190 + 183)/1.1;
+        Cmpss1Regs.DACHVALS.bit.DACVAL = (2604 + (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2604) - 10)/1.1;
 
         Cmpss1Regs.COMPCTL.bit.COMPHINV = 0;
         Cmpss1Regs.COMPCTL.bit.CTRIPHSEL = 2;
@@ -322,7 +322,7 @@ void CMPSS_Protection_FLC(void)
         Cmpss1Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // VbG Lower protecion
-        Cmpss1Regs.DACLVALS.bit.DACVAL = (2100 - (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2100) - 190 - 183)/1.1;
+        Cmpss1Regs.DACLVALS.bit.DACVAL = (2604 - (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2604) - 20)/1.1;
 
         Cmpss1Regs.COMPCTL.bit.COMPLINV = 1;
         Cmpss1Regs.COMPCTL.bit.CTRIPLSEL = 2;
@@ -430,7 +430,7 @@ void CMPSS_Protection_FLC(void)
         Cmpss2Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Ic Upper protection
-        Cmpss2Regs.DACHVALS.bit.DACVAL = (2054 + (CMPSS_Ig_inv_New_Protecion/81.3)*2054 - 185 + 162)/1.1;
+        Cmpss2Regs.DACHVALS.bit.DACVAL = (2050 + (CMPSS_Ig_inv_New_Protecion/10.0)*2050 - 23)/1.1;
         Cmpss2Regs.COMPCTL.bit.COMPHINV = 0;
         Cmpss2Regs.COMPCTL.bit.CTRIPHSEL = 2;
 
@@ -452,7 +452,7 @@ void CMPSS_Protection_FLC(void)
         Cmpss2Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Ic Lower protecion
-        Cmpss2Regs.DACLVALS.bit.DACVAL = (2054 - (CMPSS_Ig_inv_New_Protecion/81.3)*2054 - 180 - 162)/1.1;
+        Cmpss2Regs.DACLVALS.bit.DACVAL = (2050 - (CMPSS_Ig_inv_New_Protecion/10.0)*2050 + 4)/1.1;
         Cmpss2Regs.COMPCTL.bit.COMPLINV = 1;
         Cmpss2Regs.COMPCTL.bit.CTRIPLSEL = 2;
 
@@ -1089,17 +1089,17 @@ int main(void)
     CpuToCLA.ADCoffset_VaG = 2598; //
     CpuToCLA.ADCoffset_VbG = 2604; //
     CpuToCLA.ADCoffset_VcG = 2591; //
-    CpuToCLA.ADCoffset_Ia_inv = 2063;
-    CpuToCLA.ADCoffset_Ib_inv = 2054;
-    CpuToCLA.ADCoffset_Ic_inv = 2038;
+    CpuToCLA.ADCoffset_Ia_inv = 2061; //
+    CpuToCLA.ADCoffset_Ib_inv = 2050; //
+    CpuToCLA.ADCoffset_Ic_inv = 2035; //
 
     CpuToCLA.ADCgain_Udc = 1.0;  //
     CpuToCLA.ADCgain_VaG = 0.75; //
     CpuToCLA.ADCgain_VbG = 0.76; //
     CpuToCLA.ADCgain_VcG = 0.75; //
-    CpuToCLA.ADCgain_Ia_inv = 1.05;
-    CpuToCLA.ADCgain_Ib_inv = 1.09;
-    CpuToCLA.ADCgain_Ic_inv = 0.92;
+    CpuToCLA.ADCgain_Ia_inv = 1.52; //
+    CpuToCLA.ADCgain_Ib_inv = 1.52; //
+    CpuToCLA.ADCgain_Ic_inv = 1.475; //
 
     DelayMs(100);
 
