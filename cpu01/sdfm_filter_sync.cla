@@ -330,7 +330,7 @@ __interrupt void Cla1Task1 ( void )
             rg_har_1st.Freq = 50.0/150.0;
             RAMP_GEN_CLA_MACRO(rg_har_1st) // Tao theta
 
-            rc_Ref.TargetValue = 1.5/81.3; // Id*
+            rc_Ref.TargetValue = 1.0/10.0; // Id*
             RC_CLA_MACRO(rc_Ref) // Ramp luong dat Id
 
             clarke_curr.As  = AdcValue.Ia_inv;  // Phase A curr
@@ -638,8 +638,8 @@ __interrupt void Cla1Task8 ( void )
         rg_har_1st.StepAngleMax = 150.0*0.00002;
 
         RC_INT_MACRO(rc_Ref)
-        rc_Ref.StepRampDec = 0.01/81.3;
-        rc_Ref.StepRampInc = 0.01/81.3;
+        rc_Ref.StepRampDec = 0.0001/10.0;
+        rc_Ref.StepRampInc = 0.0001/10.0;
 
     #endif
 
@@ -661,21 +661,21 @@ __interrupt void Cla1Task8 ( void )
         pi_curr_id.Ts = (float)Ti;
         pi_curr_id.Kp = KP_CURR_LOOP;
         pi_curr_id.Ki = KI_CURR_LOOP;
-        pi_curr_id.IN_max   = 81.3;
+        pi_curr_id.IN_max   = 10.0;
         pi_curr_id.OUT_max  = 400.0;
 
         PI_NORMAL_INT(pi_curr_iq)
         pi_curr_iq.Ts = (float)Ti;
         pi_curr_iq.Kp = KP_CURR_LOOP;
         pi_curr_iq.Ki = KI_CURR_LOOP;
-        pi_curr_iq.IN_max   = 81.3;
+        pi_curr_iq.IN_max   = 10.0;
         pi_curr_iq.OUT_max  = 400.0;
 
         PI_NORMAL_INT(pi_curr_iz)
         pi_curr_iz.Ts = (float)Ti;
         pi_curr_iz.Kp = KP_CURR_LOOP_Z;
         pi_curr_iz.Ki = KI_CURR_LOOP_Z;
-        pi_curr_iz.IN_max   = 81.3;
+        pi_curr_iz.IN_max   = 10.0;
         pi_curr_iz.OUT_max  = 400.0;
 
     #endif
@@ -689,21 +689,21 @@ __interrupt void Cla1Task8 ( void )
         pi_curr_id.Ts = (float)Ti;
         pi_curr_id.Kp = KP_CURR_LOOP_1;
         pi_curr_id.Ki = KI_CURR_LOOP_1;
-        pi_curr_id.IN_max   = 81.3;
+        pi_curr_id.IN_max   = 10.0;
         pi_curr_id.OUT_max  = 400.0;
 
         PI_NORMAL_INT(pi_curr_iq)
         pi_curr_iq.Ts = (float)Ti;
         pi_curr_iq.Kp = KP_CURR_LOOP_1;
         pi_curr_iq.Ki = KI_CURR_LOOP_1;
-        pi_curr_iq.IN_max   = 81.3;
+        pi_curr_iq.IN_max   = 10.0;
         pi_curr_iq.OUT_max  = 400.0;
 
         PI_NORMAL_INT(pi_curr_iz)
         pi_curr_iz.Ts = (float)Ti;
         pi_curr_iz.Kp = KP_CURR_LOOP_1;
         pi_curr_iz.Ki = KI_CURR_LOOP_1;
-        pi_curr_iz.IN_max   = 81.3;
+        pi_curr_iz.IN_max   = 10.0;
         pi_curr_iz.OUT_max  = 400.0;
 
         // Voltage controller
@@ -712,14 +712,14 @@ __interrupt void Cla1Task8 ( void )
         pi_volt_Usd.Kp = KP_VOLT_US_LOOP;
         pi_volt_Usd.Ki = KI_VOLT_US_LOOP;
         pi_volt_Usd.IN_max   = 400.0;
-        pi_volt_Usd.OUT_max  = 81.3;
+        pi_volt_Usd.OUT_max  = 10.0;
 
         PI_NORMAL_INT(pi_volt_Usq)
         pi_volt_Usq.Ts = (float)T_Us;
         pi_volt_Usq.Kp = KP_VOLT_US_LOOP;
         pi_volt_Usq.Ki = KI_VOLT_US_LOOP;
         pi_volt_Usq.IN_max   = 400.0;
-        pi_volt_Usq.OUT_max  = 81.3;
+        pi_volt_Usq.OUT_max  = 10.0;
 
     #endif
 

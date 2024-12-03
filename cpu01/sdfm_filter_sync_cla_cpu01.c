@@ -60,7 +60,7 @@ Uint16 Task8_Isr = 0;
 
 Uint16 START = 0;
 Uint16 ON_RELAY = 0;
-
+//Uint
 // CMPSS parameters for Over Current Protection FLC
 Uint16  clkPrescale_1 = 6,
         sampwin_1     = 30,
