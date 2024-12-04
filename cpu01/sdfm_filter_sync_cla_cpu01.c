@@ -1,3 +1,7 @@
+/*
+    Code Dual Core 2 CPU 2 CLA viet boi LUU TA TRUONG LINH K65
+ */
+
 //
 // Included Files
 //

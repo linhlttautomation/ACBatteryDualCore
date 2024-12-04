@@ -39,7 +39,7 @@
 #define DATA1_IG_RMS             1.0
 // ---------------------------------------------------
 
-#define ALLOW_IPC_2CPU          1
+#define ALLOW_IPC_CPU          1
 
 // Define toán học
 #define can2 1.414213562
