@@ -220,15 +220,15 @@ __interrupt void Cla1Task1 ( void )
 
         #if(TUNNING_ADC == 2)
 
-            AdcValue.Va_G = 0.94*(UDC_HCPL - 2140)/(4096.0 - 2140);
-            AdcValue.Vb_G = 0.9*(VbG_HCPL - 2095)/(4096.0 - 2095);
-            AdcValue.Vc_G = 0.9*(VcG_HCPL - 2092)/(4096.0 - 2092);
-            AdcValue.Ia_inv = 1.05*(IA_INV_LEM - 2093)/(4096.0 - 2093);
-            AdcValue.Ib_inv = 1.09*(IB_INV_LEM  - 2105)/(4096.0 - 2105);
-            AdcValue.Ic_inv = 0.92*(IC_INV_LEM - 2063)/(4096.0 - 2063);
-            if (UDC_HCPL > 21)
+            AdcValue.Va_G = 0.75*(UDC_HCPL - 2598)/(4096.0 - 2598);
+            AdcValue.Vb_G = 0.76*(VbG_HCPL - 2604)/(4096.0 - 2604);
+            AdcValue.Vc_G = 0.75*(VcG_HCPL - 2591)/(4096.0 - 2591);
+            AdcValue.Ia_inv = 1.52*(IA_INV_LEM - 2061)/(4096.0 - 2061);
+            AdcValue.Ib_inv = 1.52*(IB_INV_LEM  - 2050)/(4096.0 - 2050);
+            AdcValue.Ic_inv = 1.475*(IC_INV_LEM - 2035)/(4096.0 - 2035);
+            if (UDC_HCPL > 4)
             {
-                AdcValue.Udc = 0.97*(UDC_HCPL - 21)/(4096.0 - 21);
+                AdcValue.Udc = 1.0*(UDC_HCPL - 4)/(4096.0 - 4);
             }
             else AdcValue.Udc = 0.0;
 
@@ -330,7 +330,7 @@ __interrupt void Cla1Task1 ( void )
             rg_har_1st.Freq = 50.0/150.0;
             RAMP_GEN_CLA_MACRO(rg_har_1st) // Tao theta
 
-            rc_Ref.TargetValue = 1.0/10.0; // Id*
+            rc_Ref.TargetValue = CpuToCLA.IdTesting/10.0; // Id*
             RC_CLA_MACRO(rc_Ref) // Ramp luong dat Id
 
             clarke_curr.As  = AdcValue.Ia_inv;  // Phase A curr

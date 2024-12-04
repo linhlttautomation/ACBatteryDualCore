@@ -108,6 +108,7 @@ typedef struct
 	float VdTesting;
 	float VqTesting;
 	float VzTesting;
+    float IdTesting;
 
 	float IdRef;
 	float IqRef;
@@ -164,5 +165,27 @@ typedef struct
     float Ig_min_data_cal;
     float Ig_max_sub_min_cal;
 }DATA;
+
+typedef struct
+{
+    Uint16 Udc_upper;
+
+    Uint16 VaG_upper;
+    Uint16 VaG_lower;
+    Uint16 VbG_upper;
+    Uint16 VbG_lower;
+    Uint16 VcG_upper;
+    Uint16 VcG_lower;
+
+    Uint16 Ia_upper;
+    Uint16 Ia_lower;
+    Uint16 Ib_upper;
+    Uint16 Ib_lower;
+    Uint16 Ic_upper;
+    Uint16 Ic_lower;
+    Uint16 Iz_upper;
+    Uint16 Iz_lower;
+
+}PROTECT_CHANEL;
 
 #endif /* _PV_VARIABLES_H_ */

@@ -60,7 +60,9 @@ Uint16 Task8_Isr = 0;
 
 Uint16 START = 0;
 Uint16 ON_RELAY = 0;
-//Uint
+
+PROTECT_CHANEL protect_chanel;
+
 // CMPSS parameters for Over Current Protection FLC
 Uint16  clkPrescale_1 = 6,
         sampwin_1     = 30,
@@ -257,7 +259,6 @@ void CMPSS_Protection_FLC(void)
 
         // VaG Upper protection
         Cmpss2Regs.DACHVALS.bit.DACVAL = (2598 + (((30.0/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2598) - 10)/1.1;
-
         Cmpss2Regs.COMPCTL.bit.COMPHINV = 0;
         Cmpss2Regs.COMPCTL.bit.CTRIPHSEL = 2;
 
@@ -279,7 +280,6 @@ void CMPSS_Protection_FLC(void)
 
         // VaG Lower protecion
         Cmpss2Regs.DACLVALS.bit.DACVAL = (2598 - (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2598) + 100000)/1.1;
-
         Cmpss2Regs.COMPCTL.bit.COMPLINV = 1;
         Cmpss2Regs.COMPCTL.bit.CTRIPLSEL = 2;
 
@@ -1083,7 +1083,8 @@ int main(void)
     CpuToCLA.EnableADC = 1;
     CpuToCLA.EnableFlag = 0;
 
-    CpuToCLA.VdTesting = 220.0;
+    CpuToCLA.VdTesting = 20.0;
+    CpuToCLA.IdTesting     = 1.0;
 
     CpuToCLA.ADCoffset_Udc = 4;  //
     CpuToCLA.ADCoffset_VaG = 2598; //
@@ -1117,9 +1118,32 @@ int main(void)
             CpuToCLA.EnableFlag = 0;
         }
 
+        // Neu co su kien bao ve thi khong cho phep START = 1
         if(EPwm4Regs.TZFLG.bit.OST == 1 || EPwm6Regs.TZFLG.bit.OST == 1 || EPwm5Regs.TZFLG.bit.OST == 1 || EPwm8Regs.TZFLG.bit.OST == 1)
         {
             START = 0;
+        }
+
+        // Hien thi kenh bao ve
+        if(Cmpss3Regs.COMPSTS.bit.COMPHLATCH == 1)
+        {
+            protect_chanel.Udc_upper = 1;
+        }
+        if(Cmpss1Regs.COMPSTS.bit.COMPHLATCH == 1)
+        {
+            protect_chanel.VbG_upper = 1;
+        }
+        if(Cmpss1Regs.COMPSTS.bit.COMPLLATCH == 1)
+        {
+            protect_chanel.VbG_lower = 1;
+        }
+        if(Cmpss2Regs.COMPSTS.bit.COMPLLATCH == 1)
+        {
+            protect_chanel.Ic_lower = 1;
+        }
+        if(Cmpss2Regs.COMPSTS.bit.COMPLLATCH == 1)
+        {
+            protect_chanel.Ic_lower = 1;
         }
 
         #if(SET_MODE_RUN == THREE_PHASE_MODE)
@@ -1136,7 +1160,7 @@ int main(void)
 
         #if(SET_MODE_RUN == SINGLE_PHASE_MODE)
 
-            ON_RELAY = 1;
+            ON_RELAY = 0;
             GpioDataRegs.GPACLEAR.bit.GPIO27 = 1; // Relay 1
             GpioDataRegs.GPACLEAR.bit.GPIO25 = 1; // Relay 2
             while(GpioDataRegs.GPADAT.bit.GPIO27 != 0 && GpioDataRegs.GPADAT.bit.GPIO25 != 0)

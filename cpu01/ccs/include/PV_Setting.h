@@ -9,8 +9,8 @@
 #define _PV_SETTING_H_
 
 // Define Level
-#define LEVEL1        1           // Vong ho
-#define LEVEL3        3           // Vong dong
+#define LEVEL1        1           // Vong ho doc lap
+#define LEVEL3        3           // Vong dong doc lap
 #define LEVEL4        4           // Vong ap doc lap
 
 // ---------------------------------------------------
@@ -34,7 +34,7 @@
 // ---------------------------------------------------
 
 // ---------------------------------------------------
-#define TUNNING_ADC              1 // 0: Auto; 1: Manual; 2: No
+#define TUNNING_ADC              2 // 1: Manual; 2: No
 #define DATA1_VG_RMS             220.0
 #define DATA1_IG_RMS             1.0
 // ---------------------------------------------------
@@ -61,7 +61,7 @@
 #define T_Us             0.002 // Time sample voltage
 #define Ti               0.00002 // Time sample current 0.0000154
 
-#define LEM_1(A)     (2048.0*A/81.3)
+#define LEM_1(A)     (2048.0*A/10.0)
 
 #if (BUILDLEVEL == LEVEL3)
 
