@@ -67,6 +67,8 @@ Uint16 ON_RELAY = 0;
 
 PROTECT_CHANEL protect_chanel;
 
+Uint16 START_1 = 0;
+
 // CMPSS parameters for Over Current Protection FLC
 Uint16  clkPrescale_1 = 6,
         sampwin_1     = 30,
@@ -283,7 +285,7 @@ void CMPSS_Protection_FLC(void)
         Cmpss2Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // VaG Lower protecion
-        Cmpss2Regs.DACLVALS.bit.DACVAL = (2598 - (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2598) + 100000)/1.1;
+        Cmpss2Regs.DACLVALS.bit.DACVAL = (2598 - (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2598) + 0)/1.1;
         Cmpss2Regs.COMPCTL.bit.COMPLINV = 1;
         Cmpss2Regs.COMPCTL.bit.CTRIPLSEL = 2;
 
@@ -533,6 +535,14 @@ int main(void)
     #endif
 
     InitSysCtrl();
+
+    #if(ALLOW_IPC_CPU == 1)
+        InitIpc();
+        // Reset trạng thái IPC trước khi bắt đầu
+        IpcRegs.IPCACK.all = 0xFFFFFFFF;   // Xóa tất cả cờ IPC
+        IpcRegs.IPCSET.all = 0;            // Đảm bảo không còn cờ set treo
+
+    #endif
 
     for(ndx1=0; ndx1<DLOG_SIZE_1; ndx1++)
     {
@@ -1143,7 +1153,7 @@ int main(void)
         }
         if(Cmpss2Regs.COMPSTS.bit.COMPLLATCH == 1)
         {
-            protect_chanel.Ic_lower = 1;
+            protect_chanel.Ic_upper = 1;
         }
         if(Cmpss2Regs.COMPSTS.bit.COMPLLATCH == 1)
         {
@@ -1152,13 +1162,23 @@ int main(void)
 
         #if(SET_MODE_RUN == THREE_PHASE_MODE)
 
-            ON_RELAY = 1;
-            GpioDataRegs.GPASET.bit.GPIO27 = 1; // Relay 1
-            GpioDataRegs.GPASET.bit.GPIO25 = 1; // Relay 2
-            while(GpioDataRegs.GPADAT.bit.GPIO27 != 1 && GpioDataRegs.GPADAT.bit.GPIO25 != 1)
+            if(ON_RELAY == 1)
             {
-                START = 0;
+                GpioDataRegs.GPASET.bit.GPIO25 = 1; // Relay 2
+                GpioDataRegs.GPASET.bit.GPIO27 = 1; // Relay
+
+
             }
+            else if(ON_RELAY == 0)
+            {
+                GpioDataRegs.GPACLEAR.bit.GPIO25 = 1; // Relay 2
+                GpioDataRegs.GPACLEAR.bit.GPIO27 = 1; // Relay 1
+            }
+
+//            while(GpioDataRegs.GPADAT.bit.GPIO27 != 1 && GpioDataRegs.GPADAT.bit.GPIO25 != 1)
+//            {
+//                START = 0;
+//            }
 
         #endif
 
@@ -1170,6 +1190,29 @@ int main(void)
             while(GpioDataRegs.GPADAT.bit.GPIO27 != 0 && GpioDataRegs.GPADAT.bit.GPIO25 != 0)
             {
                 START = 0;
+            }
+
+        #endif
+
+        #if(ALLOW_IPC_CPU == 1)
+
+            // Điều khiển giá trị biến START_2 trên CPU2
+            if (START_1 == 1)
+            {
+
+                // Gửi giá trị 1 đến CPU2 qua IPC (địa chỉ truyền dữ liệu)
+                IpcRegs.IPCSENDDATA = 1;
+                // Tín hiệu IPC để thông báo dữ liệu đã sẵn sàng
+                IpcRegs.IPCSET.bit.IPC0 = 1;
+
+                // Đợi CPU2 xác nhận đã nhận dữ liệu
+                while (IpcRegs.IPCFLG.bit.IPC0 == 1);
+            }
+            else
+            {
+                IpcRegs.IPCSENDDATA = 0;
+                IpcRegs.IPCSET.bit.IPC0 = 1;
+                while (IpcRegs.IPCFLG.bit.IPC0 == 1);
             }
 
         #endif

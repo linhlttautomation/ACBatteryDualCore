@@ -9,6 +9,11 @@
 #include "F2837xD_adc.h"
 #include "CFDAB_Setting.h"
 
+
+
+
+
+
 typedef struct {
         unsigned int PeriodMax;     // Parameter: PWM Half-Period in CPU clock cycles (Q0)
         float MfuncA1;        // Input: EPWM1 A&B Duty cycle ratio (Q15)
@@ -30,23 +35,23 @@ float Vc_Display;
     Default Initializers for the F280X PWMGEN Object
     bo di 1 cai
 ------------------------------------------------------------------------------*/
-#define F2837X_FC_PWM_GEN    { 10000,  \
-                              0.0, \
-                              0.0, \
-                              0.0, \
-                              0.0, \
-                              0.0, \
-                              0.0, \
-                             }
-
-#define PWMGEN_DEFAULTS     F2837X_FC_PWM_GEN
+//#define F2837X_FC_PWM_GEN    { 10000,  \
+//                              0.0, \
+//                              0.0, \
+//                              0.0, \
+//                              0.0, \
+//                              0.0, \
+//                              0.0, \
+//                             }
+//
+//#define PWMGEN_DEFAULTS     F2837X_FC_PWM_GEN
 
 //
 // Macro definitions
 //
 #define WAITSTEP                  asm(" RPT #255 || NOP")
 
-PWMGEN pwm1 = PWMGEN_DEFAULTS;
+//PWMGEN pwm1 = PWMGEN_DEFAULTS;
 
 //
 // Global variables
@@ -59,17 +64,17 @@ Uint16 Task1_Isr,Task2_Isr = 0;
 int ChannelAdc = 0;
 
 // CMPSS parameters for Over Current Protection TPC
-Uint16  clkPrescale_2 = 2,
-        sampwin_2     = 30,
-        thresh_2      = 18,
-        LEM_curIlvHi_2   = LEM_2(15), //20
-        LEM_curIlvLo_2   = LEML_2(-15),
-        LEM_curIhvHi_2   = LEM_2(15), //20
-        LEM_curIhvLo_2   = LEML_2(-15),
-        MEA_voltUbatHi = MEAUBAT(80),
-        MEA_voltUbatLo = 0,
-        MEA_voltUcHi = MEAUC(180),
-        MEA_voltUcLo = 0;
+//Uint16  clkPrescale_2 = 2,
+//        sampwin_2     = 30,
+//        thresh_2      = 18,
+//        LEM_curIlvHi_2   = LEM_2(15), //20
+//        LEM_curIlvLo_2   = LEML_2(-15),
+//        LEM_curIhvHi_2   = LEM_2(15), //20
+//        LEM_curIhvLo_2   = LEML_2(-15),
+//        MEA_voltUbatHi = MEAUBAT(80),
+//        MEA_voltUbatLo = 0,
+//        MEA_voltUcHi = MEAUC(30),
+//        MEA_voltUcLo = 0;
 
 //
 // Function prototypes
@@ -155,10 +160,12 @@ void PWM_CFDAB(int period, int deadtime)
 {
     EALLOW;
 
+// Van S1
+
     EPwm1Regs.TBCTL.bit.PRDLD = TB_SHADOW;        // set shadow load
     EPwm1Regs.TBPRD = period;
     EPwm1Regs.CMPA.bit.CMPA = period;             // Fix duty at 100%
-    EPwm1Regs.TBPHS.bit.TBPHS = period/2;           // Phase = 180 deg
+    EPwm1Regs.TBPHS.bit.TBPHS = 0;           // Phase = 180 deg
     EPwm1Regs.TBCTR = 0;
     EPwm1Regs.TBCTL.bit.FREE_SOFT = 3;                   // Free run
 
@@ -167,7 +174,7 @@ void PWM_CFDAB(int period, int deadtime)
     EPwm1Regs.TBCTL.bit.SYNCOSEL = TB_CTR_ZERO;       // Sync "flow through" mode
     EPwm1Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;
     EPwm1Regs.TBCTL.bit.CLKDIV = TB_DIV1;
-    EPwm1Regs.TBCTL.bit.PHSDIR = TB_UP;            // Count DOWN on sync (=180 deg)
+    EPwm1Regs.TBCTL.bit.PHSDIR = TB_UP;            // Count DOWN on sync (=180 deg) // chi dung khi up-down
 
     EPwm1Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;
     EPwm1Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
@@ -197,15 +204,15 @@ void PWM_CFDAB(int period, int deadtime)
     EPwm1Regs.ETCLR.bit.SOCA = 1;
     EPwm1Regs.ETPS.bit.SOCACNT = ET_1ST ;              // Generate INT on 1st event
 
+
     // Enable CNT_zero interrupt using EPWM1 Time-base
     EPwm1Regs.ETSEL.bit.INTEN = 1;                      // enable EPWM1INT generation
     EPwm1Regs.ETSEL.bit.INTSEL = ET_CTR_ZERO;           // enable interrupt CNT_zero event
     EPwm1Regs.ETPS.bit.INTPRD = ET_1ST;                 // generate interrupt on the 1st event
     EPwm1Regs.ETPS.bit.INTCNT = ET_1ST;
-    EPwm1Regs.ETCLR.bit.INT = 1;                        // enable more interrupts
-
+    EPwm1Regs.ETCLR.bit.INT = 1;
     //-----------------------------------------------------
-    // ePWM(n+1) init.  EPWM(n+1) is a slave
+    // Q2a   // ePWM(n+1) init.  EPWM(n+1) is a slave
     EPwm2Regs.TBCTL.bit.PRDLD = TB_SHADOW;        // set Immediate load
     EPwm2Regs.TBPRD = period;
     EPwm2Regs.CMPA.bit.CMPA = period;             // Fix duty at 100%
@@ -246,7 +253,7 @@ void PWM_CFDAB(int period, int deadtime)
     EPwm3Regs.TBCTL.bit.PRDLD = TB_SHADOW;             // set Immediate load
     EPwm3Regs.TBPRD = period;
     EPwm3Regs.CMPA.bit.CMPA = period;
-    EPwm3Regs.TBPHS.bit.TBPHS = 0;
+    EPwm3Regs.TBPHS.bit.TBPHS = period/2;
     EPwm3Regs.TBCTR = 0;
     EPwm3Regs.TBCTL.bit.FREE_SOFT = 3;                 // Free run
 
@@ -278,6 +285,8 @@ void PWM_CFDAB(int period, int deadtime)
     EPwm3Regs.DBCTL.bit.IN_MODE = DBA_ALL;
     EPwm3Regs.DBRED.bit.DBRED = deadtime;              // dummy value for now
     EPwm3Regs.DBFED.bit.DBFED = deadtime;              // dummy value for now
+
+
     //-----------------------------------------------------
 
     // ePWM(n+1) init.  EPWM(n+1) is a slave
@@ -285,7 +294,7 @@ void PWM_CFDAB(int period, int deadtime)
     EPwm10Regs.TBPRD = period;
     EPwm10Regs.CMPA.bit.CMPA = 0;             // Fix duty at 100%
     EPwm10Regs.CMPB.bit.CMPB = period;             // Fix duty at 100%
-    EPwm10Regs.TBPHS.bit.TBPHS = period/2;           // Phase = 180 deg
+    EPwm10Regs.TBPHS.bit.TBPHS = 0;           // Phase = 180 deg
     EPwm10Regs.TBCTR = 0;
     EPwm10Regs.TBCTL.bit.FREE_SOFT = 3;                   // Free run
 
@@ -323,6 +332,24 @@ void PWM_CFDAB(int period, int deadtime)
     EDIS;
 }
 
+//void DelayMs(unsigned long ms)
+//{
+//    unsigned long count = 0;
+//    for(count = 0; count < ms ; count++)
+//    {
+//        DELAY_US(1000);
+//    }
+//}
+//
+//void DelayS(unsigned long s)
+//{
+//    unsigned long count = 0;
+//    for(count = 0; count < s ; count++)
+//    {
+//        DelayMs(1000);
+//    }
+//}
+
 void CMPSS_Protection_TPC(void)
 {
         EALLOW;
@@ -333,14 +360,14 @@ void CMPSS_Protection_TPC(void)
         Cmpss6Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Ubat Upper protection
-        Cmpss6Regs.DACHVALS.bit.DACVAL = MEA_voltUbatHi;
-
+        //Cmpss6Regs.DACHVALS.bit.DACVAL = MEA_voltUbatHi;
+        Cmpss6Regs.DACHVALS.bit.DACVAL = 4095;
         Cmpss6Regs.COMPCTL.bit.COMPHINV = 0;
         Cmpss6Regs.COMPCTL.bit.CTRIPHSEL = 2;
 
-        Cmpss6Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale_2; // Set time between samples, max : 1023
-        Cmpss6Regs.CTRIPHFILCTL.bit.SAMPWIN        = sampwin_2; // # Of samples in window, max : 31
-        Cmpss6Regs.CTRIPHFILCTL.bit.THRESH         = thresh_2; // Recommended : thresh > sampwin/2
+        Cmpss6Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = 11; // Set time between samples, max : 1023
+        Cmpss6Regs.CTRIPHFILCTL.bit.SAMPWIN        = 30; // # Of samples in window, max : 31
+        Cmpss6Regs.CTRIPHFILCTL.bit.THRESH         = 18; // Recommended : thresh > sampwin/2
         Cmpss6Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
         Cmpss6Regs.COMPSTSCLR.bit.HLATCHCLR = 1; // Clear the status register for latched comparator events
     #endif
@@ -445,7 +472,8 @@ void CMPSS_Protection_TPC(void)
         Cmpss5Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // Uc Upper protection
-        Cmpss5Regs.DACHVALS.bit.DACVAL = MEA_voltUcHi;
+        //Cmpss5Regs.DACHVALS.bit.DACVAL = MEA_voltUcHi;
+        Cmpss5Regs.DACHVALS.bit.DACVAL = 100;
         Cmpss5Regs.COMPCTL.bit.COMPHINV = 0;
         Cmpss5Regs.COMPCTL.bit.CTRIPHSEL = 2;
 
@@ -494,21 +522,21 @@ void CMPSS_Protection_TPC(void)
     EPwm10Regs.DCTRIPSEL.bit.DCALCOMPSEL = 5 ; // Tripin6
 
     // DC Trip select tripin5
-    EPwm1Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 4 ; // Tripin5
-    EPwm1Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
-    EPwm1Regs.DCTRIPSEL.bit.DCALCOMPSEL = 4 ; // Tripin5
-
-    EPwm2Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 4 ; // Tripin5
-    EPwm2Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
-    EPwm2Regs.DCTRIPSEL.bit.DCALCOMPSEL = 4 ; // Tripin5
-
-    EPwm3Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 4 ; // Tripin5
-    EPwm3Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
-    EPwm3Regs.DCTRIPSEL.bit.DCALCOMPSEL = 4 ; // Tripin5
-
-    EPwm10Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 4 ; // Tripin5
-    EPwm10Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
-    EPwm10Regs.DCTRIPSEL.bit.DCALCOMPSEL = 4 ; // Tripin5
+//    EPwm1Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 4 ; // Tripin5
+//    EPwm1Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
+//    EPwm1Regs.DCTRIPSEL.bit.DCALCOMPSEL = 4 ; // Tripin5
+//
+//    EPwm2Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 4 ; // Tripin5
+//    EPwm2Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
+//    EPwm2Regs.DCTRIPSEL.bit.DCALCOMPSEL = 4 ; // Tripin5
+//
+//    EPwm3Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 4 ; // Tripin5
+//    EPwm3Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
+//    EPwm3Regs.DCTRIPSEL.bit.DCALCOMPSEL = 4 ; // Tripin5
+//
+//    EPwm10Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 4 ; // Tripin5
+//    EPwm10Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
+//    EPwm10Regs.DCTRIPSEL.bit.DCALCOMPSEL = 4 ; // Tripin5
 
     // Tripzone Select
     EPwm1Regs.TZSEL.bit.DCAEVT1 = 1;
@@ -537,29 +565,12 @@ void CMPSS_Protection_TPC(void)
     EDIS;
 }
 
-void DelayMs(unsigned long ms)
-{
-    unsigned long count = 0;
-    for(count = 0; count < ms ; count++)
-    {
-        DELAY_US(1000);
-    }
-}
 
-void DelayS(unsigned long s)
-{
-    unsigned long count = 0;
-    for(count = 0; count < s ; count++)
-    {
-        DelayMs(1000);
-    }
-}
 //
 // Main
 //
 int main(void)
 {
-
 //
 // Initialize System Control:
 // PLL, WatchDog, enable Peripheral Clocks
@@ -588,6 +599,7 @@ int main(void)
    EDIS;
 
    PWM_CFDAB(2000,30);
+
 
    CMPSS_Protection_TPC();
 
@@ -682,7 +694,7 @@ int main(void)
     EDIS;
     // khoi tao luong dat Cpu cho CLA
     CpuToCLA.EnableADC = 0;
-    DelayMs(1000);
+   // DelayMs(1000);
 
     CpuToCLA.EnableADC = 1;
     CpuToCLA.EnableFlag = 0;
@@ -694,26 +706,26 @@ int main(void)
     CpuToCLA.PhiTesting = 0.084;
     CpuToCLA.PhiStart = 0.001;
 
-    DelayMs(1000);
+    //DelayMs(1000);
     //------------------------------------------------------------------------------
     // khoi tao tham so ban dau cho CFDAB
-    Setting_bat.Power  = CFDAB_Power;
-    Setting_bat.Voltage = CFDAB_Voltage;
-    Setting_bat.ChargeCurrentMax = CFDAB_MaxCharge_Current;
-    Setting_bat.DisChargeCurrentMax = CFDAB_MaxDischarge_Current;
-
-    Setting_bat.UdcRef = CFDAB_UdcRef;
-    Setting_bat.VcRef  = CFDAB_VcRef;
-    Setting_bat.UbatRef = CFDAB_UbatRef;
-    Setting_bat.IbatRef = CFDAB_IbatRef;
-
-    Setting_bat.UdcMax = CFDAB_Udc_Max;
-    Setting_bat.UdcMin = CFDAB_Udc_Min;
-    Setting_bat.VcMax = CFDAB_Vc_Max;
-    Setting_bat.VcMin = CFDAB_Vc_Min;
-    Setting_bat.UbatMax = CFDAB_Ubat_Max;
-    Setting_bat.UbatMin = CFDAB_Ubat_Min;
-    Setting_bat.IbatMax = CFDAB_Ibat_Max;
+//    Setting_bat.Power  = CFDAB_Power;
+//    Setting_bat.Voltage = CFDAB_Voltage;
+//    Setting_bat.ChargeCurrentMax = CFDAB_MaxCharge_Current;
+//    Setting_bat.DisChargeCurrentMax = CFDAB_MaxDischarge_Current;
+//
+//    Setting_bat.UdcRef = CFDAB_UdcRef;
+//    Setting_bat.VcRef  = CFDAB_VcRef;
+//    Setting_bat.UbatRef = CFDAB_UbatRef;
+//    Setting_bat.IbatRef = CFDAB_IbatRef;
+//
+//    Setting_bat.UdcMax = CFDAB_Udc_Max;
+//    Setting_bat.UdcMin = CFDAB_Udc_Min;
+//    Setting_bat.VcMax = CFDAB_Vc_Max;
+//    Setting_bat.VcMin = CFDAB_Vc_Min;
+//    Setting_bat.UbatMax = CFDAB_Ubat_Max;
+//    Setting_bat.UbatMin = CFDAB_Ubat_Min;
+//    Setting_bat.IbatMax = CFDAB_Ibat_Max;
 
     // DelayMs(1000);
 
@@ -742,7 +754,6 @@ int main(void)
         {
             CpuToCLA.EnableFlag = 0;
         }
-
         //asm(" NOP");
     }
 }
@@ -873,33 +884,33 @@ void CLA_initCpu2Cla(void)
 interrupt void cla1Isr1 ()
 {
     Task1_Isr++;
-    static Uint16 i = 0;
-    // hien thi
-    Vout_Display = 800.0 * ClaToCPU.ADC_CPU.Udc_CFDAB;
-    Vc_Display   = 600.0 * ClaToCPU.ADC_CPU.Vc;
-    Vin_Display  = 200.0 * ClaToCPU.ADC_CPU.Ubat;
-
-    if(i == 200) i =0;
-    switch(ChannelAdc)
-    {
-        case 0:
-            Datalog1[i] = ClaToCPU.ADC_CPU.Udc_CFDAB;
-            Datalog2[i] = ClaToCPU.ADC_CPU.Vc;
-            break;
-        case 1:
-            Datalog1[i] = ClaToCPU.ADC_CPU.Ubat;
-            Datalog2[i] = ClaToCPU.ADC_CPU.Ilv;
-            break;
-        case 2:
-            Datalog1[i] = ClaToCPU.MEASUARE_CPU.duty;
-            Datalog2[i] = ClaToCPU.MEASUARE_CPU.theta1;
-            break;
-    }
-    i++;
-    if(i == 200) i =0;
-    //asm(" ESTOP0");
-    AdcaRegs.ADCINTFLGCLR.bit.ADCINT1 = 1; //make sure INT1 flag is cleared
-    PieCtrlRegs.PIEACK.all = (PIEACK_GROUP1 | PIEACK_GROUP11);
+//    static Uint16 i = 0;
+//    // hien thi
+//    Vout_Display = 800.0 * ClaToCPU.ADC_CPU.Udc_CFDAB;
+//    Vc_Display   = 600.0 * ClaToCPU.ADC_CPU.Vc;
+//    Vin_Display  = 200.0 * ClaToCPU.ADC_CPU.Ubat;
+//
+//    if(i == 200) i =0;
+//    switch(ChannelAdc)
+//    {
+//        case 0:
+//            Datalog1[i] = ClaToCPU.ADC_CPU.Udc_CFDAB;
+//            Datalog2[i] = ClaToCPU.ADC_CPU.Vc;
+//            break;
+//        case 1:
+//            Datalog1[i] = ClaToCPU.ADC_CPU.Ubat;
+//            Datalog2[i] = ClaToCPU.ADC_CPU.Ilv;
+//            break;
+//        case 2:
+//            Datalog1[i] = ClaToCPU.MEASUARE_CPU.duty;
+//            Datalog2[i] = ClaToCPU.MEASUARE_CPU.theta1;
+//            break;
+//    }
+//    i++;
+//    if(i == 200) i =0;
+//    //asm(" ESTOP0");
+//    AdcaRegs.ADCINTFLGCLR.bit.ADCINT1 = 1; //make sure INT1 flag is cleared
+//    PieCtrlRegs.PIEACK.all = (PIEACK_GROUP1 | PIEACK_GROUP11);
     PieCtrlRegs.PIEACK.all = M_INT11;
 }
 
@@ -961,6 +972,10 @@ interrupt void cla1Isr8 ()
     Task8_Isr++;
     PieCtrlRegs.PIEACK.all = M_INT11;
 }
+
+
+
+
 
 //
 // End of file

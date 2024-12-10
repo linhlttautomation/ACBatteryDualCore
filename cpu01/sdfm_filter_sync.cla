@@ -31,6 +31,8 @@
 #pragma DATA_SECTION(IsrTicker,"CLADataLS0");
 volatile Uint32 IsrTicker;
 
+#if(SET_MODE_RUN == THREE_PHASE_MODE)
+
 #pragma DATA_SECTION(rg_har_1st,"CLADataLS0");
 volatile RAMP_GEN_CLA rg_har_1st;
 
@@ -122,6 +124,15 @@ volatile int loop_volt_Us;
 #pragma DATA_SECTION(data1,"CLADataLS0");
 volatile DATA data1;
 
+#pragma DATA_SECTION(ramp_switch,"CLADataLS0");
+volatile short ramp_switch;
+
+#endif
+
+#if(SET_MODE_RUN == SINGLE_PHASE_MODE)
+
+#endif
+
 Uint16 TaskCpu1Cla1;
 Uint16 TaskCpu1Cla1_task2;
 
@@ -134,8 +145,6 @@ __interrupt void Cla1Task1 ( void )
     #endif
 
     TaskCpu1Cla1++;
-
-#if(SET_MODE_RUN == THREE_PHASE_MODE)
 
     if(CpuToCLA.EnableADC == 1 && START_ADC == 2)
     {
@@ -287,10 +296,12 @@ __interrupt void Cla1Task1 ( void )
     }
     if(START_CONTROLLER == 1)
     {
-        EPwm4Regs.DBCTL.bit.OUT_MODE = 3; // Dead-band áp dụng cho cả hai tín hiệu PWM A và B.
-        EPwm6Regs.DBCTL.bit.OUT_MODE = 3;
-        EPwm5Regs.DBCTL.bit.OUT_MODE = 3;
-        EPwm8Regs.DBCTL.bit.OUT_MODE = 3;
+        if(ramp_switch == 1)
+        {
+            EPwm4Regs.DBCTL.bit.OUT_MODE = 3; // Dead-band áp dụng cho cả hai tín hiệu PWM A và B.
+            EPwm6Regs.DBCTL.bit.OUT_MODE = 3;
+            EPwm5Regs.DBCTL.bit.OUT_MODE = 3;
+            EPwm8Regs.DBCTL.bit.OUT_MODE = 3;
 
         #if(BUILDLEVEL == LEVEL1)
 
@@ -491,7 +502,55 @@ __interrupt void Cla1Task1 ( void )
             EPwm5Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncB1*pwm.PeriodMax);
             EPwm8Regs.CMPA.bit.CMPA = (Uint16)(pwm.MfuncB2*pwm.PeriodMax);
         #endif
+
+        }
+        else
+        {
+            EPwm4Regs.DBCTL.bit.OUT_MODE = 0; // Tắt chức năng Dead Band đầu ra (Dead Band output mode).
+            EPwm6Regs.DBCTL.bit.OUT_MODE = 0; // Tắt chức năng Dead Band đầu ra (Dead Band output mode).
+            EPwm5Regs.DBCTL.bit.OUT_MODE = 0; // Tắt chức năng Dead Band đầu ra (Dead Band output mode).
+            EPwm8Regs.DBCTL.bit.OUT_MODE = 0; // Tắt chức năng Dead Band đầu ra (Dead Band output mode).
+
+            EPwm4Regs.AQCTLA.bit.CAU = AQ_CLEAR;
+            EPwm4Regs.AQCTLA.bit.CAD = AQ_SET;
+
+            EPwm6Regs.AQCTLA.bit.CAU = AQ_CLEAR;
+            EPwm6Regs.AQCTLA.bit.CAD = AQ_SET;
+
+            EPwm5Regs.AQCTLA.bit.CAU = AQ_CLEAR;
+            EPwm5Regs.AQCTLA.bit.CAD = AQ_SET;
+
+            EPwm8Regs.AQCTLA.bit.CAU = AQ_CLEAR;
+            EPwm8Regs.AQCTLA.bit.CAD = AQ_SET;
+
+            EPwm4Regs.CMPA.bit.CMPA = 0;
+            EPwm4Regs.CMPB.bit.CMPB = 0;
+
+            EPwm6Regs.CMPA.bit.CMPA = 0;
+            EPwm6Regs.CMPB.bit.CMPB = 0;
+
+            EPwm5Regs.CMPA.bit.CMPA = 0;
+            EPwm5Regs.CMPB.bit.CMPB = 0;
+
+            EPwm8Regs.CMPA.bit.CMPA = 0;
+            EPwm8Regs.CMPB.bit.CMPB = 0;
+
+            ramp_switch = 1;
+
+            rg_har_1st.Angle = 0;
+            rg_har_1st.Out = 0;
+
+            rc_Ref.SetpointValue = 0;
+
+            pi_volt_Usd.OUT_I = 0; pi_volt_Usd.OUT = 0;
+            pi_volt_Usq.OUT_I = 0; pi_volt_Usq.OUT = 0;
+
+            pi_curr_id.OUT_I = 0; pi_curr_id.OUT = 0;
+            pi_curr_iq.OUT_I = 0; pi_curr_iq.OUT = 0;
+            pi_curr_iz.OUT_I = 0; pi_curr_iz.OUT = 0;
+        }
     }
+
     else
     {
         EPwm4Regs.DBCTL.bit.OUT_MODE = 0; // Tắt chức năng Dead Band đầu ra (Dead Band output mode).
@@ -523,22 +582,7 @@ __interrupt void Cla1Task1 ( void )
         EPwm8Regs.CMPA.bit.CMPA = 0;
         EPwm8Regs.CMPB.bit.CMPB = 0;
 
-        // RESET cac bien trong thuat toan
-        rg_har_1st.Angle = 0;
-        rg_har_1st.Out = 0;
-
-        rc_Ref.SetpointValue = 0;
-
-        pi_volt_Usd.OUT_I = 0; pi_volt_Usd.OUT = 0;
-        pi_volt_Usq.OUT_I = 0; pi_volt_Usq.OUT = 0;
-
-        pi_curr_id.OUT_I = 0; pi_curr_id.OUT = 0;
-        pi_curr_iq.OUT_I = 0; pi_curr_iq.OUT = 0;
-        pi_curr_iz.OUT_I = 0; pi_curr_iz.OUT = 0;
     }
-
-#endif
-
 }
 
 //
@@ -630,8 +674,8 @@ __interrupt void Cla1Task8 ( void )
         rg_har_1st.StepAngleMax = 150.0*0.00002;
 
         RC_INT_MACRO(rc_Ref)
-        rc_Ref.StepRampDec = 0.001/400.0;
-        rc_Ref.StepRampInc = 0.001/400.0;
+        rc_Ref.StepRampDec = 0.0005/10/400.0;
+        rc_Ref.StepRampInc = 0.0005/10/400.0;
 
     #endif
 
@@ -763,9 +807,14 @@ __interrupt void Cla1Task8 ( void )
 
     IsrTicker = 0;
     START_ADC = 2;
+    ramp_switch = 1;
 
     data1.Vg_rms = DATA1_VG_RMS;
     data1.Ig_rms   = DATA1_IG_RMS;
+#endif
+
+#if(SET_MODE_RUN == SINGLE_PHASE_MODE)
+
 #endif
 
 }
