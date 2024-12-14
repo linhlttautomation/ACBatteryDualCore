@@ -14,7 +14,7 @@
 #define LEVEL4        4           // Vong ap doc lap
 
 // ---------------------------------------------------
-#define BUILDLEVEL    LEVEL1
+#define BUILDLEVEL    LEVEL4
 // ---------------------------------------------------
 
 #define SINGLE_PHASE_MODE       1
@@ -108,7 +108,7 @@
 #define CMPSS_PROTECT_Ic_inv_LOWER      1 // Da test co the bao ve duoc, bv ok
 
 // CMPSS FLC Setting
-#define CMPSS_Udc_New_Protecion            60.0
+#define CMPSS_Udc_New_Protecion            80.0
 
 #define CMPSS_Udc_Offset_New_Protecion     0.0
 #define CMPSS_Vg_Offset_New_Protecion      0.0

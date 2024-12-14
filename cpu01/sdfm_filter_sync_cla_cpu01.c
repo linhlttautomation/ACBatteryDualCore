@@ -1101,17 +1101,17 @@ int main(void)
     CpuToCLA.IdTesting     = 1.0;
 
     CpuToCLA.ADCoffset_Udc = 4;  //
-    CpuToCLA.ADCoffset_VaG = 2598; //
+    CpuToCLA.ADCoffset_VaG = 2703; //
     CpuToCLA.ADCoffset_VbG = 2604; //
-    CpuToCLA.ADCoffset_VcG = 2591; //
+    CpuToCLA.ADCoffset_VcG = 2695; //
     CpuToCLA.ADCoffset_Ia_inv = 2061; //
     CpuToCLA.ADCoffset_Ib_inv = 2050; //
     CpuToCLA.ADCoffset_Ic_inv = 2035; //
 
     CpuToCLA.ADCgain_Udc = 1.0;  //
-    CpuToCLA.ADCgain_VaG = 0.75; //
+    CpuToCLA.ADCgain_VaG = 0.78; //
     CpuToCLA.ADCgain_VbG = 0.76; //
-    CpuToCLA.ADCgain_VcG = 0.75; //
+    CpuToCLA.ADCgain_VcG = 0.77; //
     CpuToCLA.ADCgain_Ia_inv = 1.52; //
     CpuToCLA.ADCgain_Ib_inv = 1.52; //
     CpuToCLA.ADCgain_Ic_inv = 1.475; //

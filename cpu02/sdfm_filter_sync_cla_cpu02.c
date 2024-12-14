@@ -9,11 +9,6 @@
 #include "F2837xD_adc.h"
 #include "CFDAB_Setting.h"
 
-
-
-
-
-
 typedef struct {
         unsigned int PeriodMax;     // Parameter: PWM Half-Period in CPU clock cycles (Q0)
         float MfuncA1;        // Input: EPWM1 A&B Duty cycle ratio (Q15)
@@ -35,16 +30,16 @@ float Vc_Display;
     Default Initializers for the F280X PWMGEN Object
     bo di 1 cai
 ------------------------------------------------------------------------------*/
-//#define F2837X_FC_PWM_GEN    { 10000,  \
-//                              0.0, \
-//                              0.0, \
-//                              0.0, \
-//                              0.0, \
-//                              0.0, \
-//                              0.0, \
-//                             }
-//
-//#define PWMGEN_DEFAULTS     F2837X_FC_PWM_GEN
+#define F2837X_FC_PWM_GEN    { 10000,  \
+                              0.0, \
+                              0.0, \
+                              0.0, \
+                              0.0, \
+                              0.0, \
+                              0.0, \
+                             }
+
+#define PWMGEN_DEFAULTS     F2837X_FC_PWM_GEN
 
 //
 // Macro definitions
@@ -62,19 +57,18 @@ Uint16 StartFlag = 0;
 Uint16 START = 0;
 Uint16 Task1_Isr,Task2_Isr = 0;
 int ChannelAdc = 0;
+uint16_t CLear_TZ = 1;
 
 // CMPSS parameters for Over Current Protection TPC
-//Uint16  clkPrescale_2 = 2,
-//        sampwin_2     = 30,
-//        thresh_2      = 18,
-//        LEM_curIlvHi_2   = LEM_2(15), //20
-//        LEM_curIlvLo_2   = LEML_2(-15),
-//        LEM_curIhvHi_2   = LEM_2(15), //20
-//        LEM_curIhvLo_2   = LEML_2(-15),
-//        MEA_voltUbatHi = MEAUBAT(80),
-//        MEA_voltUbatLo = 0,
-//        MEA_voltUcHi = MEAUC(30),
-//        MEA_voltUcLo = 0;
+//Uint16  clkPrescale = 2,
+//        sampwin     = 30,
+//        thresh      = 18,
+//        MEA_voltUbatHi= MEAUBAT(20),
+//        MEA_voltUbatLo= 0,
+//        MEA_voltUdcHi = MEAUDC(60),
+//        MEA_voltUdcLo = 0,
+//        MEA_voltUcHi=MEAUC(10),
+//        MEA_voltUcLo=0;
 
 //
 // Function prototypes
@@ -262,7 +256,7 @@ void PWM_CFDAB(int period, int deadtime)
     EPwm3Regs.TBCTL.bit.SYNCOSEL = TB_SYNC_IN;        //used to sync EPWM(n+1) "down-stream"
     EPwm3Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;
     EPwm3Regs.TBCTL.bit.CLKDIV = TB_DIV1;
-    EPwm3Regs.TBCTL.bit.PHSDIR = TB_DOWN;
+    EPwm3Regs.TBCTL.bit.PHSDIR = TB_UP;
 
     EPwm3Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;      // load on CTR=Zero
     EPwm3Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
@@ -332,238 +326,24 @@ void PWM_CFDAB(int period, int deadtime)
     EDIS;
 }
 
-//void DelayMs(unsigned long ms)
-//{
-//    unsigned long count = 0;
-//    for(count = 0; count < ms ; count++)
-//    {
-//        DELAY_US(1000);
-//    }
-//}
-//
-//void DelayS(unsigned long s)
-//{
-//    unsigned long count = 0;
-//    for(count = 0; count < s ; count++)
-//    {
-//        DelayMs(1000);
-//    }
-//}
-
-void CMPSS_Protection_TPC(void)
+void DelayMs(unsigned long ms)
 {
-        EALLOW;
-    #if(CMPSS_PROTECT_Ubat_UPPER == 1)
-        Cmpss6Regs.COMPCTL.bit.COMPDACE = 1;
-        Cmpss6Regs.COMPCTL.bit.COMPHSOURCE = 0;
-        Cmpss6Regs.COMPDACCTL.bit.DACSOURCE = 0;
-        Cmpss6Regs.COMPDACCTL.bit.SWLOADSEL = 0;
-
-        // Ubat Upper protection
-        //Cmpss6Regs.DACHVALS.bit.DACVAL = MEA_voltUbatHi;
-        Cmpss6Regs.DACHVALS.bit.DACVAL = 4095;
-        Cmpss6Regs.COMPCTL.bit.COMPHINV = 0;
-        Cmpss6Regs.COMPCTL.bit.CTRIPHSEL = 2;
-
-        Cmpss6Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = 11; // Set time between samples, max : 1023
-        Cmpss6Regs.CTRIPHFILCTL.bit.SAMPWIN        = 30; // # Of samples in window, max : 31
-        Cmpss6Regs.CTRIPHFILCTL.bit.THRESH         = 18; // Recommended : thresh > sampwin/2
-        Cmpss6Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
-        Cmpss6Regs.COMPSTSCLR.bit.HLATCHCLR = 1; // Clear the status register for latched comparator events
-    #endif
-    //-----------------------------------------------------
-    #if(CMPSS_PROTECT_Ubat_LOWER == 1)
-        Cmpss6Regs.COMPCTL.bit.COMPDACE = 1;
-        Cmpss6Regs.COMPCTL.bit.COMPLSOURCE = 0;
-        Cmpss6Regs.COMPDACCTL.bit.DACSOURCE = 0;
-        Cmpss6Regs.COMPDACCTL.bit.SWLOADSEL = 0;
-
-        // Ubat Lower protecion
-        Cmpss6Regs.DACLVALS.bit.DACVAL = MEA_voltUbatLo;
-
-        Cmpss6Regs.COMPCTL.bit.COMPLINV = 1;
-        Cmpss6Regs.COMPCTL.bit.CTRIPLSEL = 2;
-
-        Cmpss6Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_2; // Set time between samples, max : 1023
-        Cmpss6Regs.CTRIPLFILCTL.bit.SAMPWIN        = sampwin_2; // # Of samples in window, max : 31
-        Cmpss6Regs.CTRIPLFILCTL.bit.THRESH         = thresh_2; // Recommended : thresh > sampwin/2
-        Cmpss6Regs.CTRIPLFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
-        Cmpss6Regs.COMPSTSCLR.bit.LLATCHCLR = 1; // Clear the status register for latched comparator events
-    #endif
-    //-----------------------------------------------------
-    #if(CMPSS_PROTECT_Ihv_UPPER == 1)
-        Cmpss6Regs.COMPCTL.bit.COMPDACE = 1;
-        Cmpss6Regs.COMPCTL.bit.COMPHSOURCE = 1;
-        Cmpss6Regs.COMPDACCTL.bit.DACSOURCE = 0;
-        Cmpss6Regs.COMPDACCTL.bit.SWLOADSEL = 0;
-
-        // Ihv Upper protection
-        Cmpss6Regs.DACHVALS.bit.DACVAL = LEM_curIhvHi_2;
-
-        Cmpss6Regs.COMPCTL.bit.COMPHINV = 0;
-        Cmpss6Regs.COMPCTL.bit.CTRIPHSEL = 2;
-
-        Cmpss6Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale_2; // Set time between samples, max : 1023
-        Cmpss6Regs.CTRIPHFILCTL.bit.SAMPWIN        = sampwin_2; // # Of samples in window, max : 31
-        Cmpss6Regs.CTRIPHFILCTL.bit.THRESH         = thresh_2; // Recommended : thresh > sampwin/2
-        Cmpss6Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
-        Cmpss6Regs.COMPSTSCLR.bit.HLATCHCLR = 1; // Clear the status register for latched comparator events
-    #endif
-    //-----------------------------------------------------
-    #if(CMPSS_PROTECT_Ihv_LOWER == 1)
-        Cmpss6Regs.COMPCTL.bit.COMPDACE = 1;
-        Cmpss6Regs.COMPCTL.bit.COMPLSOURCE = 1;
-        Cmpss6Regs.COMPDACCTL.bit.DACSOURCE = 0;
-        Cmpss6Regs.COMPDACCTL.bit.SWLOADSEL = 0;
-
-        // VbG Lower protecion
-        Cmpss6Regs.DACLVALS.bit.DACVAL = LEM_curIhvLo_2;
-
-        Cmpss6Regs.COMPCTL.bit.COMPLINV = 1;
-        Cmpss6Regs.COMPCTL.bit.CTRIPLSEL = 2;
-
-        Cmpss6Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_2; // Set time between samples, max : 1023
-        Cmpss6Regs.CTRIPLFILCTL.bit.SAMPWIN        = sampwin_2; // # Of samples in window, max : 31
-        Cmpss6Regs.CTRIPLFILCTL.bit.THRESH         = thresh_2; // Recommended : thresh > sampwin/2
-        Cmpss6Regs.CTRIPLFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
-        Cmpss6Regs.COMPSTSCLR.bit.LLATCHCLR = 1; // Clear the status register for latched comparator events
-    #endif
-    //-----------------------------------------------------
-    #if(CMPSS_PROTECT_Ilv_UPPER == 1)
-        Cmpss5Regs.COMPCTL.bit.COMPDACE = 1;
-        Cmpss5Regs.COMPCTL.bit.COMPHSOURCE = 0;
-        Cmpss5Regs.COMPDACCTL.bit.DACSOURCE = 0;
-        Cmpss5Regs.COMPDACCTL.bit.SWLOADSEL = 0;
-
-        // Ilv Upper protection
-        Cmpss5Regs.DACHVALS.bit.DACVAL = LEM_curIlvHi_2;
-        Cmpss5Regs.COMPCTL.bit.COMPHINV = 0;
-        Cmpss5Regs.COMPCTL.bit.CTRIPHSEL = 2;
-
-        Cmpss5Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale_2; // Set time between samples, max : 1023
-        Cmpss5Regs.CTRIPHFILCTL.bit.SAMPWIN        = sampwin_2; // # Of samples in window, max : 31
-        Cmpss5Regs.CTRIPHFILCTL.bit.THRESH         = thresh_2; // Recommended : thresh > sampwin/2
-        Cmpss5Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
-        Cmpss5Regs.COMPSTSCLR.bit.HLATCHCLR = 1; // Clear the status register for latched comparator events
-    #endif
-    //-----------------------------------------------------
-    #if(CMPSS_PROTECT_Ilv_LOWER == 1)
-        Cmpss5Regs.COMPCTL.bit.COMPDACE = 1;
-        Cmpss5Regs.COMPCTL.bit.COMPLSOURCE = 0;
-        Cmpss5Regs.COMPDACCTL.bit.DACSOURCE = 0;
-        Cmpss5Regs.COMPDACCTL.bit.SWLOADSEL = 0;
-
-        // Ilv Lower protecion
-        Cmpss5Regs.DACLVALS.bit.DACVAL = LEM_curIlvLo_2;
-        Cmpss5Regs.COMPCTL.bit.COMPLINV = 1;
-        Cmpss5Regs.COMPCTL.bit.CTRIPLSEL = 2;
-
-        Cmpss5Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_2; // Set time between samples, max : 1023
-        Cmpss5Regs.CTRIPLFILCTL.bit.SAMPWIN        = sampwin_2; // # Of samples in window, max : 31
-        Cmpss5Regs.CTRIPLFILCTL.bit.THRESH         = thresh_2; // Recommended : thresh > sampwin/2
-        Cmpss5Regs.CTRIPLFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
-        Cmpss5Regs.COMPSTSCLR.bit.LLATCHCLR = 1; // Clear the status register for latched comparator events
-    #endif
-    //-----------------------------------------------------
-    #if(CMPSS_PROTECT_Uc_UPPER == 1)
-        Cmpss5Regs.COMPCTL.bit.COMPDACE = 1;
-        Cmpss5Regs.COMPCTL.bit.COMPHSOURCE = 1;
-        Cmpss5Regs.COMPDACCTL.bit.DACSOURCE = 0;
-        Cmpss5Regs.COMPDACCTL.bit.SWLOADSEL = 0;
-
-        // Uc Upper protection
-        //Cmpss5Regs.DACHVALS.bit.DACVAL = MEA_voltUcHi;
-        Cmpss5Regs.DACHVALS.bit.DACVAL = 100;
-        Cmpss5Regs.COMPCTL.bit.COMPHINV = 0;
-        Cmpss5Regs.COMPCTL.bit.CTRIPHSEL = 2;
-
-        // High protect
-        Cmpss5Regs.CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale_2; // Set time between samples, max : 1023
-        Cmpss5Regs.CTRIPHFILCTL.bit.SAMPWIN        = sampwin_2; // # Of samples in window, max : 31
-        Cmpss5Regs.CTRIPHFILCTL.bit.THRESH         = thresh_2; // Recommended : thresh > sampwin/2
-        Cmpss5Regs.CTRIPHFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
-        Cmpss5Regs.COMPSTSCLR.bit.HLATCHCLR = 1; // Clear the status register for latched comparator events
-    #endif
-    //-----------------------------------------------------
-    #if(CMPSS_PROTECT_Uc_LOWER == 1)
-        Cmpss5Regs.COMPCTL.bit.COMPDACE = 1;
-        Cmpss5Regs.COMPCTL.bit.COMPLSOURCE = 1;
-        Cmpss5Regs.COMPDACCTL.bit.DACSOURCE = 0;
-        Cmpss5Regs.COMPDACCTL.bit.SWLOADSEL = 0;
-
-        // Uc Lower protecion
-        Cmpss5Regs.DACLVALS.bit.DACVAL = MEA_voltUcLo;
-        Cmpss5Regs.COMPCTL.bit.COMPLINV = 1;
-        Cmpss5Regs.COMPCTL.bit.CTRIPLSEL = 2;
-
-        Cmpss5Regs.CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale_2; // Set time between samples, max : 1023
-        Cmpss5Regs.CTRIPLFILCTL.bit.SAMPWIN        = sampwin_2; // # Of samples in window, max : 31
-        Cmpss5Regs.CTRIPLFILCTL.bit.THRESH         = thresh_2; // Recommended : thresh > sampwin/2
-        Cmpss5Regs.CTRIPLFILCTL.bit.FILINIT        = 1; // Init samples to filter input value
-        Cmpss5Regs.COMPSTSCLR.bit.LLATCHCLR = 1; // Clear the status register for latched comparator events
-    #endif
-    //-----------------------------------------------------
-
-    // DC Trip select tripin6
-    EPwm1Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 5 ; // Tripin6
-    EPwm1Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
-    EPwm1Regs.DCTRIPSEL.bit.DCALCOMPSEL = 5 ; // Tripin6
-
-    EPwm2Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 5 ; // Tripin6
-    EPwm2Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
-    EPwm2Regs.DCTRIPSEL.bit.DCALCOMPSEL = 5 ; // Tripin6
-
-    EPwm3Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 5 ; // Tripin6
-    EPwm3Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
-    EPwm3Regs.DCTRIPSEL.bit.DCALCOMPSEL = 5 ; // Tripin6
-
-    EPwm10Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 5 ; // Tripin6
-    EPwm10Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
-    EPwm10Regs.DCTRIPSEL.bit.DCALCOMPSEL = 5 ; // Tripin6
-
-    // DC Trip select tripin5
-//    EPwm1Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 4 ; // Tripin5
-//    EPwm1Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
-//    EPwm1Regs.DCTRIPSEL.bit.DCALCOMPSEL = 4 ; // Tripin5
-//
-//    EPwm2Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 4 ; // Tripin5
-//    EPwm2Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
-//    EPwm2Regs.DCTRIPSEL.bit.DCALCOMPSEL = 4 ; // Tripin5
-//
-//    EPwm3Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 4 ; // Tripin5
-//    EPwm3Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
-//    EPwm3Regs.DCTRIPSEL.bit.DCALCOMPSEL = 4 ; // Tripin5
-//
-//    EPwm10Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 4 ; // Tripin5
-//    EPwm10Regs.TZDCSEL.bit.DCAEVT1 = 4 ; // DCAL high , DCAH don't care
-//    EPwm10Regs.DCTRIPSEL.bit.DCALCOMPSEL = 4 ; // Tripin5
-
-    // Tripzone Select
-    EPwm1Regs.TZSEL.bit.DCAEVT1 = 1;
-    EPwm2Regs.TZSEL.bit.DCAEVT1 = 1;
-    EPwm3Regs.TZSEL.bit.DCAEVT1 = 1;
-    EPwm10Regs.TZSEL.bit.DCAEVT1 = 1;
-
-    EPwm1Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
-    EPwm1Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
-
-    EPwm2Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
-    EPwm2Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
-
-    EPwm3Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
-    EPwm3Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
-
-    EPwm10Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
-    EPwm10Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
-
-    // Clear any spurious OV trip
-    EPwm1Regs.TZCLR.bit.DCAEVT1 = 1;
-    EPwm2Regs.TZCLR.bit.DCAEVT1 = 1;
-    EPwm3Regs.TZCLR.bit.DCAEVT1 = 1;
-    EPwm10Regs.TZCLR.bit.DCAEVT1 = 1;
-
-    EDIS;
+    unsigned long count = 0;
+    for(count = 0; count < ms ; count++)
+    {
+        DELAY_US(1000);
+    }
 }
+
+void DelayS(unsigned long s)
+{
+    unsigned long count = 0;
+    for(count = 0; count < s ; count++)
+    {
+        DelayMs(1000);
+    }
+}
+
 
 
 //
@@ -589,9 +369,11 @@ int main(void)
 
    CpuSysRegs.PCLKCR14.bit.CMPSS5 = 1;
    CpuSysRegs.PCLKCR14.bit.CMPSS6 = 1;
+   CpuSysRegs.PCLKCR14.bit.CMPSS7 = 1;
 
    EDIS;
 
+   Cla1ForceTask8();
    Init_ADC_C();
 
    EALLOW;
@@ -600,8 +382,7 @@ int main(void)
 
    PWM_CFDAB(2000,30);
 
-
-   CMPSS_Protection_TPC();
+//   CMPSS_Protection();
 
    EALLOW;
    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;
@@ -694,7 +475,7 @@ int main(void)
     EDIS;
     // khoi tao luong dat Cpu cho CLA
     CpuToCLA.EnableADC = 0;
-   // DelayMs(1000);
+    DelayMs(1000);
 
     CpuToCLA.EnableADC = 1;
     CpuToCLA.EnableFlag = 0;
@@ -706,28 +487,28 @@ int main(void)
     CpuToCLA.PhiTesting = 0.084;
     CpuToCLA.PhiStart = 0.001;
 
-    //DelayMs(1000);
+    DelayMs(1000);
     //------------------------------------------------------------------------------
     // khoi tao tham so ban dau cho CFDAB
-//    Setting_bat.Power  = CFDAB_Power;
-//    Setting_bat.Voltage = CFDAB_Voltage;
-//    Setting_bat.ChargeCurrentMax = CFDAB_MaxCharge_Current;
-//    Setting_bat.DisChargeCurrentMax = CFDAB_MaxDischarge_Current;
-//
-//    Setting_bat.UdcRef = CFDAB_UdcRef;
-//    Setting_bat.VcRef  = CFDAB_VcRef;
-//    Setting_bat.UbatRef = CFDAB_UbatRef;
-//    Setting_bat.IbatRef = CFDAB_IbatRef;
-//
-//    Setting_bat.UdcMax = CFDAB_Udc_Max;
-//    Setting_bat.UdcMin = CFDAB_Udc_Min;
-//    Setting_bat.VcMax = CFDAB_Vc_Max;
-//    Setting_bat.VcMin = CFDAB_Vc_Min;
-//    Setting_bat.UbatMax = CFDAB_Ubat_Max;
-//    Setting_bat.UbatMin = CFDAB_Ubat_Min;
-//    Setting_bat.IbatMax = CFDAB_Ibat_Max;
+    Setting_bat.Power  = CFDAB_Power;
+    Setting_bat.Voltage = CFDAB_Voltage;
+    Setting_bat.ChargeCurrentMax = CFDAB_MaxCharge_Current;
+    Setting_bat.DisChargeCurrentMax = CFDAB_MaxDischarge_Current;
 
-    // DelayMs(1000);
+    Setting_bat.UdcRef = CFDAB_UdcRef;
+    Setting_bat.VcRef  = 6.67;
+    Setting_bat.UbatRef = CFDAB_UbatRef;
+    Setting_bat.IbatRef = CFDAB_IbatRef;
+
+    Setting_bat.UdcMax = CFDAB_Udc_Max;
+    Setting_bat.UdcMin = CFDAB_Udc_Min;
+    Setting_bat.VcMax = CFDAB_Vc_Max;
+    Setting_bat.VcMin = CFDAB_Vc_Min;
+    Setting_bat.UbatMax = CFDAB_Ubat_Max;
+    Setting_bat.UbatMin = CFDAB_Ubat_Min;
+    Setting_bat.IbatMax = CFDAB_Ibat_Max;
+
+     DelayMs(1000);
 
     while(1)
     {
@@ -754,7 +535,18 @@ int main(void)
         {
             CpuToCLA.EnableFlag = 0;
         }
-        //asm(" NOP");
+
+//        if(CLear_TZ == 1) {
+//            // Xóa cờ One-shot Trip (OST) của EPWM4
+//            EPwm1Regs.TZCLR.bit.OST = 1;
+//            EPwm2Regs.TZCLR.bit.OST = 1;
+//            EPwm3Regs.TZCLR.bit.OST = 1;
+//            EPwm10Regs.TZCLR.bit.OST = 1;
+//            // Đặt lại biến CLear_TZ
+//            CLear_TZ = 0;
+//        }
+
+
     }
 }
 
@@ -883,7 +675,7 @@ void CLA_initCpu2Cla(void)
 //
 interrupt void cla1Isr1 ()
 {
-    Task1_Isr++;
+//    Task1_Isr++;
 //    static Uint16 i = 0;
 //    // hien thi
 //    Vout_Display = 800.0 * ClaToCPU.ADC_CPU.Udc_CFDAB;
@@ -973,7 +765,169 @@ interrupt void cla1Isr8 ()
     PieCtrlRegs.PIEACK.all = M_INT11;
 }
 
-
+//void cmpssConfig(volatile struct CMPSS_REGS *v, int16 Hi, int16 Lo)
+//{
+//
+//    // Set up COMPCTL register
+//    EALLOW;
+//    v->COMPCTL.bit.COMPDACE    = 1;             // Enable CMPSS
+//    v->COMPCTL.bit.COMPLSOURCE = NEGIN_DAC;     // NEG signal from DAC for COMP-L
+//    v->COMPCTL.bit.COMPHSOURCE = NEGIN_DAC;     // NEG signal from DAC for COMP-H
+//    v->COMPCTL.bit.COMPHINV    = 0;             // COMP-H output is NOT inverted
+//    v->COMPCTL.bit.COMPLINV    = 1;             // COMP-L output is inverted
+//    v->COMPCTL.bit.ASYNCHEN    = 0;             // Disable aynch COMP-H ouput
+//    v->COMPCTL.bit.ASYNCLEN    = 0;             // Disable aynch COMP-L ouput
+//    v->COMPCTL.bit.CTRIPHSEL    = CTRIP_FILTER; // Dig filter output ==> CTRIPH
+//    v->COMPCTL.bit.CTRIPOUTHSEL = CTRIP_FILTER; // Dig filter output ==> CTRIPOUTH
+//    v->COMPCTL.bit.CTRIPLSEL    = CTRIP_FILTER; // Dig filter output ==> CTRIPL
+//    v->COMPCTL.bit.CTRIPOUTLSEL = CTRIP_FILTER; // Dig filter output ==> CTRIPOUTL
+//
+//    // Set up COMPHYSCTL register
+//    v->COMPHYSCTL.bit.COMPHYS   = 2; // COMP hysteresis set to 2x typical value
+//
+//    // set up COMPDACCTL register
+//    v->COMPDACCTL.bit.SELREF    = REFERENCE_VDDA_CMPSS; // VDDA is REF for CMPSS DACs
+//    v->COMPDACCTL.bit.SWLOADSEL = 0; // DAC updated on sysclock
+//    v->COMPDACCTL.bit.DACSOURCE = 0; // Ramp bypassed
+//
+//    // Load DACs - High and Low
+//    v->DACHVALS.bit.DACVAL = Hi;     // Set DAC-H to allowed MAX +ve current
+//    v->DACLVALS.bit.DACVAL = Lo;     // Set DAC-L to allowed MAX -ve current
+//
+//    // digital filter settings - HIGH side
+//    v->CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // set time between samples, max : 1023
+//    v->CTRIPHFILCTL.bit.SAMPWIN        = sampwin;     // # of samples in window, max : 31
+//    v->CTRIPHFILCTL.bit.THRESH         = thresh;      // recommended : thresh > sampwin/2
+//    v->CTRIPHFILCTL.bit.FILINIT        = 1;           // Init samples to filter input value
+//
+//    // digital filter settings - LOW side
+//    v->CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // set time between samples, max : 1023
+//    v->CTRIPLFILCTL.bit.SAMPWIN        = sampwin;     // # of samples in window, max : 31
+//    v->CTRIPLFILCTL.bit.THRESH         = thresh;      // recommended : thresh > sampwin/2
+//    v->CTRIPLFILCTL.bit.FILINIT        = 1;           // Init samples to filter input value
+//
+//    // Clear the status register for latched comparator events
+//    v->COMPSTSCLR.bit.HLATCHCLR = 1;
+//    v->COMPSTSCLR.bit.LLATCHCLR = 1;
+//    EDIS;
+//    return;
+//}
+//
+//void CMPSS_Protection(void)
+//{
+//    cmpssConfig(&Cmpss6Regs,MEA_voltUbatHi, MEA_voltUbatLo);  //Enable CMPSS6 - BAT VOLTAGE - 6P
+////    cmpssConfig(&Cmpss5Regs, LEM_curHi, LEM_curLo);  //Enable CMPS5 - LEM CURRENT  for ADCINC4
+////    cmpssConfig(&Cmpss7Regs,MEA_voltUcHi,MEA_voltUcLo);  //Enable CMPSS7 - Vclamp -7P
+//    cmpssConfig(&Cmpss3Regs,MEA_voltUdcHi,MEA_voltUdcLo);  //Enable CMPSS3 - Vdc - 3P
+//
+//    EALLOW;
+//    // Configure TRIP 4 to OR the High and Low trips from both comparator 1 & 3
+//    // Clear everything first
+//    EPwmXbarRegs.TRIP4MUX0TO15CFG.all  = 0x0000;
+//    EPwmXbarRegs.TRIP4MUX16TO31CFG.all = 0x0000;
+////    EPwmXbarRegs.TRIP5MUX0TO15CFG.all  = 0x0000;
+////    EPwmXbarRegs.TRIP5MUX16TO31CFG.all = 0x0000;
+//    // Enable Muxes for ored input of CMPSS1H and 1L, i.e. .1 mux for Mux0
+//    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX10  = 0;
+//    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX12  = 0;
+//    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX4  = 0;
+////    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX10  = 0;  //cmpss2 - tripH ubat 6P
+////    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX4  = 0;  //cmpss3 - tripH
+////    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX6  = 0;  //cmpss4 - tripH
+////    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX8  = 1;  //cmpss5 - tripH or TripL
+//
+//
+//    // Disable all the muxes first
+//    EPwmXbarRegs.TRIP4MUXENABLE.all = 0x0000;
+////    EPwmXbarRegs.TRIP5MUXENABLE.all = 0x0000;
+//    // Enable Mux 2,4,6,8 to generate TRIP4
+//    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX10  = 1;
+//    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX12  = 1;
+//    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX4  = 1;
+////    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX4  = 1;
+////    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX6  = 1;
+////    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX8  = 1;
+//
+//    EPwm1Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 3; //Trip 4 is the input to the DCAHCOMPSEL
+//    EPwm1Regs.TZDCSEL.bit.DCAEVT1       = TZ_DCAH_HI;
+//    EPwm1Regs.DCACTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm1Regs.DCACTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm1Regs.TZSEL.bit.DCAEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+//
+//    EPwm1Regs.DCTRIPSEL.bit.DCBHCOMPSEL = 3; //Trip 4 is the input to the DCBHCOMPSEL
+//    EPwm1Regs.TZDCSEL.bit.DCBEVT1       = TZ_DCBH_HI;
+//    EPwm1Regs.DCBCTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm1Regs.DCBCTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm1Regs.TZSEL.bit.DCBEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+//
+//    EPwm2Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 3; //Trip 4 is the input to the DCAHCOMPSEL
+//    EPwm2Regs.TZDCSEL.bit.DCAEVT1       = TZ_DCAH_HI;
+//    EPwm2Regs.DCACTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm2Regs.DCACTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm2Regs.TZSEL.bit.DCAEVT1         = 1;
+//
+//    EPwm2Regs.DCTRIPSEL.bit.DCBHCOMPSEL = 3; //Trip 4 is the input to the DCBHCOMPSEL
+//    EPwm2Regs.TZDCSEL.bit.DCBEVT1       = TZ_DCBH_HI;
+//    EPwm2Regs.DCBCTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm2Regs.DCBCTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm2Regs.TZSEL.bit.DCBEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+//
+//    EPwm3Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 3; //Trip 4 is the input to the DCAHCOMPSEL
+//    EPwm3Regs.TZDCSEL.bit.DCAEVT1       = TZ_DCAH_HI;
+//    EPwm3Regs.DCACTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm3Regs.DCACTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm3Regs.TZSEL.bit.DCAEVT1         = 1;
+//
+//    EPwm3Regs.DCTRIPSEL.bit.DCBHCOMPSEL = 3; //Trip 4 is the input to the DCBHCOMPSEL
+//    EPwm3Regs.TZDCSEL.bit.DCBEVT1       = TZ_DCBH_HI;
+//    EPwm3Regs.DCBCTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm3Regs.DCBCTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm3Regs.TZSEL.bit.DCBEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+//
+//    EPwm10Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 3; //Trip 4 is the input to the DCAHCOMPSEL
+//    EPwm10Regs.TZDCSEL.bit.DCAEVT1       = TZ_DCAH_HI;
+//    EPwm10Regs.DCACTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm10Regs.DCACTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm10Regs.TZSEL.bit.DCAEVT1         = 1;
+//
+//    EPwm10Regs.DCTRIPSEL.bit.DCBHCOMPSEL = 3; //Trip 4 is the input to the DCBHCOMPSEL
+//    EPwm10Regs.TZDCSEL.bit.DCBEVT1       = TZ_DCBH_HI;
+//    EPwm10Regs.DCBCTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm10Regs.DCBCTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm10Regs.TZSEL.bit.DCBEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+//
+//    // What do we want the DCAEVT1 events to do?
+//    // TZA events can force EPWMxA
+//    // TZB events can force EPWMxB
+//
+//    EPwm1Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
+//    EPwm1Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
+//
+//    EPwm2Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
+//    EPwm2Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
+//
+//    EPwm3Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
+//    EPwm3Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
+//
+//    EPwm10Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
+//    EPwm10Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
+//
+//
+//    // Clear any spurious OV trip
+//    EPwm1Regs.TZCLR.bit.DCAEVT1 = 1;
+//    EPwm2Regs.TZCLR.bit.DCAEVT1 = 1;
+//    EPwm3Regs.TZCLR.bit.DCAEVT1 = 1;
+//    EPwm10Regs.TZCLR.bit.DCAEVT1 = 1;
+//
+//    // Clear any spurious OV trip
+//    EPwm1Regs.TZCLR.bit.DCBEVT1 = 1;
+//    EPwm2Regs.TZCLR.bit.DCBEVT1 = 1;
+//    EPwm3Regs.TZCLR.bit.DCBEVT1 = 1;
+//    EPwm10Regs.TZCLR.bit.DCBEVT1 = 1;
+//
+//    EDIS;
+//
+//}
 
 
 
