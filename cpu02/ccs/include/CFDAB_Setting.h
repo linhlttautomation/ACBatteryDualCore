@@ -10,7 +10,7 @@
 
 // Define Level
 #define LEVEL1          1           // Vong ho discharge
-#define LEVEL1          5           // Vong kin discharge
+#define LEVEL5          5           // Vong kin discharge
 
 #define BUILDLEVEL      LEVEL1
 //
@@ -20,14 +20,16 @@
 #define ADC_PU_PPB_SCALE_FACTOR          0.000488281250             //1/2^11
 #define SD_PU_SCALE_FACTOR               0.000030517578125
 
+#define PI 3.14159265358979
 #define DUTY_MAX        1.0
 
-#define Udc_max         1000.0           // Udc_max = 600
-#define Ubat_max        200.0           // Ubat_max = 200
-#define Ibat_max        50.0             // Base peak phase current (amp)
-#define Uc_max          800.0             // Uc_max = 800
+#define Udc_max         800.0
+#define Ubat_max        200.0
+#define Ibat_max        50.0
+#define Uc_max          600.0
 
-
+#define T                   0.00002            // time sample
+#define MEAUBAT(A) (A/Ubat_max*4096.0+43)
 
 #if (PV_INVERTER_ADC == 0)
 //
@@ -43,11 +45,24 @@
 #endif
 
 // LEM    1.0pu current ==> 50.0A -> 2048 counts
-#define LEM_2(A)     2024-132+(2048.0*A/50.0)
-#define LEML_2(A)    2024+(2048.0*A/50.0/1.1)-165
+#define LEM(A)     2024-132+(2048.0*A/Ibat_max)
+#define LEML(A)     2024+(2048.0*A/Ibat_max/1.1)-165
+#define MEAUBAT(A) (A/Ubat_max*4096.0 + 0)
+#define MEAUDC(A)   (4096.0*A/Udc_max/1.09+0)
+#define MEAUC(A)  (A/Uc_max*4096.0/1.1+0)
 
-#define MEAUBAT(A)   (A/800.0*4096.0+43)
-#define MEAUC(A)     (A/800.0*4096.0/1.1+75)
+//// CMPSS TPC Permission
+//#define CMPSS_PROTECT_Ubat_UPPER        1
+//#define CMPSS_PROTECT_Ubat_LOWER        0
+//
+//#define CMPSS_PROTECT_Ihv_UPPER         0
+//#define CMPSS_PROTECT_Ihv_LOWER         0
+//
+//#define CMPSS_PROTECT_Ilv_UPPER         0
+//#define CMPSS_PROTECT_Ilv_LOWER         0
+//
+//#define CMPSS_PROTECT_Uc_UPPER          0
+//#define CMPSS_PROTECT_Uc_LOWER          0
 
 // Discharge Close_Loop
 #if (BUILDLEVEL == LEVEL5)
@@ -83,10 +98,10 @@
 #define CFDAB_MaxCharge_Current        10
 #define CFDAB_MaxDischarge_Current     10
 
-#define CFDAB_UdcRef                   300
-#define CFDAB_VcRef                    130
+#define CFDAB_UdcRef                   10
+#define CFDAB_VcRef                    6.67
 
-#define CFDAB_UbatRef                  6
+#define CFDAB_UbatRef                  3
 #define CFDAB_IbatRef                  5.2
 
 #define CFDAB_Udc_Max                  460
@@ -101,7 +116,7 @@
 #define CFDAB_Ibat_Max                 10
 
 // CMPSS TPC Permission
-#define CMPSS_PROTECT_Ubat_UPPER        0
+#define CMPSS_PROTECT_Ubat_UPPER        1
 #define CMPSS_PROTECT_Ubat_LOWER        0
 
 #define CMPSS_PROTECT_Ihv_UPPER         0

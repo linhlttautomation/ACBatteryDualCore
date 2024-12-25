@@ -5,7 +5,7 @@
     <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROJECT.TMS320F28377D.ccxml.Texas Instruments XDS100v2 USB Debug Probe_0/C28xx_CPU1" value="AC_Battery_CPU2"/>
     <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_TARGET_CONFIG" value="${target_config_active_default:AC_Battery_CPU2}"/>
     <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TMS320F28377D.ccxml.Texas Instruments XDS100v2 USB Debug Probe_0/C28xx_CPU1" value="${build_artifact:AC_Battery_CPU2}"/>
-    <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TMS320F28377D.ccxml.Texas Instruments XDS100v2 USB Debug Probe_0/C28xx_CPU2" value="C:\ti\c2000\C2000Ware_5_03_00_00\device_support\f2837xd\examples\dual\sdfm_filters_sync_cla\cpu02\ccs\CPU2_RAM\AC_Battery_CPU2.out"/>
+    <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TMS320F28377D.ccxml.Texas Instruments XDS100v2 USB Debug Probe_0/C28xx_CPU2" value="C:\Ti\c2000\C2000Ware_5_02_00_00\device_support\f2837xd\examples\dual\sdfm_filters_sync_cla1_for_FLC\cpu02\ccs\CPU2_RAM\AC_Battery_CPU2.out"/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
         <listEntry value="/AC_Battery_CPU2"/>
     </listAttribute>

@@ -11,6 +11,7 @@
 #include "Var.h"
 //----------------------------------------------------------------------------------------
 // CLA ---> CPU
+
 typedef struct
 {
     float Udc;
@@ -29,6 +30,8 @@ typedef struct
 	float datalog1;
 	float datalog2;
 	float datalog3;
+	float mUs;
+
 }ADC_VALUE;
 
 
@@ -90,6 +93,9 @@ typedef struct
 	int32 Currflag;
     int32 Voltflag;
     short SwitchRamp;
+    float Theta_gen;
+    float Is;
+    float Us;
 }MEASUREMENT_VAULE;
 
 typedef struct
@@ -187,5 +193,5 @@ typedef struct
     Uint16 Iz_lower;
 
 }PROTECT_CHANEL;
-
-#endif /* _PV_VARIABLES_H_ */
+#endif
+ /* _PV_VARIABLES_H_ */

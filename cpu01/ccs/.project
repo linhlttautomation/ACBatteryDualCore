@@ -33,72 +33,72 @@
 		<link>
 			<name>2837x_RAM_SDFM_CLA_lnk_cpu1.cmd</name>
 			<type>1</type>
-			<locationURI>copy_PARENT/2837x_RAM_SDFM_CLA_lnk_cpu1.cmd</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu01/2837x_RAM_SDFM_CLA_lnk_cpu1.cmd</location>
 		</link>
 		<link>
 			<name>AC_Battery_Main_Cpu1.c</name>
 			<type>1</type>
-			<locationURI>copy_PARENT/sdfm_filter_sync_cla_cpu01.c</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu01/sdfm_filter_sync_cla_cpu01.c</location>
 		</link>
 		<link>
 			<name>AC_Battery_Task1.cla</name>
 			<type>1</type>
-			<locationURI>copy_PARENT/sdfm_filter_sync.cla</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu01/sdfm_filter_sync.cla</location>
 		</link>
 		<link>
 			<name>F2837xD_CodeStartBranch.asm</name>
 			<type>1</type>
-			<locationURI>copy_PARENT1/common/source/F2837xD_CodeStartBranch.asm</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/common/source/F2837xD_CodeStartBranch.asm</location>
 		</link>
 		<link>
 			<name>F2837xD_DefaultISR.c</name>
 			<type>1</type>
-			<locationURI>copy_PARENT1/common/source/F2837xD_DefaultISR.c</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/common/source/F2837xD_DefaultISR.c</location>
 		</link>
 		<link>
 			<name>F2837xD_GlobalVariableDefs.c</name>
 			<type>1</type>
-			<locationURI>copy_PARENT1/headers/source/F2837xD_GlobalVariableDefs.c</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/headers/source/F2837xD_GlobalVariableDefs.c</location>
 		</link>
 		<link>
 			<name>F2837xD_Gpio.c</name>
 			<type>1</type>
-			<locationURI>copy_PARENT1/common/source/F2837xD_Gpio.c</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/common/source/F2837xD_Gpio.c</location>
 		</link>
 		<link>
 			<name>F2837xD_Ipc.c</name>
 			<type>1</type>
-			<locationURI>copy_PARENT1/common/source/F2837xD_Ipc.c</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/common/source/F2837xD_Ipc.c</location>
 		</link>
 		<link>
 			<name>F2837xD_PieCtrl.c</name>
 			<type>1</type>
-			<locationURI>copy_PARENT1/common/source/F2837xD_PieCtrl.c</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/common/source/F2837xD_PieCtrl.c</location>
 		</link>
 		<link>
 			<name>F2837xD_PieVect.c</name>
 			<type>1</type>
-			<locationURI>copy_PARENT1/common/source/F2837xD_PieVect.c</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/common/source/F2837xD_PieVect.c</location>
 		</link>
 		<link>
 			<name>F2837xD_SysCtrl.c</name>
 			<type>1</type>
-			<locationURI>copy_PARENT1/common/source/F2837xD_SysCtrl.c</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/common/source/F2837xD_SysCtrl.c</location>
 		</link>
 		<link>
 			<name>F2837xD_sdfm_drivers.c</name>
 			<type>1</type>
-			<locationURI>copy_PARENT1/common/source/F2837xD_sdfm_drivers.c</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/common/source/F2837xD_sdfm_drivers.c</location>
 		</link>
 		<link>
 			<name>F2837xD_struct.c</name>
 			<type>1</type>
-			<locationURI>copy_PARENT1/common/source/F2837xD_struct.c</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/common/source/F2837xD_struct.c</location>
 		</link>
 		<link>
 			<name>F2837xD_usDelay.asm</name>
 			<type>1</type>
-			<locationURI>copy_PARENT1/common/source/F2837xD_usDelay.asm</locationURI>
+			<location>C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/common/source/F2837xD_usDelay.asm</location>
 		</link>
 	</linkedResources>
 	<variableList>

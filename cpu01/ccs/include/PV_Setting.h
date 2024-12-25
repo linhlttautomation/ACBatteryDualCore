@@ -10,9 +10,11 @@
 
 // Define Level
 #define LEVEL1        1           // Vong ho doc lap
+#define LEVEL2        2           // Vong ho IFB
 #define LEVEL3        3           // Vong dong doc lap
 #define LEVEL4        4           // Vong ap doc lap
-
+#define LEVEL5        5           // Vong Dong IFB
+#define LEVEL6        6           // Vong AP IFB
 // ---------------------------------------------------
 #define BUILDLEVEL    LEVEL4
 // ---------------------------------------------------
@@ -34,12 +36,12 @@
 // ---------------------------------------------------
 
 // ---------------------------------------------------
-#define TUNNING_ADC              2 // 1: Manual; 2: No
+#define TUNNING_ADC              1 // 1: Manual; 2: No
 #define DATA1_VG_RMS             220.0
 #define DATA1_IG_RMS             1.0
 // ---------------------------------------------------
 
-#define ALLOW_IPC_CPU          1
+#define ALLOW_IPC_CPU          0
 
 // Define toán học
 #define can2 1.414213562
@@ -66,20 +68,35 @@
 #if (BUILDLEVEL == LEVEL3)
 
     #define KP_CURR_LOOP            3.0 // L filter 330uH: 3.3
-    #define KI_CURR_LOOP            1500.0 // L filter 330uH: 132000.0
+    #define KI_CURR_LOOP            800.0 // L filter 330uH: 132000.0
 
     #define KP_CURR_LOOP_Z          3.0 // L filter 330uH: 13.2
-    #define KI_CURR_LOOP_Z          1500.0 // L filter 330uH: 528000.0
+    #define KI_CURR_LOOP_Z          800.0 // L filter 330uH: 528000.0
 
 #endif
 #if(BUILDLEVEL == LEVEL4)
 
-    #define KP_CURR_LOOP_1            2.0 // Thong so moi vong ap khong tai
-    #define KI_CURR_LOOP_1            0.18
+    #define KP_CURR_LOOP_1            3.0 // Thong so moi vong ap khong tai
+    #define KI_CURR_LOOP_1            800
 
     #define KP_VOLT_US_LOOP           0.00001
     #define KI_VOLT_US_LOOP           0.1
 
+#endif
+#if (BUILDLEVEL == LEVEL5)
+
+#define KP_CURR_LOOP_PR        1 //2.953;
+#define KI_CURR_LOOP_PR        1000; //6159.173;
+
+#define KP_CURR_LOOP_PI         3.4
+#define KI_CURR_LOOP_PI         800.0
+#endif
+#if (BUILDLEVEL == LEVEL6)
+#define KP_CURR_LOOP_PR        1; //2.953;
+#define KI_CURR_LOOP_PR        1000; //6159.173;
+
+#define KP_voltage_LOOP_PR        0.2;
+#define KI_voltage_LOOP_PR        200;
 #endif
 
 // Define the base quantities for PU system conversion
@@ -108,12 +125,12 @@
 #define CMPSS_PROTECT_Ic_inv_LOWER      1 // Da test co the bao ve duoc, bv ok
 
 // CMPSS FLC Setting
-#define CMPSS_Udc_New_Protecion            80.0
+#define CMPSS_Udc_New_Protecion            90.0
 
 #define CMPSS_Udc_Offset_New_Protecion     0.0
 #define CMPSS_Vg_Offset_New_Protecion      0.0
 
-#define CMPSS_Ig_inv_New_Protecion         3.0
+#define CMPSS_Ig_inv_New_Protecion         2.0
 
 // CMPSS TPC Setting
 

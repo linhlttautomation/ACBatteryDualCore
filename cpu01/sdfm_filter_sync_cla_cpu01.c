@@ -67,6 +67,8 @@ Uint16 ON_RELAY = 0;
 
 PROTECT_CHANEL protect_chanel;
 
+Uint16 START_1 = 0;
+
 // CMPSS parameters for Over Current Protection FLC
 Uint16  clkPrescale_1 = 6,
         sampwin_1     = 30,
@@ -233,6 +235,12 @@ void CMPSS_Protection_FLC(void)
 {
     EALLOW;
 
+    EPwmXbarRegs.TRIP5MUX0TO15CFG.all  = 0x0000;
+    EPwmXbarRegs.TRIP5MUX16TO31CFG.all = 0x0000;
+    EPwmXbarRegs.TRIP5MUX0TO15CFG.bit.MUX10  = 0;
+    EPwmXbarRegs.TRIP5MUXENABLE.all = 0x0000;
+    EPwmXbarRegs.TRIP5MUXENABLE.bit.MUX10  = 1;
+
     #if(CMPSS_PROTECT_UDC_UPPER == 1)
         Cmpss3Regs.COMPCTL.bit.COMPDACE = 1;
         Cmpss3Regs.COMPCTL.bit.COMPHSOURCE = 0;
@@ -283,7 +291,7 @@ void CMPSS_Protection_FLC(void)
         Cmpss2Regs.COMPDACCTL.bit.SWLOADSEL = 0;
 
         // VaG Lower protecion
-        Cmpss2Regs.DACLVALS.bit.DACVAL = (2598 - (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2598) + 100000)/1.1;
+        Cmpss2Regs.DACLVALS.bit.DACVAL = (2598 - (((CMPSS_Udc_New_Protecion/can3)+ CMPSS_Vg_Offset_New_Protecion)/400.0)*(4096.0 - 2598) + 0)/1.1;
         Cmpss2Regs.COMPCTL.bit.COMPLINV = 1;
         Cmpss2Regs.COMPCTL.bit.CTRIPLSEL = 2;
 
@@ -534,6 +542,14 @@ int main(void)
 
     InitSysCtrl();
 
+    #if(ALLOW_IPC_CPU == 1)
+        InitIpc();
+        // Reset trạng thái IPC trước khi bắt đầu
+        IpcRegs.IPCACK.all = 0xFFFFFFFF;   // Xóa tất cả cờ IPC
+        IpcRegs.IPCSET.all = 0;            // Đảm bảo không còn cờ set treo
+
+    #endif
+
     for(ndx1=0; ndx1<DLOG_SIZE_1; ndx1++)
     {
         DataLog1[ndx1] = 0;
@@ -736,7 +752,7 @@ int main(void)
     EALLOW;
     CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;
     EDIS;
-
+#if(SET_MODE_RUN == THREE_PHASE_MODE)
     EALLOW;
 
     /* Time-Base Control (TBCTL) */
@@ -837,7 +853,6 @@ int main(void)
     EPwm8Regs.DBFED.bit.DBFED = deadtime;
     EPwm8Regs.DBRED.bit.DBRED = deadtime;
 
-    #if(SET_MODE_RUN == THREE_PHASE_MODE)
 
         /* Event Trigger (ET) */
         EPwm4Regs.ETSEL.bit.SOCAEN = 1;
@@ -852,27 +867,131 @@ int main(void)
         EPwm4Regs.ETPS.bit.INTPRD = ET_2ND;                 // generate interrupt on the 2nd event
         EPwm4Regs.ETPS.bit.INTCNT = ET_2ND;
         EPwm4Regs.ETCLR.bit.INT = 1;                        // enable more interrupts
-
+        EDIS;
     #endif
-
     #if(SET_MODE_RUN == SINGLE_PHASE_MODE)
+        EALLOW;
 
-        /* Event Trigger (ET) */
-        EPwm5Regs.ETSEL.bit.SOCAEN = 1;
-        EPwm5Regs.ETSEL.bit.SOCASEL = ET_CTRU_CMPB;           // CTR = 0
-        EPwm5Regs.ETPS.bit.SOCAPRD = ET_1ST;                // Generate pulse on 2nd event
-        EPwm5Regs.ETCLR.bit.SOCA = 1;
-        EPwm5Regs.ETPS.bit.SOCACNT = ET_1ST;
+           /* Time-Base Control (TBCTL) */
+           EPwm4Regs.TBCTL.bit.FREE_SOFT = 3;
+           EPwm4Regs.TBCTL.bit.PHSDIR = TB_DOWN;
+           EPwm4Regs.TBCTL.bit.CLKDIV = TB_DIV1;
+           EPwm4Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;
+           EPwm4Regs.TBCTL.bit.SWFSYNC = 0;
+           EPwm4Regs.TBCTL.bit.SYNCOSEL = TB_CTR_ZERO;
+           EPwm4Regs.TBCTL.bit.PRDLD = TB_IMMEDIATE;
+           EPwm4Regs.TBCTL.bit.PHSEN = TB_DISABLE;
+           EPwm4Regs.TBCTL.bit.CTRMODE = TB_COUNT_UPDOWN;
 
-        // Enable CNT_zero interrupt using EPWM1 Time-base
-        EPwm4Regs.ETSEL.bit.INTEN = 1;                      // enable EPWM1INT generation
-        EPwm4Regs.ETSEL.bit.INTSEL = ET_CTR_ZERO;            // enable interrupt CNT_zero event
-        EPwm4Regs.ETPS.bit.INTPRD = ET_1ST;                 // generate interrupt on the 2nd event
-        EPwm4Regs.ETPS.bit.INTCNT = ET_1ST;
-        EPwm4Regs.ETCLR.bit.INT = 1;                        // enable more interrupts
+           EPwm6Regs.TBCTL.bit.FREE_SOFT = 3;
+           EPwm6Regs.TBCTL.bit.PHSDIR = TB_DOWN;
+           EPwm6Regs.TBCTL.bit.CLKDIV = TB_DIV1;
+           EPwm6Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;
+           EPwm6Regs.TBCTL.bit.SWFSYNC = 0;
+           EPwm6Regs.TBCTL.bit.SYNCOSEL = TB_SYNC_IN;
+           EPwm6Regs.TBCTL.bit.PRDLD = TB_IMMEDIATE;
+           EPwm6Regs.TBCTL.bit.PHSEN = TB_ENABLE;
+           EPwm6Regs.TBCTL.bit.CTRMODE = TB_COUNT_UPDOWN;
+
+           EPwm5Regs.TBCTL.bit.FREE_SOFT = 3;
+           EPwm5Regs.TBCTL.bit.PHSDIR = TB_DOWN;
+           EPwm5Regs.TBCTL.bit.CLKDIV = TB_DIV1;
+           EPwm5Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;
+           EPwm5Regs.TBCTL.bit.SWFSYNC = 0;
+           EPwm5Regs.TBCTL.bit.SYNCOSEL = TB_SYNC_IN;
+           EPwm5Regs.TBCTL.bit.PRDLD = TB_IMMEDIATE;
+           EPwm5Regs.TBCTL.bit.PHSEN = TB_ENABLE;
+           EPwm5Regs.TBCTL.bit.CTRMODE = TB_COUNT_UPDOWN;
+
+           EPwm8Regs.TBCTL.bit.FREE_SOFT = 3;
+           EPwm8Regs.TBCTL.bit.PHSDIR = TB_DOWN;
+           EPwm8Regs.TBCTL.bit.CLKDIV = TB_DIV1;
+           EPwm8Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;
+           EPwm8Regs.TBCTL.bit.SWFSYNC = 0;
+           EPwm8Regs.TBCTL.bit.SYNCOSEL = TB_SYNC_IN;
+           EPwm8Regs.TBCTL.bit.PRDLD = TB_IMMEDIATE;
+           EPwm8Regs.TBCTL.bit.PHSEN = TB_ENABLE;
+           EPwm8Regs.TBCTL.bit.CTRMODE = TB_COUNT_UPDOWN;
+
+           /* Initialization */
+           EPwm4Regs.CMPA.bit.CMPA = period;
+           EPwm4Regs.TBPHS.bit.TBPHS = 0;
+           EPwm4Regs.TBCTR = 0;
+           EPwm4Regs.TBPRD = period;
+
+           EPwm6Regs.CMPA.bit.CMPA = period;
+           EPwm6Regs.TBPHS.bit.TBPHS = 0;
+           EPwm6Regs.TBCTR = 0;
+           EPwm6Regs.TBPRD = period;
+
+           EPwm5Regs.CMPA.bit.CMPA = period;
+           EPwm5Regs.TBPHS.bit.TBPHS = period;
+           EPwm5Regs.TBCTR = 0;
+           EPwm5Regs.TBPRD = period;
+
+           EPwm8Regs.CMPA.bit.CMPA = period;
+           EPwm8Regs.TBPHS.bit.TBPHS = period;
+           EPwm8Regs.TBCTR = 0;
+           EPwm8Regs.TBPRD = period;
+
+           /* Counter-Compare (CC) */
+           EPwm4Regs.CMPCTL.all = 0x000C;
+           EPwm6Regs.CMPCTL.all = 0x000C;
+           EPwm5Regs.CMPCTL.all = 0x000C;
+           EPwm8Regs.CMPCTL.all = 0x000C;
+
+           EPwm4Regs.CMPCTL.bit.LOADAMODE = 0x01;
+           EPwm6Regs.CMPCTL.bit.LOADAMODE = 0x01;
+           EPwm5Regs.CMPCTL.bit.LOADAMODE = 0x01;
+           EPwm8Regs.CMPCTL.bit.LOADAMODE = 0x01;
+
+           /* Action-Qualifier (AQ) */
+           EPwm4Regs.AQCTLA.bit.CAU = AQ_SET;
+           EPwm4Regs.AQCTLA.bit.CAD = AQ_CLEAR;
+
+           EPwm6Regs.AQCTLA.bit.CAU = AQ_SET;
+           EPwm6Regs.AQCTLA.bit.CAD = AQ_CLEAR;
+
+           EPwm5Regs.AQCTLA.bit.CAU = AQ_SET;
+           EPwm5Regs.AQCTLA.bit.CAD = AQ_CLEAR;
+
+           EPwm8Regs.AQCTLA.bit.CAU = AQ_SET;
+           EPwm8Regs.AQCTLA.bit.CAD = AQ_CLEAR;
+
+           /* Dead Band (DB) */
+           EPwm4Regs.DBCTL.all = 0x03CB;
+           EPwm4Regs.DBFED.bit.DBFED = deadtime;
+           EPwm4Regs.DBRED.bit.DBRED = deadtime;
+
+           EPwm6Regs.DBCTL.all = 0x03CB;
+           EPwm6Regs.DBFED.bit.DBFED = deadtime;
+           EPwm6Regs.DBRED.bit.DBRED = deadtime;
+
+           EPwm5Regs.DBCTL.all = 0x03CB;
+           EPwm5Regs.DBFED.bit.DBFED = deadtime;
+           EPwm5Regs.DBRED.bit.DBRED = deadtime;
+
+           EPwm8Regs.DBCTL.all = 0x03CB;
+           EPwm8Regs.DBFED.bit.DBFED = deadtime;
+           EPwm8Regs.DBRED.bit.DBRED = deadtime;
+
+           /* Event Trigger (ET) */
+           EPwm4Regs.ETSEL.bit.SOCAEN = 1;
+           EPwm4Regs.ETSEL.bit.SOCASEL = ET_CTR_ZERO;           // CTR = 0
+           EPwm4Regs.ETPS.bit.SOCAPRD = ET_1ST;                // Generate pulse on 2nd event
+           EPwm4Regs.ETCLR.bit.SOCA = 1;
+           EPwm4Regs.ETPS.bit.SOCACNT = ET_1ST;
+
+           // Enable CNT_zero interrupt using EPWM1 Time-base
+           EPwm4Regs.ETSEL.bit.INTEN = 1;                      // enable EPWM1INT generation
+           EPwm4Regs.ETSEL.bit.INTSEL = ET_CTR_ZERO;            // enable interrupt CNT_zero event
+           EPwm4Regs.ETPS.bit.INTPRD = ET_1ST;                 // generate interrupt on the 2nd event
+           EPwm4Regs.ETPS.bit.INTCNT = ET_1ST;
+           EPwm4Regs.ETCLR.bit.INT = 1;                        // enable more interrupts
+
+           EDIS;
     #endif
 
-    EDIS;
 
     CMPSS_Protection_FLC();
 
@@ -1088,7 +1207,7 @@ int main(void)
     CpuToCLA.EnableFlag = 0;
 
     CpuToCLA.VdTesting = 20.0;
-    CpuToCLA.IdTesting     = 1.0;
+    CpuToCLA.IdTesting     = 0.20;
 
     CpuToCLA.ADCoffset_Udc = 4;  //
     CpuToCLA.ADCoffset_VaG = 2598; //
@@ -1113,7 +1232,7 @@ int main(void)
         if(START == 1)
         {
             // LEVEL1 || LEVEL3 || LEVEL4
-            #if(BUILDLEVEL == LEVEL1 || BUILDLEVEL == LEVEL3 || BUILDLEVEL == LEVEL4)
+            #if(BUILDLEVEL == LEVEL1 ||BUILDLEVEL == LEVEL2|| BUILDLEVEL == LEVEL3 || BUILDLEVEL == LEVEL4||BUILDLEVEL == LEVEL5||BUILDLEVEL == LEVEL6)
                 CpuToCLA.EnableFlag = 1;
             #endif
         }
@@ -1143,7 +1262,7 @@ int main(void)
         }
         if(Cmpss2Regs.COMPSTS.bit.COMPLLATCH == 1)
         {
-            protect_chanel.Ic_lower = 1;
+            protect_chanel.Ic_upper = 1;
         }
         if(Cmpss2Regs.COMPSTS.bit.COMPLLATCH == 1)
         {
@@ -1152,24 +1271,50 @@ int main(void)
 
         #if(SET_MODE_RUN == THREE_PHASE_MODE)
 
-            ON_RELAY = 1;
-            GpioDataRegs.GPASET.bit.GPIO27 = 1; // Relay 1
-            GpioDataRegs.GPASET.bit.GPIO25 = 1; // Relay 2
-            while(GpioDataRegs.GPADAT.bit.GPIO27 != 1 && GpioDataRegs.GPADAT.bit.GPIO25 != 1)
-            {
-                START = 0;
-            }
+            if (ON_RELAY == 1)
+            { GpioDataRegs.GPASET.bit.GPIO27 = 1; // Relay 1
+            GpioDataRegs.GPASET.bit.GPIO25 = 1; }// Relay 2
+            else
+                        { GpioDataRegs.GPACLEAR.bit.GPIO27 = 1; // Relay 1
+                          GpioDataRegs.GPACLEAR.bit.GPIO25 = 1;}
 
         #endif
 
         #if(SET_MODE_RUN == SINGLE_PHASE_MODE)
 
-            ON_RELAY = 0;
-            GpioDataRegs.GPACLEAR.bit.GPIO27 = 1; // Relay 1
-            GpioDataRegs.GPACLEAR.bit.GPIO25 = 1; // Relay 2
-            while(GpioDataRegs.GPADAT.bit.GPIO27 != 0 && GpioDataRegs.GPADAT.bit.GPIO25 != 0)
+            if(ON_RELAY == 0)
+            { GpioDataRegs.GPACLEAR.bit.GPIO27 = 1; // Relay 1
+            GpioDataRegs.GPACLEAR.bit.GPIO25 = 1;} // Relay 2
+            else
+            { GpioDataRegs.GPASET.bit.GPIO27 = 1; // Relay 1
+              GpioDataRegs.GPASET.bit.GPIO25 = 1;}
+          //  while(GpioDataRegs.GPADAT.bit.GPIO27 != 0 && GpioDataRegs.GPADAT.bit.GPIO25 != 0)
+           // {
+           //     START = 0;
+
+           // }
+
+        #endif
+
+        #if(ALLOW_IPC_CPU == 1)
+
+            // Điều khiển giá trị biến START_2 trên CPU2
+            if (START_1 == 1)
             {
-                START = 0;
+
+                // Gửi giá trị 1 đến CPU2 qua IPC (địa chỉ truyền dữ liệu)
+                IpcRegs.IPCSENDDATA = 1;
+                // Tín hiệu IPC để thông báo dữ liệu đã sẵn sàng
+                IpcRegs.IPCSET.bit.IPC0 = 1;
+
+                // Đợi CPU2 xác nhận đã nhận dữ liệu
+                while (IpcRegs.IPCFLG.bit.IPC0 == 1);
+            }
+            else
+            {
+                IpcRegs.IPCSENDDATA = 0;
+                IpcRegs.IPCSET.bit.IPC0 = 1;
+                while (IpcRegs.IPCFLG.bit.IPC0 == 1);
             }
 
         #endif

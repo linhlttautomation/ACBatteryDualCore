@@ -14,17 +14,17 @@ typedef struct { float  Freq; 			// Input: Ramp frequency (pu)
 	RAMP(Sawtooh) Generator Macro Definition
 ------------------------------------------------------------------------------*/                                               
 
-#define RAMP_GEN_CLA_MACRO(v)						\
-													\
-/* Compute the angle rate */						\
-    v.Angle = v.Angle + v.StepAngleMax*v.Freq;	    \
-													\
-/* Saturate the angle rate within (-1,1) */			\
-	if (v.Angle > 1.0)								\
-		v.Angle = v.Angle - (1.0);					\
-	else if (v.Angle<(-1.0))						\
-		v.Angle +=(1.0);							\
-	v.Out=v.Angle;                                  \
+#define RAMP_GEN_CLA_MACRO(v)                       \
+                                                    \
+/* Compute the angle rate */                        \
+    v.Angle += v.StepAngleMax*v.Freq;               \
+                                                    \
+/* Saturate the angle rate within (-1,1) */         \
+    if (v.Angle>1.0)                                \
+        v.Angle -= (1.0);                           \
+    else if (v.Angle<(-1.0))                        \
+        v.Angle +=(1.0);                            \
+        v.Out=v.Angle;
 
 #define RAMP_GEN_CLA_V2_MACRO(v)                    \
                                                     \

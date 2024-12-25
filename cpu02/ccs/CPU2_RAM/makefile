@@ -23,6 +23,8 @@ ORDERED_OBJS += \
 "./F2837xD_sdfm_drivers.obj" \
 "./F2837xD_struct.obj" \
 "./F2837xD_usDelay.obj" \
+"./library/Driver/source/ADC_CFDAB.obj" \
+"./library/Driver/source/Pwm_CFDAB.obj" \
 "C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu02/2837x_RAM_SDFM_CLA_lnk_cpu2.cmd" \
 $(GEN_CMDS__FLAG) \
 -lrts2800_fpu32.lib \
@@ -37,7 +39,9 @@ RMDIR := RMDIR /S/Q
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include subdir_vars.mk
+-include library/Driver/source/subdir_vars.mk
 -include subdir_rules.mk
+-include library/Driver/source/subdir_rules.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -154,8 +158,8 @@ AC_Battery_CPU2.out: $(OBJS) $(CMD_SRCS) $(LIB_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)
-	-$(RM) "sdfm_filter_sync_cla_cpu02.obj" "sdfm_filter_sync.obj" "F2837xD_CodeStartBranch.obj" "F2837xD_DefaultISR.obj" "F2837xD_GlobalVariableDefs.obj" "F2837xD_Gpio.obj" "F2837xD_Ipc.obj" "F2837xD_PieCtrl.obj" "F2837xD_PieVect.obj" "F2837xD_SysCtrl.obj" "F2837xD_sdfm_drivers.obj" "F2837xD_struct.obj" "F2837xD_usDelay.obj" 
-	-$(RM) "AC_Battery_Main_Cpu2.d" "F2837xD_DefaultISR.d" "F2837xD_GlobalVariableDefs.d" "F2837xD_Gpio.d" "F2837xD_Ipc.d" "F2837xD_PieCtrl.d" "F2837xD_PieVect.d" "F2837xD_SysCtrl.d" "F2837xD_sdfm_drivers.d" "F2837xD_struct.d" 
+	-$(RM) "sdfm_filter_sync_cla_cpu02.obj" "sdfm_filter_sync.obj" "F2837xD_CodeStartBranch.obj" "F2837xD_DefaultISR.obj" "F2837xD_GlobalVariableDefs.obj" "F2837xD_Gpio.obj" "F2837xD_Ipc.obj" "F2837xD_PieCtrl.obj" "F2837xD_PieVect.obj" "F2837xD_SysCtrl.obj" "F2837xD_sdfm_drivers.obj" "F2837xD_struct.obj" "F2837xD_usDelay.obj" "library\Driver\source\ADC_CFDAB.obj" "library\Driver\source\Pwm_CFDAB.obj" 
+	-$(RM) "AC_Battery_Main_Cpu2.d" "F2837xD_DefaultISR.d" "F2837xD_GlobalVariableDefs.d" "F2837xD_Gpio.d" "F2837xD_Ipc.d" "F2837xD_PieCtrl.d" "F2837xD_PieVect.d" "F2837xD_SysCtrl.d" "F2837xD_sdfm_drivers.d" "F2837xD_struct.d" "library\Driver\source\ADC_CFDAB.d" "library\Driver\source\Pwm_CFDAB.d" 
 	-$(RM) "AC_Battery_Task2.d" 
 	-$(RM) "F2837xD_CodeStartBranch.d" "F2837xD_usDelay.d" 
 	-@echo 'Finished clean'

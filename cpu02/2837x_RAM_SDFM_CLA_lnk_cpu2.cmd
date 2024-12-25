@@ -27,6 +27,7 @@ PAGE 0 :
    RAMM0           	: origin = 0x000122, length = 0x0002DE
    RAMD0           	: origin = 0x00B000, length = 0x000800
    RAMD1            : origin = 0x00B800, length = 0x000800
+   //RAMD01            : origin = 0x00B000, length = 0x001000
    //RAMLS4      		: origin = 0x00A000, length = 0x000800
    //RAMLS5           : origin = 0x00A800, length = 0x00800
    //RAMLS45          : origin = 0x00A000, length = 0x001000
@@ -44,6 +45,7 @@ PAGE 1 :
 
    RAMLS0          	: origin = 0x008000, length = 0x000800
    //RAMLS1          	: origin = 0x008800, length = 0x000800
+   //RAMLS01          	: origin = 0x008000, length = 0x001000
    RAMLS2_1      	: origin = 0x009000, length = 0x000400
    RAMLS2_2         : origin = 0x009400, length = 0x000400
    RAMLS3_1      	: origin = 0x009800, length = 0x000400
@@ -83,8 +85,8 @@ PAGE 1 :
 SECTIONS
 {
    codestart        : > BEGIN,     PAGE = 0
-   //.text            : >> RAMD0|RAMD1|RAMLS4,   PAGE = 0
-   .text            : >> RAMD0|RAMD1|RAMLS4|RAMM0|RAMGS1,   PAGE = 0
+   .text            : >> RAMM0|RAMD0|RAMD1|RAMGS1,   PAGE = 0
+   //.text            : >> RAMD01|RAMLS4|RAMM0|RAMGS1,   PAGE = 0
    .cinit           : > RAMM0,     PAGE = 0
    .pinit           : > RAMM0,     PAGE = 0
    .switch          : > RAMM0,     PAGE = 0
@@ -110,6 +112,7 @@ SECTIONS
    Cla1Prog         : > RAMLS12345, PAGE=0
 
    CLADataLS0		: > RAMLS0, PAGE=1
+   //CLADataLS0		: > RAMLS01, PAGE=1
    //CLADataLS1		: > RAMLS1, PAGE=1
 
    Cla1ToCpuMsgRAM  : > CLA1_MSGRAMLOW,   PAGE = 1
@@ -138,14 +141,17 @@ SECTIONS
                      { *.obj(CLAscratch)
                      . += CLA_SCRATCHPAD_SIZE;
                      *.obj(CLAscratch_end) } >  RAMLS0,  PAGE = 1
-
+//                     *.obj(CLAscratch_end) } >  RAMLS01,  PAGE = 1
    .scratchpad      : > RAMLS0,       PAGE = 1
    .bss_cla		    : > RAMLS0,       PAGE = 1
    .const_cla	    : > RAMLS0,       PAGE = 1
+//   .scratchpad      : > RAMLS01,       PAGE = 1
+//   .bss_cla		    : > RAMLS01,       PAGE = 1
+//   .const_cla	    : > RAMLS01,       PAGE = 1
 #endif //CLA_C
  /* Test specific sections */
    IOBuffer         : > RAMLS0,     PAGE = 1
-
+//   IOBuffer         : > RAMLS01,     PAGE = 1
    .reset           : > RESET,      PAGE = 0, TYPE = DSECT /* not used, */
 
    .cio             : > RAMGS7,     PAGE = 1

@@ -11,6 +11,8 @@
 "./F2837xD_sdfm_drivers.obj"
 "./F2837xD_struct.obj"
 "./F2837xD_usDelay.obj"
+"./library/Driver/source/ADC_CFDAB.obj"
+"./library/Driver/source/Pwm_CFDAB.obj"
 "C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu02/2837x_RAM_SDFM_CLA_lnk_cpu2.cmd"
 -lrts2800_fpu32.lib
 -lF2837xD_Headers_nonBIOS_cpu2.cmd
