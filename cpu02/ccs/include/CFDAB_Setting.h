@@ -12,7 +12,7 @@
 #define LEVEL1          1           // Vong ho discharge
 #define LEVEL5          5           // Vong kin discharge
 
-#define BUILDLEVEL      LEVEL1
+#define BUILDLEVEL      LEVEL5
 //
 #define PV_INVERTER_ADC 1    // 0 HIL , 1 = Exp
 #define ADC_PU_SCALE_FACTOR_16BIT        0.0000152587890625         //1/2^12=0.000244140625

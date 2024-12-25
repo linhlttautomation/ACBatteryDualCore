@@ -1210,17 +1210,17 @@ int main(void)
     CpuToCLA.IdTesting     = 0.20;
 
     CpuToCLA.ADCoffset_Udc = 4;  //
-    CpuToCLA.ADCoffset_VaG = 2598; //
+    CpuToCLA.ADCoffset_VaG = 2703; //
     CpuToCLA.ADCoffset_VbG = 2604; //
-    CpuToCLA.ADCoffset_VcG = 2591; //
+    CpuToCLA.ADCoffset_VcG = 2695; //
     CpuToCLA.ADCoffset_Ia_inv = 2061; //
     CpuToCLA.ADCoffset_Ib_inv = 2050; //
     CpuToCLA.ADCoffset_Ic_inv = 2035; //
 
     CpuToCLA.ADCgain_Udc = 1.0;  //
-    CpuToCLA.ADCgain_VaG = 0.75; //
+    CpuToCLA.ADCgain_VaG = 0.78; //
     CpuToCLA.ADCgain_VbG = 0.76; //
-    CpuToCLA.ADCgain_VcG = 0.75; //
+    CpuToCLA.ADCgain_VcG = 0.77; //
     CpuToCLA.ADCgain_Ia_inv = 1.52; //
     CpuToCLA.ADCgain_Ib_inv = 1.52; //
     CpuToCLA.ADCgain_Ic_inv = 1.475; //
@@ -1271,12 +1271,32 @@ int main(void)
 
         #if(SET_MODE_RUN == THREE_PHASE_MODE)
 
+<<<<<<< HEAD
             if (ON_RELAY == 1)
             { GpioDataRegs.GPASET.bit.GPIO27 = 1; // Relay 1
             GpioDataRegs.GPASET.bit.GPIO25 = 1; }// Relay 2
             else
                         { GpioDataRegs.GPACLEAR.bit.GPIO27 = 1; // Relay 1
                           GpioDataRegs.GPACLEAR.bit.GPIO25 = 1;}
+=======
+            if(ON_RELAY == 1)
+            {
+                GpioDataRegs.GPASET.bit.GPIO25 = 1; // Relay 2
+                GpioDataRegs.GPASET.bit.GPIO27 = 1; // Relay
+
+
+            }
+            else if(ON_RELAY == 0)
+            {
+                GpioDataRegs.GPACLEAR.bit.GPIO25 = 1; // Relay 2
+                GpioDataRegs.GPACLEAR.bit.GPIO27 = 1; // Relay 1
+            }
+
+//            while(GpioDataRegs.GPADAT.bit.GPIO27 != 1 && GpioDataRegs.GPADAT.bit.GPIO25 != 1)
+//            {
+//                START = 0;
+//            }
+>>>>>>> 8a67fe63b820ee0fc14504b545aa482d6fa65d74
 
         #endif
 
@@ -1293,6 +1313,29 @@ int main(void)
            //     START = 0;
 
            // }
+
+        #endif
+
+        #if(ALLOW_IPC_CPU == 1)
+
+            // Điều khiển giá trị biến START_2 trên CPU2
+            if (START_1 == 1)
+            {
+
+                // Gửi giá trị 1 đến CPU2 qua IPC (địa chỉ truyền dữ liệu)
+                IpcRegs.IPCSENDDATA = 1;
+                // Tín hiệu IPC để thông báo dữ liệu đã sẵn sàng
+                IpcRegs.IPCSET.bit.IPC0 = 1;
+
+                // Đợi CPU2 xác nhận đã nhận dữ liệu
+                while (IpcRegs.IPCFLG.bit.IPC0 == 1);
+            }
+            else
+            {
+                IpcRegs.IPCSENDDATA = 0;
+                IpcRegs.IPCSET.bit.IPC0 = 1;
+                while (IpcRegs.IPCFLG.bit.IPC0 == 1);
+            }
 
         #endif
 

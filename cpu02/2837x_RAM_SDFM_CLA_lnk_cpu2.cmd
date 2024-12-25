@@ -85,7 +85,11 @@ PAGE 1 :
 SECTIONS
 {
    codestart        : > BEGIN,     PAGE = 0
+<<<<<<< HEAD
    .text            : >> RAMM0|RAMD0|RAMD1|RAMGS1,   PAGE = 0
+=======
+   .text            : >> RAMD0|RAMD1|RAMLS4|RAMGS1,   PAGE = 0
+>>>>>>> 8a67fe63b820ee0fc14504b545aa482d6fa65d74
    //.text            : >> RAMD01|RAMLS4|RAMM0|RAMGS1,   PAGE = 0
    .cinit           : > RAMM0,     PAGE = 0
    .pinit           : > RAMM0,     PAGE = 0

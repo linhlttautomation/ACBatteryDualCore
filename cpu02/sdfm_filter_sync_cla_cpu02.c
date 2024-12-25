@@ -62,6 +62,7 @@ int ChannelAdc = 0;
 uint16_t CLear_TZ = 1;
 
 // CMPSS parameters for Over Current Protection TPC
+<<<<<<< HEAD
 Uint16  clkPrescale = 2,
         sampwin     = 30,
         thresh      = 18,
@@ -71,6 +72,17 @@ Uint16  clkPrescale = 2,
         MEA_voltUdcLo = 0,
         MEA_voltUcHi=MEAUC(10),
         MEA_voltUcLo=0;
+=======
+//Uint16  clkPrescale = 2,
+//        sampwin     = 30,
+//        thresh      = 18,
+//        MEA_voltUbatHi= MEAUBAT(20),
+//        MEA_voltUbatLo= 0,
+//        MEA_voltUdcHi = MEAUDC(60),
+//        MEA_voltUdcLo = 0,
+//        MEA_voltUcHi=MEAUC(10),
+//        MEA_voltUcLo=0;
+>>>>>>> 8a67fe63b820ee0fc14504b545aa482d6fa65d74
 
 //
 // Function prototypes
@@ -84,6 +96,253 @@ extern volatile CPU_TO_CLA CpuToCLA;
 // Khai bao cac bien share CPU --> CLA
 extern volatile CLA_TO_CPU ClaToCPU;
 
+<<<<<<< HEAD
+=======
+// Init ADC C
+void Init_ADC_C()
+{
+    Uint16 i;
+    EALLOW;
+
+    //
+    //write configurations
+    //
+    AdccRegs.ADCCTL2.bit.PRESCALE = 6; //set ADCCLK divider to /4
+    //AdcSetMode(ADC_ADCC, ADC_RESOLUTION_12BIT, ADC_SIGNALMODE_SINGLE);
+    AdccRegs.ADCCTL2.bit.RESOLUTION = 0;
+    AdccRegs.ADCCTL2.bit.SIGNALMODE = 0;
+    //
+    //Set pulse positions to late
+    //
+    AdccRegs.ADCCTL1.bit.INTPULSEPOS = 1;
+    //
+    //power up the ADC
+    //
+    AdccRegs.ADCCTL1.bit.ADCPWDNZ = 1;
+    //
+    //delay for > 1ms to allow ADC time to power up
+    //
+    for(i = 0; i < 1000; i++)
+    {
+        asm("   RPT#255 || NOP");
+    }
+    EDIS;
+
+
+    EALLOW;
+
+    AdccRegs.ADCSOC4CTL.bit.CHSEL = 4;          //SOC3 will convert pin C4 (67) -> Ilv_adc
+    AdccRegs.ADCSOC4CTL.bit.ACQPS = 8;         //sample window is 20 SYSCLK cycles
+    AdccRegs.ADCSOC4CTL.bit.TRIGSEL = 0x05;     //trigger on ePWM1 SOCA/C
+    AdccRegs.ADCPPB1CONFIG.bit.CONFIG = 0;      // PPB is associated with SOC0
+    AdccRegs.ADCPPB1OFFCAL.bit.OFFCAL = 0;      // Write zero to this for now till offset ISR is run
+
+    AdccRegs.ADCSOC5CTL.bit.CHSEL = 5;          //SOC5 will convert pin C5 (64) -> Vclamp
+    AdccRegs.ADCSOC5CTL.bit.ACQPS = 8;         //sample window is 11 SYSCLK cycles
+    AdccRegs.ADCSOC5CTL.bit.TRIGSEL = 0x05;     //trigger on ePWM1 SOCA/C
+    AdccRegs.ADCPPB1CONFIG.bit.CONFIG = 0;      // PPB is associated with SOC0
+    AdccRegs.ADCPPB1OFFCAL.bit.OFFCAL = 0;      // Write zero to this for now till offset ISR is run
+
+    AdccRegs.ADCSOC3CTL.bit.CHSEL = 3;          //SOC2 will convert pin C3 (24)-> Ihv_adc
+    AdccRegs.ADCSOC3CTL.bit.ACQPS = 8;         //sample window is 11 SYSCLK cycles
+    AdccRegs.ADCSOC3CTL.bit.TRIGSEL = 0x05;     //trigger on ePWM1 SOCA/C
+    AdccRegs.ADCPPB2CONFIG.bit.CONFIG = 1;      // PPB is associated with SOC1
+    AdccRegs.ADCPPB2OFFCAL.bit.OFFCAL = 0;      // Write zero to this for now till offset ISR is run
+
+    AdccRegs.ADCSOC2CTL.bit.CHSEL = 2;          //SOC4 will convert pin C2 (27) -> Ubat
+    AdccRegs.ADCSOC2CTL.bit.ACQPS = 8;         //sample window is 20 SYSCLK cycles
+    AdccRegs.ADCSOC2CTL.bit.TRIGSEL = 0x05;     //trigger on ePWM1 SOCA/C
+    AdccRegs.ADCPPB1CONFIG.bit.CONFIG = 0;      // PPB is associated with SOC0
+    AdccRegs.ADCPPB1OFFCAL.bit.OFFCAL = 0;      // Write zero to this for now till offset ISR is run
+
+    AdccRegs.ADCINTSOCSEL1.all = 0x0000;          // No ADCInterrupt will trigger SOCx
+    AdccRegs.ADCINTSOCSEL2.all = 0x0000;
+    AdccRegs.ADCINTSEL1N2.bit.INT1SEL = 3;      // EOC3 is trigger for ADCINT1
+    AdccRegs.ADCINTSEL1N2.bit.INT1E = 1;        // enable ADC interrupt 1
+    AdccRegs.ADCINTSEL1N2.bit.INT1CONT = 1;     // ADCINT1 pulses are generated whenever an EOC pulse is generated irrespective of whether the flag bit is cleared or not.
+                                               // 0 No further ADCINT2 pulses are generated until ADCINT2 flag (in ADCINTFLG register) is cleared by user.
+    AdccRegs.ADCINTFLGCLR.bit.ADCINT1 = 1;      //make sure INT1 flag is cleared
+
+   EDIS;
+}
+
+void PWM_CFDAB(int period, int deadtime)
+{
+    EALLOW;
+
+// Van S1
+
+    EPwm1Regs.TBCTL.bit.PRDLD = TB_SHADOW;        // set shadow load
+    EPwm1Regs.TBPRD = period;
+    EPwm1Regs.CMPA.bit.CMPA = period;             // Fix duty at 100%
+    EPwm1Regs.TBPHS.bit.TBPHS = 0;           // Phase = 180 deg
+    EPwm1Regs.TBCTR = 0;
+    EPwm1Regs.TBCTL.bit.FREE_SOFT = 3;                   // Free run
+
+    EPwm1Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
+    EPwm1Regs.TBCTL.bit.PHSEN = TB_DISABLE;           // Slave module
+    EPwm1Regs.TBCTL.bit.SYNCOSEL = TB_CTR_ZERO;       // Sync "flow through" mode
+    EPwm1Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;
+    EPwm1Regs.TBCTL.bit.CLKDIV = TB_DIV1;
+    EPwm1Regs.TBCTL.bit.PHSDIR = TB_UP;            // Count DOWN on sync (=180 deg) // chi dung khi up-down
+
+    EPwm1Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;
+    EPwm1Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
+    EPwm1Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;
+    EPwm1Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
+
+    EPwm1Regs.AQCTLA.bit.ZRO = AQ_SET;
+    EPwm1Regs.AQCTLA.bit.CAU = AQ_CLEAR;
+
+    EPwm1Regs.AQCTLB.bit.ZRO = AQ_SET;
+    EPwm1Regs.AQCTLB.bit.CBU = AQ_CLEAR;
+
+    // activate shadow mode for DBCTL
+    EPwm1Regs.DBCTL2.bit.SHDWDBCTLMODE = 0x1;
+    // reload on CTR = 0
+    EPwm1Regs.DBCTL2.bit.LOADDBCTLMODE = 0x0;
+
+    EPwm1Regs.DBCTL.bit.OUT_MODE = DB_FULL_ENABLE;
+    EPwm1Regs.DBCTL.bit.POLSEL = DB_ACTV_HIC;        // Active Hi Complimentary
+    EPwm1Regs.DBCTL.bit.IN_MODE = DBA_ALL;
+    EPwm1Regs.DBRED.bit.DBRED = deadtime;                            // dummy value for now
+    EPwm1Regs.DBFED.bit.DBFED = deadtime;                            // dummy value for now
+
+    EPwm1Regs.ETSEL.bit.SOCAEN   = 1;
+    EPwm1Regs.ETSEL.bit.SOCASEL = ET_CTR_ZERO;         // CTR = 0//
+    EPwm1Regs.ETPS.bit.SOCAPRD = ET_1ST;               // Generate pulse on 1st event
+    EPwm1Regs.ETCLR.bit.SOCA = 1;
+    EPwm1Regs.ETPS.bit.SOCACNT = ET_1ST ;              // Generate INT on 1st event
+
+
+    // Enable CNT_zero interrupt using EPWM1 Time-base
+    EPwm1Regs.ETSEL.bit.INTEN = 1;                      // enable EPWM1INT generation
+    EPwm1Regs.ETSEL.bit.INTSEL = ET_CTR_ZERO;           // enable interrupt CNT_zero event
+    EPwm1Regs.ETPS.bit.INTPRD = ET_1ST;                 // generate interrupt on the 1st event
+    EPwm1Regs.ETPS.bit.INTCNT = ET_1ST;
+    EPwm1Regs.ETCLR.bit.INT = 1;
+    //-----------------------------------------------------
+    // Q2a   // ePWM(n+1) init.  EPWM(n+1) is a slave
+    EPwm2Regs.TBCTL.bit.PRDLD = TB_SHADOW;        // set Immediate load
+    EPwm2Regs.TBPRD = period;
+    EPwm2Regs.CMPA.bit.CMPA = period;             // Fix duty at 100%
+    EPwm2Regs.TBPHS.bit.TBPHS = period/2;           // Phase = 180 deg
+    EPwm2Regs.TBCTR = 0;
+    EPwm2Regs.TBCTL.bit.FREE_SOFT = 3;                   // Free run
+
+    EPwm2Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
+    EPwm2Regs.TBCTL.bit.PHSEN = TB_ENABLE;           // Slave module
+    EPwm2Regs.TBCTL.bit.SYNCOSEL = TB_SYNC_IN;       // Sync "flow through" mode
+    EPwm2Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;
+    EPwm2Regs.TBCTL.bit.CLKDIV = TB_DIV1;
+    EPwm2Regs.TBCTL.bit.PHSDIR = TB_UP;            // Count DOWN on sync (=180 deg)
+
+    EPwm2Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;
+    EPwm2Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
+    EPwm2Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;
+    EPwm2Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
+
+    EPwm2Regs.AQCTLA.bit.ZRO = AQ_CLEAR;
+    EPwm2Regs.AQCTLA.bit.CAU = AQ_SET;
+
+    EPwm2Regs.AQCTLB.bit.ZRO = AQ_SET;
+    EPwm2Regs.AQCTLB.bit.CBU = AQ_CLEAR;
+
+    // activate shadow mode for DBCTL
+    EPwm2Regs.DBCTL2.bit.SHDWDBCTLMODE = 0x1;
+    // reload on CTR = 0
+    EPwm2Regs.DBCTL2.bit.LOADDBCTLMODE = 0x0;
+
+    EPwm2Regs.DBCTL.bit.OUT_MODE = DB_FULL_ENABLE;
+    EPwm2Regs.DBCTL.bit.POLSEL = DB_ACTV_HIC;        // Active Hi Complimentary
+    EPwm2Regs.DBCTL.bit.IN_MODE = DBA_ALL;
+    EPwm2Regs.DBRED.bit.DBRED = deadtime;                            // dummy value for now
+    EPwm2Regs.DBFED.bit.DBFED = deadtime;                            // dummy value for now
+
+    // ePWM(n+1) init.  EPWM(n+1) is a slave
+    EPwm3Regs.TBCTL.bit.PRDLD = TB_SHADOW;             // set Immediate load
+    EPwm3Regs.TBPRD = period;
+    EPwm3Regs.CMPA.bit.CMPA = period;
+    EPwm3Regs.TBPHS.bit.TBPHS = period/2;
+    EPwm3Regs.TBCTR = 0;
+    EPwm3Regs.TBCTL.bit.FREE_SOFT = 3;                 // Free run
+
+    EPwm3Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;         // COUNTER_UP
+    EPwm3Regs.TBCTL.bit.PHSEN   = TB_ENABLE;          // Master module
+    EPwm3Regs.TBCTL.bit.SYNCOSEL = TB_SYNC_IN;        //used to sync EPWM(n+1) "down-stream"
+    EPwm3Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;
+    EPwm3Regs.TBCTL.bit.CLKDIV = TB_DIV1;
+    EPwm3Regs.TBCTL.bit.PHSDIR = TB_UP;
+
+    EPwm3Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;      // load on CTR=Zero
+    EPwm3Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
+    EPwm3Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;      // load on CTR=Zero
+    EPwm3Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
+
+    EPwm3Regs.AQCTLA.bit.ZRO = AQ_CLEAR;
+    EPwm3Regs.AQCTLA.bit.CAU = AQ_SET;
+
+    EPwm3Regs.AQCTLB.bit.ZRO = AQ_SET;
+    EPwm3Regs.AQCTLB.bit.CBU = AQ_CLEAR;
+
+    // activate shadow mode for DBCTL
+    EPwm3Regs.DBCTL2.bit.SHDWDBCTLMODE = 0x1;
+    // reload on CTR = 0
+    EPwm3Regs.DBCTL2.bit.LOADDBCTLMODE = 0x0;
+
+    EPwm3Regs.DBCTL.bit.OUT_MODE = DB_FULL_ENABLE;     // enable Dead-band module
+    EPwm3Regs.DBCTL.bit.POLSEL = DB_ACTV_HIC;          // Active Hi Complimentary
+    EPwm3Regs.DBCTL.bit.IN_MODE = DBA_ALL;
+    EPwm3Regs.DBRED.bit.DBRED = deadtime;              // dummy value for now
+    EPwm3Regs.DBFED.bit.DBFED = deadtime;              // dummy value for now
+
+
+    //-----------------------------------------------------
+
+    // ePWM(n+1) init.  EPWM(n+1) is a slave
+    EPwm10Regs.TBCTL.bit.PRDLD = TB_SHADOW;        // set shadow load
+    EPwm10Regs.TBPRD = period;
+    EPwm10Regs.CMPA.bit.CMPA = 0;             // Fix duty at 100%
+    EPwm10Regs.CMPB.bit.CMPB = period;             // Fix duty at 100%
+    EPwm10Regs.TBPHS.bit.TBPHS = 0;           // Phase = 180 deg
+    EPwm10Regs.TBCTR = 0;
+    EPwm10Regs.TBCTL.bit.FREE_SOFT = 3;                   // Free run
+
+    EPwm10Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
+    EPwm10Regs.TBCTL.bit.PHSEN = TB_ENABLE;           // Slave module
+    EPwm10Regs.TBCTL.bit.SYNCOSEL = TB_SYNC_IN;       // Sync "flow through" mode
+    EPwm10Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;
+    EPwm10Regs.TBCTL.bit.CLKDIV = TB_DIV1;
+    EPwm10Regs.TBCTL.bit.PHSDIR = TB_UP;            // Count DOWN on sync (=180 deg)
+
+    EPwm10Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;
+    EPwm10Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
+    EPwm10Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;
+    EPwm10Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
+
+    EPwm10Regs.AQCTLA.bit.ZRO = AQ_SET;                                                     // tao them 1 phan xung S2
+    EPwm10Regs.AQCTLA.bit.CAU = AQ_CLEAR;
+    EPwm10Regs.AQCTLA.bit.CBU = AQ_SET;
+
+    EPwm10Regs.AQCTLB.bit.ZRO = AQ_SET;
+    EPwm10Regs.AQCTLB.bit.CAU = AQ_CLEAR;
+    EPwm10Regs.AQCTLB.bit.CBU = AQ_SET;
+
+    // activate shadow mode for DBCTL
+    EPwm10Regs.DBCTL2.bit.SHDWDBCTLMODE = 0x1;
+    // reload on CTR = 0
+    EPwm10Regs.DBCTL2.bit.LOADDBCTLMODE = 0x0;
+
+    EPwm10Regs.DBCTL.bit.OUT_MODE = DB_FULL_ENABLE;
+    EPwm10Regs.DBCTL.bit.POLSEL = DB_ACTV_HIC;        // Active Hi Complimentary
+    EPwm10Regs.DBCTL.bit.IN_MODE = DBA_ALL;
+    EPwm10Regs.DBRED.bit.DBRED = deadtime;                            // dummy value for now
+    EPwm10Regs.DBFED.bit.DBFED = deadtime;                            // dummy value for now
+
+    EDIS;
+}
+
+>>>>>>> 8a67fe63b820ee0fc14504b545aa482d6fa65d74
 void DelayMs(unsigned long ms)
 {
     unsigned long count = 0;
@@ -140,7 +399,11 @@ int main(void)
 
    PWM_CFDAB(2000,30);
 
+<<<<<<< HEAD
    CMPSS_Protection();
+=======
+//   CMPSS_Protection();
+>>>>>>> 8a67fe63b820ee0fc14504b545aa482d6fa65d74
 
    EALLOW;
    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;
@@ -473,6 +736,7 @@ interrupt void cla1Isr8 ()
     PieCtrlRegs.PIEACK.all = M_INT11;
 }
 
+<<<<<<< HEAD
 void cmpssConfig(volatile struct CMPSS_REGS *v, int16 Hi, int16 Lo)
 {
 
@@ -537,19 +801,94 @@ void CMPSS_Protection(void)
 //    EPwmXbarRegs.TRIP4MUX16TO31CFG.all = 0x0000;
 //        EPwmXbarRegs.TRIP5MUX0TO15CFG.all  = 0x0000;
 //        EPwmXbarRegs.TRIP5MUX16TO31CFG.all = 0x0000;
+=======
+//void cmpssConfig(volatile struct CMPSS_REGS *v, int16 Hi, int16 Lo)
+//{
+//
+//    // Set up COMPCTL register
+//    EALLOW;
+//    v->COMPCTL.bit.COMPDACE    = 1;             // Enable CMPSS
+//    v->COMPCTL.bit.COMPLSOURCE = NEGIN_DAC;     // NEG signal from DAC for COMP-L
+//    v->COMPCTL.bit.COMPHSOURCE = NEGIN_DAC;     // NEG signal from DAC for COMP-H
+//    v->COMPCTL.bit.COMPHINV    = 0;             // COMP-H output is NOT inverted
+//    v->COMPCTL.bit.COMPLINV    = 1;             // COMP-L output is inverted
+//    v->COMPCTL.bit.ASYNCHEN    = 0;             // Disable aynch COMP-H ouput
+//    v->COMPCTL.bit.ASYNCLEN    = 0;             // Disable aynch COMP-L ouput
+//    v->COMPCTL.bit.CTRIPHSEL    = CTRIP_FILTER; // Dig filter output ==> CTRIPH
+//    v->COMPCTL.bit.CTRIPOUTHSEL = CTRIP_FILTER; // Dig filter output ==> CTRIPOUTH
+//    v->COMPCTL.bit.CTRIPLSEL    = CTRIP_FILTER; // Dig filter output ==> CTRIPL
+//    v->COMPCTL.bit.CTRIPOUTLSEL = CTRIP_FILTER; // Dig filter output ==> CTRIPOUTL
+//
+//    // Set up COMPHYSCTL register
+//    v->COMPHYSCTL.bit.COMPHYS   = 2; // COMP hysteresis set to 2x typical value
+//
+//    // set up COMPDACCTL register
+//    v->COMPDACCTL.bit.SELREF    = REFERENCE_VDDA_CMPSS; // VDDA is REF for CMPSS DACs
+//    v->COMPDACCTL.bit.SWLOADSEL = 0; // DAC updated on sysclock
+//    v->COMPDACCTL.bit.DACSOURCE = 0; // Ramp bypassed
+//
+//    // Load DACs - High and Low
+//    v->DACHVALS.bit.DACVAL = Hi;     // Set DAC-H to allowed MAX +ve current
+//    v->DACLVALS.bit.DACVAL = Lo;     // Set DAC-L to allowed MAX -ve current
+//
+//    // digital filter settings - HIGH side
+//    v->CTRIPHFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // set time between samples, max : 1023
+//    v->CTRIPHFILCTL.bit.SAMPWIN        = sampwin;     // # of samples in window, max : 31
+//    v->CTRIPHFILCTL.bit.THRESH         = thresh;      // recommended : thresh > sampwin/2
+//    v->CTRIPHFILCTL.bit.FILINIT        = 1;           // Init samples to filter input value
+//
+//    // digital filter settings - LOW side
+//    v->CTRIPLFILCLKCTL.bit.CLKPRESCALE = clkPrescale; // set time between samples, max : 1023
+//    v->CTRIPLFILCTL.bit.SAMPWIN        = sampwin;     // # of samples in window, max : 31
+//    v->CTRIPLFILCTL.bit.THRESH         = thresh;      // recommended : thresh > sampwin/2
+//    v->CTRIPLFILCTL.bit.FILINIT        = 1;           // Init samples to filter input value
+//
+//    // Clear the status register for latched comparator events
+//    v->COMPSTSCLR.bit.HLATCHCLR = 1;
+//    v->COMPSTSCLR.bit.LLATCHCLR = 1;
+//    EDIS;
+//    return;
+//}
+//
+//void CMPSS_Protection(void)
+//{
+//    cmpssConfig(&Cmpss6Regs,MEA_voltUbatHi, MEA_voltUbatLo);  //Enable CMPSS6 - BAT VOLTAGE - 6P
+////    cmpssConfig(&Cmpss5Regs, LEM_curHi, LEM_curLo);  //Enable CMPS5 - LEM CURRENT  for ADCINC4
+////    cmpssConfig(&Cmpss7Regs,MEA_voltUcHi,MEA_voltUcLo);  //Enable CMPSS7 - Vclamp -7P
+//    cmpssConfig(&Cmpss3Regs,MEA_voltUdcHi,MEA_voltUdcLo);  //Enable CMPSS3 - Vdc - 3P
+//
+//    EALLOW;
+//    // Configure TRIP 4 to OR the High and Low trips from both comparator 1 & 3
+//    // Clear everything first
+//    EPwmXbarRegs.TRIP4MUX0TO15CFG.all  = 0x0000;
+//    EPwmXbarRegs.TRIP4MUX16TO31CFG.all = 0x0000;
+////    EPwmXbarRegs.TRIP5MUX0TO15CFG.all  = 0x0000;
+////    EPwmXbarRegs.TRIP5MUX16TO31CFG.all = 0x0000;
+>>>>>>> 8a67fe63b820ee0fc14504b545aa482d6fa65d74
 //    // Enable Muxes for ored input of CMPSS1H and 1L, i.e. .1 mux for Mux0
 //    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX10  = 0;
 //    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX12  = 0;
 //    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX4  = 0;
+<<<<<<< HEAD
 //    //    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX10  = 0;  //cmpss2 - tripH ubat 6P
 //    //    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX4  = 0;  //cmpss3 - tripH
 //    //    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX6  = 0;  //cmpss4 - tripH
 //    //    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX8  = 1;  //cmpss5 - tripH or TripL
+=======
+////    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX10  = 0;  //cmpss2 - tripH ubat 6P
+////    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX4  = 0;  //cmpss3 - tripH
+////    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX6  = 0;  //cmpss4 - tripH
+////    EPwmXbarRegs.TRIP4MUX0TO15CFG.bit.MUX8  = 1;  //cmpss5 - tripH or TripL
+>>>>>>> 8a67fe63b820ee0fc14504b545aa482d6fa65d74
 //
 //
 //    // Disable all the muxes first
 //    EPwmXbarRegs.TRIP4MUXENABLE.all = 0x0000;
+<<<<<<< HEAD
 //    //    EPwmXbarRegs.TRIP5MUXENABLE.all = 0x0000;
+=======
+////    EPwmXbarRegs.TRIP5MUXENABLE.all = 0x0000;
+>>>>>>> 8a67fe63b820ee0fc14504b545aa482d6fa65d74
 //    // Enable Mux 2,4,6,8 to generate TRIP4
 //    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX10  = 1;
 //    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX12  = 1;
@@ -557,6 +896,7 @@ void CMPSS_Protection(void)
 ////    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX4  = 1;
 ////    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX6  = 1;
 ////    EPwmXbarRegs.TRIP4MUXENABLE.bit.MUX8  = 1;
+<<<<<<< HEAD
 
 
 //    CMPSS6_CTRL_REG.bit.HI_TRIP = 1;
@@ -641,6 +981,89 @@ void CMPSS_Protection(void)
     EDIS;
 
 }
+=======
+//
+//    EPwm1Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 3; //Trip 4 is the input to the DCAHCOMPSEL
+//    EPwm1Regs.TZDCSEL.bit.DCAEVT1       = TZ_DCAH_HI;
+//    EPwm1Regs.DCACTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm1Regs.DCACTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm1Regs.TZSEL.bit.DCAEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+//
+//    EPwm1Regs.DCTRIPSEL.bit.DCBHCOMPSEL = 3; //Trip 4 is the input to the DCBHCOMPSEL
+//    EPwm1Regs.TZDCSEL.bit.DCBEVT1       = TZ_DCBH_HI;
+//    EPwm1Regs.DCBCTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm1Regs.DCBCTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm1Regs.TZSEL.bit.DCBEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+//
+//    EPwm2Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 3; //Trip 4 is the input to the DCAHCOMPSEL
+//    EPwm2Regs.TZDCSEL.bit.DCAEVT1       = TZ_DCAH_HI;
+//    EPwm2Regs.DCACTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm2Regs.DCACTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm2Regs.TZSEL.bit.DCAEVT1         = 1;
+//
+//    EPwm2Regs.DCTRIPSEL.bit.DCBHCOMPSEL = 3; //Trip 4 is the input to the DCBHCOMPSEL
+//    EPwm2Regs.TZDCSEL.bit.DCBEVT1       = TZ_DCBH_HI;
+//    EPwm2Regs.DCBCTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm2Regs.DCBCTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm2Regs.TZSEL.bit.DCBEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+//
+//    EPwm3Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 3; //Trip 4 is the input to the DCAHCOMPSEL
+//    EPwm3Regs.TZDCSEL.bit.DCAEVT1       = TZ_DCAH_HI;
+//    EPwm3Regs.DCACTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm3Regs.DCACTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm3Regs.TZSEL.bit.DCAEVT1         = 1;
+//
+//    EPwm3Regs.DCTRIPSEL.bit.DCBHCOMPSEL = 3; //Trip 4 is the input to the DCBHCOMPSEL
+//    EPwm3Regs.TZDCSEL.bit.DCBEVT1       = TZ_DCBH_HI;
+//    EPwm3Regs.DCBCTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm3Regs.DCBCTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm3Regs.TZSEL.bit.DCBEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+//
+//    EPwm10Regs.DCTRIPSEL.bit.DCAHCOMPSEL = 3; //Trip 4 is the input to the DCAHCOMPSEL
+//    EPwm10Regs.TZDCSEL.bit.DCAEVT1       = TZ_DCAH_HI;
+//    EPwm10Regs.DCACTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm10Regs.DCACTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm10Regs.TZSEL.bit.DCAEVT1         = 1;
+//
+//    EPwm10Regs.DCTRIPSEL.bit.DCBHCOMPSEL = 3; //Trip 4 is the input to the DCBHCOMPSEL
+//    EPwm10Regs.TZDCSEL.bit.DCBEVT1       = TZ_DCBH_HI;
+//    EPwm10Regs.DCBCTL.bit.EVT1SRCSEL     = DC_EVT1;
+//    EPwm10Regs.DCBCTL.bit.EVT1FRCSYNCSEL = DC_EVT_ASYNC;
+//    EPwm10Regs.TZSEL.bit.DCBEVT1         = 1;           // 1/0 - Enable/Disable One Shot Mode
+//
+//    // What do we want the DCAEVT1 events to do?
+//    // TZA events can force EPWMxA
+//    // TZB events can force EPWMxB
+//
+//    EPwm1Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
+//    EPwm1Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
+//
+//    EPwm2Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
+//    EPwm2Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
+//
+//    EPwm3Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
+//    EPwm3Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
+//
+//    EPwm10Regs.TZCTL.bit.DCAEVT1 = TZ_FORCE_LO; // EPWMxA will go low
+//    EPwm10Regs.TZCTL.bit.DCBEVT1 = TZ_FORCE_LO; // EPWMxB will go low
+//
+//
+//    // Clear any spurious OV trip
+//    EPwm1Regs.TZCLR.bit.DCAEVT1 = 1;
+//    EPwm2Regs.TZCLR.bit.DCAEVT1 = 1;
+//    EPwm3Regs.TZCLR.bit.DCAEVT1 = 1;
+//    EPwm10Regs.TZCLR.bit.DCAEVT1 = 1;
+//
+//    // Clear any spurious OV trip
+//    EPwm1Regs.TZCLR.bit.DCBEVT1 = 1;
+//    EPwm2Regs.TZCLR.bit.DCBEVT1 = 1;
+//    EPwm3Regs.TZCLR.bit.DCBEVT1 = 1;
+//    EPwm10Regs.TZCLR.bit.DCBEVT1 = 1;
+//
+//    EDIS;
+//
+//}
+>>>>>>> 8a67fe63b820ee0fc14504b545aa482d6fa65d74
 
 
 

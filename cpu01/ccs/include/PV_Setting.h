@@ -130,7 +130,11 @@
 #define CMPSS_Udc_Offset_New_Protecion     0.0
 #define CMPSS_Vg_Offset_New_Protecion      0.0
 
+<<<<<<< HEAD
 #define CMPSS_Ig_inv_New_Protecion         2.0
+=======
+#define CMPSS_Ig_inv_New_Protecion         1.0
+>>>>>>> 8a67fe63b820ee0fc14504b545aa482d6fa65d74
 
 // CMPSS TPC Setting
 
