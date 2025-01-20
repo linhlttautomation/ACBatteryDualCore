@@ -29,3 +29,4 @@ sdfm_filter_sync.obj: C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/ex
 sdfm_filter_sync.obj: C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu02/ccs/library/App_lib/Controller/include/PI_NORMAL_CLA.h
 sdfm_filter_sync.obj: C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu02/ccs/library/App_lib/Controller/include/CNTL_2P2Z_CLA.h
 sdfm_filter_sync.obj: C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu02/ccs/library/App_lib/Controller/include/CNTL_PI_CLA.h
+sdfm_filter_sync.obj: C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/common/include/F2837xD_EPwm_defines.h

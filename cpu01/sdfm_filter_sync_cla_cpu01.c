@@ -649,34 +649,40 @@ int main(void)
     GpioCtrlRegs.GPAGMUX1.bit.GPIO6 = 0;   //
     GpioCtrlRegs.GPAMUX1.bit.GPIO6 = 1;    // 2=CANTXB,
     GpioCtrlRegs.GPADIR.bit.GPIO6 = 1;     // 1=OUTput
+    GpioCtrlRegs.GPAPUD.bit.GPIO6 = 0;
 
 //--------------------------------------------------------------------------------------
 //  GPIO-07 - PIN FUNCTION = PWM4B
     GpioCtrlRegs.GPAGMUX1.bit.GPIO7 = 0;   //
     GpioCtrlRegs.GPAMUX1.bit.GPIO7 = 1;    // 2=CANXB,
     GpioCtrlRegs.GPADIR.bit.GPIO7 = 1;     //  0 = INput, 1 = Output
+    GpioCtrlRegs.GPAPUD.bit.GPIO7 = 0;
 
 //--------------------------------------------------------------------------------------
 //  GPIO-8 - PIN FUNCTION = PWM 5A
     GpioCtrlRegs.GPAGMUX1.bit.GPIO8 = 0;   //
     GpioCtrlRegs.GPAMUX1.bit.GPIO8 = 1;    // 0=GPIO,
     GpioCtrlRegs.GPADIR.bit.GPIO8 = 1;     // 1=OUTput,  0=INput
+    GpioCtrlRegs.GPAPUD.bit.GPIO8 = 0;
 
 //--------------------------------------------------------------------------------------
 //  GPIO-9 - PIN FUNCTION = PWM 5B
     GpioCtrlRegs.GPAGMUX1.bit.GPIO9 = 0;   //
     GpioCtrlRegs.GPAMUX1.bit.GPIO9 = 1;    // 0=GPIO,
     GpioCtrlRegs.GPADIR.bit.GPIO9 = 1;     // 1=OUTput,  0=INput
+    GpioCtrlRegs.GPAPUD.bit.GPIO9 = 0;
 //--------------------------------------------------------------------------------------
 //  GPIO-10 - PIN FUNCTION = PWM 6A
     GpioCtrlRegs.GPAGMUX1.bit.GPIO10 = 0;      //
     GpioCtrlRegs.GPAMUX1.bit.GPIO10 = 1;    //
     GpioCtrlRegs.GPADIR.bit.GPIO10 = 1;     // 1=OUTput,  0=INput
+    GpioCtrlRegs.GPAPUD.bit.GPIO10 = 0;
 //--------------------------------------------------------------------------------------
 //  GPIO-11 - PIN FUNCTION = PWM 6B
     GpioCtrlRegs.GPAGMUX1.bit.GPIO11 = 0;      //
     GpioCtrlRegs.GPAMUX1.bit.GPIO11 = 1;
     GpioCtrlRegs.GPADIR.bit.GPIO11 = 1;     // 1=OUTput,  0=INput
+    GpioCtrlRegs.GPAPUD.bit.GPIO11 = 0;
 //--------------------------------------------------------------------------------------
 //  GPIO-12 - PIN FUNCTION = PWM 7A
     GpioCtrlRegs.GPAGMUX1.bit.GPIO12 = 0;      //
@@ -692,11 +698,13 @@ int main(void)
     GpioCtrlRegs.GPAGMUX1.bit.GPIO14 = 0;      //
     GpioCtrlRegs.GPAMUX1.bit.GPIO14 = 1;
     GpioCtrlRegs.GPADIR.bit.GPIO14 = 1;     // 1=OUTput,  0=INput
+    GpioCtrlRegs.GPAPUD.bit.GPIO14 = 0;
 //--------------------------------------------------------------------------------------
 //  GPIO-15 - PIN FUNCTION = PWM 8B
     GpioCtrlRegs.GPAGMUX1.bit.GPIO15 = 0;      //
     GpioCtrlRegs.GPAMUX1.bit.GPIO15 = 1;
     GpioCtrlRegs.GPADIR.bit.GPIO15 = 1;     // 1=OUTput,  0=INput
+    GpioCtrlRegs.GPAPUD.bit.GPIO15 = 0;
 //--------------------------------------------------------------------------------------
 //  GPIO-16 - PIN FUNCTION = PWM 9A
     GpioCtrlRegs.GPAGMUX2.bit.GPIO16 = 0;      //
@@ -747,11 +755,16 @@ int main(void)
     GpioCtrlRegs.GPAMUX2.bit.GPIO25 = 0;  // Chọn chức năng GPIO cho chân GPIO32
     GpioCtrlRegs.GPADIR.bit.GPIO25 = 1;   // Cấu hình GPIO32 làm output
     GpioDataRegs.GPACLEAR.bit.GPIO25 = 1; // Khởi tạo ở mức thấp (relay tắt)
+
+    GpioCtrlRegs.GPCGMUX1.bit.GPIO73 = 0;      //
+    GpioCtrlRegs.GPCDIR.bit.GPIO73 = 1;     // 1=OUTput,  0=INput
+    GpioCtrlRegs.GPCMUX1.bit.GPIO73 = 3;  // Chọn chế độ XCLKOUT cho GPIO73
     EDIS;
 
     EALLOW;
     CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;
     EDIS;
+
 #if(SET_MODE_RUN == THREE_PHASE_MODE)
     EALLOW;
 
@@ -1206,21 +1219,21 @@ int main(void)
     CpuToCLA.EnableADC = 1;
     CpuToCLA.EnableFlag = 0;
 
-    CpuToCLA.VdTesting = 20.0;
-    CpuToCLA.IdTesting     = 0.20;
+    CpuToCLA.VdTesting = 22.0;
+    CpuToCLA.IdTesting = 0.20;
 
     CpuToCLA.ADCoffset_Udc = 4;  //
     CpuToCLA.ADCoffset_VaG = 2703; //
     CpuToCLA.ADCoffset_VbG = 2604; //
-    CpuToCLA.ADCoffset_VcG = 2695; //
+    CpuToCLA.ADCoffset_VcG = 2694; //
     CpuToCLA.ADCoffset_Ia_inv = 2061; //
     CpuToCLA.ADCoffset_Ib_inv = 2050; //
     CpuToCLA.ADCoffset_Ic_inv = 2035; //
 
     CpuToCLA.ADCgain_Udc = 1.0;  //
-    CpuToCLA.ADCgain_VaG = 0.78; //
-    CpuToCLA.ADCgain_VbG = 0.76; //
-    CpuToCLA.ADCgain_VcG = 0.77; //
+    CpuToCLA.ADCgain_VaG = 0.775; //
+    CpuToCLA.ADCgain_VbG = 0.745; //
+    CpuToCLA.ADCgain_VcG = 0.765; //
     CpuToCLA.ADCgain_Ia_inv = 1.52; //
     CpuToCLA.ADCgain_Ib_inv = 1.52; //
     CpuToCLA.ADCgain_Ic_inv = 1.475; //
@@ -1271,32 +1284,14 @@ int main(void)
 
         #if(SET_MODE_RUN == THREE_PHASE_MODE)
 
-<<<<<<< HEAD
+            ON_RELAY = 1;
+
             if (ON_RELAY == 1)
             { GpioDataRegs.GPASET.bit.GPIO27 = 1; // Relay 1
             GpioDataRegs.GPASET.bit.GPIO25 = 1; }// Relay 2
             else
                         { GpioDataRegs.GPACLEAR.bit.GPIO27 = 1; // Relay 1
                           GpioDataRegs.GPACLEAR.bit.GPIO25 = 1;}
-=======
-            if(ON_RELAY == 1)
-            {
-                GpioDataRegs.GPASET.bit.GPIO25 = 1; // Relay 2
-                GpioDataRegs.GPASET.bit.GPIO27 = 1; // Relay
-
-
-            }
-            else if(ON_RELAY == 0)
-            {
-                GpioDataRegs.GPACLEAR.bit.GPIO25 = 1; // Relay 2
-                GpioDataRegs.GPACLEAR.bit.GPIO27 = 1; // Relay 1
-            }
-
-//            while(GpioDataRegs.GPADAT.bit.GPIO27 != 1 && GpioDataRegs.GPADAT.bit.GPIO25 != 1)
-//            {
-//                START = 0;
-//            }
->>>>>>> 8a67fe63b820ee0fc14504b545aa482d6fa65d74
 
         #endif
 
@@ -1313,29 +1308,6 @@ int main(void)
            //     START = 0;
 
            // }
-
-        #endif
-
-        #if(ALLOW_IPC_CPU == 1)
-
-            // Điều khiển giá trị biến START_2 trên CPU2
-            if (START_1 == 1)
-            {
-
-                // Gửi giá trị 1 đến CPU2 qua IPC (địa chỉ truyền dữ liệu)
-                IpcRegs.IPCSENDDATA = 1;
-                // Tín hiệu IPC để thông báo dữ liệu đã sẵn sàng
-                IpcRegs.IPCSET.bit.IPC0 = 1;
-
-                // Đợi CPU2 xác nhận đã nhận dữ liệu
-                while (IpcRegs.IPCFLG.bit.IPC0 == 1);
-            }
-            else
-            {
-                IpcRegs.IPCSENDDATA = 0;
-                IpcRegs.IPCSET.bit.IPC0 = 1;
-                while (IpcRegs.IPCFLG.bit.IPC0 == 1);
-            }
 
         #endif
 

@@ -71,6 +71,4 @@ sdfm_filter_sync_cla_cpu02.obj: C:/ti/c2000/C2000Ware_5_03_00_00/device_support/
 sdfm_filter_sync_cla_cpu02.obj: C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/common/include/F2837xD_struct.h
 sdfm_filter_sync_cla_cpu02.obj: C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu02/ccs/include/CFDAB_Variables.h
 sdfm_filter_sync_cla_cpu02.obj: C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu02/ccs/include/CFDAB_Setting.h
-sdfm_filter_sync_cla_cpu02.obj: C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu02/ccs/library/Driver/include/F2837xD_CMPSS_defines.h
-sdfm_filter_sync_cla_cpu02.obj: C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu02/ccs/library/Driver/include/Pwm_CFDAB.h
-sdfm_filter_sync_cla_cpu02.obj: C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu02/ccs/library/Driver/include/ADC_CFDAB.h
+sdfm_filter_sync_cla_cpu02.obj: C:/ti/c2000/C2000Ware_5_03_00_00/device_support/f2837xd/examples/dual/sdfm_filters_sync_cla/cpu02/ccs/include/F2837xD_CMPSS_defines.h

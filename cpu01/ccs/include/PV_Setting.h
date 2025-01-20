@@ -68,16 +68,16 @@
 #if (BUILDLEVEL == LEVEL3)
 
     #define KP_CURR_LOOP            3.0 // L filter 330uH: 3.3
-    #define KI_CURR_LOOP            800.0 // L filter 330uH: 132000.0
+    #define KI_CURR_LOOP            1500.0 // L filter 330uH: 132000.0
 
     #define KP_CURR_LOOP_Z          3.0 // L filter 330uH: 13.2
-    #define KI_CURR_LOOP_Z          800.0 // L filter 330uH: 528000.0
+    #define KI_CURR_LOOP_Z          1500.0 // L filter 330uH: 528000.0
 
 #endif
 #if(BUILDLEVEL == LEVEL4)
 
-    #define KP_CURR_LOOP_1            3.0 // Thong so moi vong ap khong tai
-    #define KI_CURR_LOOP_1            800
+    #define KP_CURR_LOOP_1            2.0*2 // Thong so moi vong ap khong tai
+    #define KI_CURR_LOOP_1            0.18/2
 
     #define KP_VOLT_US_LOOP           0.00001
     #define KI_VOLT_US_LOOP           0.1
@@ -125,16 +125,12 @@
 #define CMPSS_PROTECT_Ic_inv_LOWER      1 // Da test co the bao ve duoc, bv ok
 
 // CMPSS FLC Setting
-#define CMPSS_Udc_New_Protecion            90.0
+#define CMPSS_Udc_New_Protecion            130.0
 
 #define CMPSS_Udc_Offset_New_Protecion     0.0
 #define CMPSS_Vg_Offset_New_Protecion      0.0
 
-<<<<<<< HEAD
 #define CMPSS_Ig_inv_New_Protecion         2.0
-=======
-#define CMPSS_Ig_inv_New_Protecion         1.0
->>>>>>> 8a67fe63b820ee0fc14504b545aa482d6fa65d74
 
 // CMPSS TPC Setting
 
