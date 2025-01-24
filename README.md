@@ -32,3 +32,5 @@ The project is organized into directories corresponding to CPU1, CPU2, and their
 ├── docs/                        # Project documentation
 ├── examples/                    # Examples and demonstrations
 └── README.md                    # Main project documentation
+## AC Battery 1kW Board
+![AC Battery 1kW Board](https://github.com/linhlttautomation/AC-Battery-Experiment/blob/main/Experimental%20Model.png)
