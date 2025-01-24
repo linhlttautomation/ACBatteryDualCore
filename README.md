@@ -21,6 +21,8 @@ This repository provides the source code for the **AC Battery** system, designed
 ## 📂 AC Battery 1kW Board
 ![AC Battery 1kW Board](https://github.com/linhlttautomation/ACBatteryDualCore/blob/master/AC%20Battery%201kW%20Board.png)
 
+--
+
 ## 📂 Project Structure
 
 The project is organized into directories corresponding to CPU1, CPU2, and their associated CLAs to maximize modularity and control capabilities:
