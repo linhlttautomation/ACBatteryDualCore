@@ -21,6 +21,9 @@ This repository provides the source code for the **AC Battery** system, designed
 ## 📂 AC Battery 1kW Board
 ![AC Battery 1kW Board](https://github.com/linhlttautomation/ACBatteryDualCore/blob/master/AC%20Battery%201kW%20Board.png)
 ![AC Battery 1kW Board](https://github.com/linhlttautomation/ACBatteryDualCore/blob/master/AC%20Battery%201kW%20Board%20Side.png)
+## 📂 PINMAP For Dual-Core Project
+![PINMAP For Dual-Core Project](https://github.com/linhlttautomation/ACBatteryDualCore/blob/master/PINMAP%20For%20Dual-Core%20Project.png)
+
 
 ---
 
